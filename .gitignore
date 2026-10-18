@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Node / console
+node_modules/
+console/.next/
+console/out/
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Regwatch raw downloads (kept out of Git; fixtures live in data/regwatch/fixtures)
+data/regwatch/raw/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
