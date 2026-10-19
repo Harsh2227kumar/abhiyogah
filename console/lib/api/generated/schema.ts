@@ -97,6 +97,12 @@ export interface components {
          */
         AccountType: "BSBD" | "OTHER_SAVINGS" | "PPI" | "GIFT_CARD" | "MSME_CURRENT_CASH_CREDIT_OD" | "INDIVIDUAL_CURRENT_CASH_CREDIT_OD_SMALL" | "CREDIT_CARD_SMALL_LIMIT" | "OTHER_CURRENT_CASH_CREDIT_OD" | "CREDIT_CARD_LARGE_LIMIT";
         /**
+         * Appellant
+         * @description Who filed an appeal against an Ombudsman award or decision (RB-IOS 2026 cl. 17, A8).
+         * @enum {string}
+         */
+        Appellant: "BANK" | "COMPLAINANT";
+        /**
          * AppliesTo
          * @description Applicability profile: which regulated entities the obligation binds.
          */
@@ -157,7 +163,7 @@ export interface components {
          * @description Payment channel of a transaction, as in the failed-transaction TAT annex (report B1/B2).
          * @enum {string}
          */
-        Channel: "UPI_P2P" | "UPI_MERCHANT" | "IMPS" | "ATM" | "MICRO_ATM" | "CARD_TO_CARD" | "POS_CARD_PRESENT" | "CARD_NOT_PRESENT" | "AEPS" | "APBS" | "NACH" | "PPI_ON_US" | "PPI_OFF_US" | "OTHER";
+        Channel: "UPI_P2P" | "UPI_MERCHANT" | "IMPS" | "ATM" | "MICRO_ATM" | "CARD_TO_CARD" | "POS_CARD_PRESENT" | "CARD_NOT_PRESENT" | "AEPS_MERCHANT" | "AEPS_BENEFICIARY" | "APBS" | "NACH" | "PPI_ON_US" | "PPI_OFF_US" | "OTHER";
         /**
          * ClockPause
          * @description A pause rule. No obligation may use one until open question Q3 is resolved by the owner.
@@ -277,6 +283,17 @@ export interface components {
             final_reply_date?: components["schemas"]["Fact_date_"] | null;
             last_bank_communication_date?: components["schemas"]["Fact_date_"] | null;
             customer_dissatisfied_date?: components["schemas"]["Fact_date_"] | null;
+            /** @description IO cl. 14(5) exclusion limb, '14_5_a' to '14_5_e' (A14, A16). */
+            exclusion_category?: components["schemas"]["Fact_Annotated_str__StringConstraints__"] | null;
+            /** @description Unit that handled the complaint (A15). */
+            handling_unit?: components["schemas"]["Fact_str_"] | null;
+            /** @description Unit that closed the complaint (A15). */
+            closing_unit?: components["schemas"]["Fact_str_"] | null;
+            senior_review_date?: components["schemas"]["Fact_date_"] | null;
+            /** @description Whether the IO upheld the bank's decision (IO_DECIDED, A18). */
+            io_upheld?: components["schemas"]["Fact_bool_"] | null;
+            /** @description Element codes found in the sent reply (A18). */
+            reply_elements?: components["schemas"]["Fact_list_str__"] | null;
             rbi_receipt_date?: components["schemas"]["Fact_date_"] | null;
             rbio_direction_date?: components["schemas"]["Fact_date_"] | null;
             written_response_date?: components["schemas"]["Fact_date_"] | null;
@@ -284,12 +301,17 @@ export interface components {
             acceptance_letter_date?: components["schemas"]["Fact_date_"] | null;
             compliance_intimated_date?: components["schemas"]["Fact_date_"] | null;
             appeal_filed_date?: components["schemas"]["Fact_date_"] | null;
+            /** @description Who filed the appeal (APPEAL_FILED payload, A8, Q18). */
+            appellant?: components["schemas"]["Fact_Appellant_"] | null;
             transaction_date_t?: components["schemas"]["Fact_date_"] | null;
             reversal_date_r?: components["schemas"]["Fact_date_"] | null;
             alert_received_date?: components["schemas"]["Fact_date_"] | null;
             customer_reported_date?: components["schemas"]["Fact_date_"] | null;
             shadow_credit_date?: components["schemas"]["Fact_date_"] | null;
             liability_determined_date?: components["schemas"]["Fact_date_"] | null;
+            issue_type?: components["schemas"]["Fact_IssueType_"] | null;
+            /** @description Whose fault (B5). Set only by a HUMAN event. */
+            liability_fault?: components["schemas"]["Fact_LiabilityFault_"] | null;
             channel?: components["schemas"]["Fact_Channel_"] | null;
             account_type?: components["schemas"]["Fact_AccountType_"] | null;
             amount_paise?: components["schemas"]["Fact_NewType_"] | null;
@@ -435,7 +457,7 @@ export interface components {
          * @description Outcome of evaluating one obligation on one complaint at ``as_of``.
          * @enum {string}
          */
-        DecisionResult: "NOT_APPLICABLE" | "NOT_TRIGGERED" | "INSUFFICIENT_FACTS" | "RUNNING" | "STOPPED_ON_TIME" | "STOPPED_LATE" | "BREACHED";
+        DecisionResult: "NOT_APPLICABLE" | "NOT_TRIGGERED" | "INSUFFICIENT_FACTS" | "RUNNING" | "STOPPED_ON_TIME" | "STOPPED_LATE" | "BREACHED" | "DETERMINED";
         /**
          * Deontic
          * @description Deontic type of an obligation: must, must not, or may.
@@ -453,7 +475,7 @@ export interface components {
          * @description Business event types (report architecture diagram [3] and clock table).
          * @enum {string}
          */
-        EventType: "BANK_RECEIVED" | "ACKNOWLEDGED" | "INFO_REQUESTED" | "OUTCOME_SET" | "IO_REFERRED" | "IO_DECIDED" | "FINAL_REPLY_SENT" | "BANK_COMMUNICATION_SENT" | "CUSTOMER_DISSATISFIED" | "CUSTOMER_REPORTED" | "ALERT_RECEIVED" | "SHADOW_CREDITED" | "REVERSAL_POSTED" | "LIABILITY_DETERMINED" | "RBI_RECEIVED" | "RBIO_DIRECTION_RECEIVED" | "WRITTEN_RESPONSE_FILED" | "AWARD_RECEIVED" | "ACCEPTANCE_LETTER_RECEIVED" | "COMPLIANCE_INTIMATED" | "APPEAL_FILED" | "ALL_DOCUMENTS_RECEIVED" | "CLAIM_SETTLED" | "FULL_REPAYMENT" | "DOCUMENTS_RELEASED" | "FACTS_RECORDED";
+        EventType: "BANK_RECEIVED" | "ACKNOWLEDGED" | "INFO_REQUESTED" | "OUTCOME_SET" | "IO_REFERRED" | "IO_DECIDED" | "FINAL_REPLY_SENT" | "BANK_COMMUNICATION_SENT" | "CUSTOMER_DISSATISFIED" | "SENIOR_REVIEWED" | "CUSTOMER_REPORTED" | "ALERT_RECEIVED" | "SHADOW_CREDITED" | "REVERSAL_POSTED" | "LIABILITY_DETERMINED" | "RBI_RECEIVED" | "RBIO_DIRECTION_RECEIVED" | "WRITTEN_RESPONSE_FILED" | "AWARD_RECEIVED" | "ACCEPTANCE_LETTER_RECEIVED" | "COMPLIANCE_INTIMATED" | "APPEAL_FILED" | "ALL_DOCUMENTS_RECEIVED" | "CLAIM_SETTLED" | "FULL_REPAYMENT" | "DOCUMENTS_RELEASED" | "FACTS_RECORDED";
         /**
          * FactSource
          * @description Who asserted a fact: a person, a bank system feed, or an LLM extraction.
@@ -463,6 +485,39 @@ export interface components {
         /** Fact[AccountType] */
         Fact_AccountType_: {
             value: components["schemas"]["AccountType"];
+            provenance: components["schemas"]["Provenance"];
+            /**
+             * Event Id
+             * @description The event that asserted this value.
+             */
+            event_id: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             * @description When the engine learned this value.
+             */
+            recorded_at: string;
+        };
+        /** Fact[Annotated[str, StringConstraints]] */
+        Fact_Annotated_str__StringConstraints__: {
+            /** Value */
+            value: string;
+            provenance: components["schemas"]["Provenance"];
+            /**
+             * Event Id
+             * @description The event that asserted this value.
+             */
+            event_id: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             * @description When the engine learned this value.
+             */
+            recorded_at: string;
+        };
+        /** Fact[Appellant] */
+        Fact_Appellant_: {
+            value: components["schemas"]["Appellant"];
             provenance: components["schemas"]["Provenance"];
             /**
              * Event Id
@@ -508,6 +563,38 @@ export interface components {
              */
             recorded_at: string;
         };
+        /** Fact[IssueType] */
+        Fact_IssueType_: {
+            value: components["schemas"]["IssueType"];
+            provenance: components["schemas"]["Provenance"];
+            /**
+             * Event Id
+             * @description The event that asserted this value.
+             */
+            event_id: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             * @description When the engine learned this value.
+             */
+            recorded_at: string;
+        };
+        /** Fact[LiabilityFault] */
+        Fact_LiabilityFault_: {
+            value: components["schemas"]["LiabilityFault"];
+            provenance: components["schemas"]["Provenance"];
+            /**
+             * Event Id
+             * @description The event that asserted this value.
+             */
+            event_id: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             * @description When the engine learned this value.
+             */
+            recorded_at: string;
+        };
         /** Fact[NewType] */
         Fact_NewType_: {
             /** Value */
@@ -528,6 +615,23 @@ export interface components {
         /** Fact[Outcome] */
         Fact_Outcome_: {
             value: components["schemas"]["Outcome"];
+            provenance: components["schemas"]["Provenance"];
+            /**
+             * Event Id
+             * @description The event that asserted this value.
+             */
+            event_id: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             * @description When the engine learned this value.
+             */
+            recorded_at: string;
+        };
+        /** Fact[bool] */
+        Fact_bool_: {
+            /** Value */
+            value: boolean;
             provenance: components["schemas"]["Provenance"];
             /**
              * Event Id
@@ -578,6 +682,23 @@ export interface components {
              */
             recorded_at: string;
         };
+        /** Fact[list[str]] */
+        Fact_list_str__: {
+            /** Value */
+            value: string[];
+            provenance: components["schemas"]["Provenance"];
+            /**
+             * Event Id
+             * @description The event that asserted this value.
+             */
+            event_id: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             * @description When the engine learned this value.
+             */
+            recorded_at: string;
+        };
         /** Fact[str] */
         Fact_str_: {
             /** Value */
@@ -612,7 +733,23 @@ export interface components {
             /** Event Id */
             event_id?: string | null;
         };
+        /**
+         * IssueType
+         * @description What kind of transaction problem a complaint raises; selects the B-table rules that apply.
+         *
+         *     Open to more members as the rule pack grows.
+         * @enum {string}
+         */
+        IssueType: "FAILED_TRANSACTION" | "UNAUTHORISED_TRANSACTION" | "FRAUDULENT_TRANSACTION" | "OTHER";
         JsonValue: unknown;
+        /**
+         * LiabilityFault
+         * @description Whose fault an unauthorised transaction was (RBC-CB paras 67-70, report B5).
+         *
+         *     Only a person sets this fact; an LLM never does (CLAUDE.md hard rule 4).
+         * @enum {string}
+         */
+        LiabilityFault: "BANK" | "THIRD_PARTY" | "CUSTOMER";
         /**
          * NextDeadline
          * @description The earliest open deadline on a complaint.

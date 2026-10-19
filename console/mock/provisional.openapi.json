@@ -222,6 +222,15 @@
         "title": "AccountType",
         "description": "Account categories that select the customer-liability cap (RBC-CB paras 67-71, report B5).\n\nThe caps themselves are rule-pack parameters, never constants in code."
       },
+      "Appellant": {
+        "type": "string",
+        "enum": [
+          "BANK",
+          "COMPLAINANT"
+        ],
+        "title": "Appellant",
+        "description": "Who filed an appeal against an Ombudsman award or decision (RB-IOS 2026 cl. 17, A8)."
+      },
       "AppliesTo": {
         "properties": {
           "entity_type": {
@@ -365,7 +374,8 @@
           "CARD_TO_CARD",
           "POS_CARD_PRESENT",
           "CARD_NOT_PRESENT",
-          "AEPS",
+          "AEPS_MERCHANT",
+          "AEPS_BENEFICIARY",
           "APBS",
           "NACH",
           "PPI_ON_US",
@@ -681,6 +691,71 @@
               }
             ]
           },
+          "exclusion_category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Annotated_str__StringConstraints__"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "IO cl. 14(5) exclusion limb, '14_5_a' to '14_5_e' (A14, A16)."
+          },
+          "handling_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_str_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unit that handled the complaint (A15)."
+          },
+          "closing_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_str_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unit that closed the complaint (A15)."
+          },
+          "senior_review_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "io_upheld": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_bool_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether the IO upheld the bank's decision (IO_DECIDED, A18)."
+          },
+          "reply_elements": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_list_str__"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Element codes found in the sent reply (A18)."
+          },
           "rbi_receipt_date": {
             "anyOf": [
               {
@@ -751,6 +826,17 @@
               }
             ]
           },
+          "appellant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Appellant_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Who filed the appeal (APPEAL_FILED payload, A8, Q18)."
+          },
           "transaction_date_t": {
             "anyOf": [
               {
@@ -810,6 +896,27 @@
                 "type": "null"
               }
             ]
+          },
+          "issue_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_IssueType_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "liability_fault": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_LiabilityFault_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whose fault (B5). Set only by a HUMAN event."
           },
           "channel": {
             "anyOf": [
@@ -1252,7 +1359,8 @@
           "RUNNING",
           "STOPPED_ON_TIME",
           "STOPPED_LATE",
-          "BREACHED"
+          "BREACHED",
+          "DETERMINED"
         ],
         "title": "DecisionResult",
         "description": "Outcome of evaluating one obligation on one complaint at ``as_of``."
@@ -1296,6 +1404,7 @@
           "FINAL_REPLY_SENT",
           "BANK_COMMUNICATION_SENT",
           "CUSTOMER_DISSATISFIED",
+          "SENIOR_REVIEWED",
           "CUSTOMER_REPORTED",
           "ALERT_RECEIVED",
           "SHADOW_CREDITED",
@@ -1357,6 +1466,68 @@
         ],
         "title": "Fact[AccountType]"
       },
+      "Fact_Annotated_str__StringConstraints__": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "pattern": "^14_5_[a-e]$",
+            "title": "Value"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[Annotated[str, StringConstraints]]"
+      },
+      "Fact_Appellant_": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Appellant"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[Appellant]"
+      },
       "Fact_Channel_": {
         "properties": {
           "value": {
@@ -1416,6 +1587,66 @@
           "recorded_at"
         ],
         "title": "Fact[EntityType]"
+      },
+      "Fact_IssueType_": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/IssueType"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[IssueType]"
+      },
+      "Fact_LiabilityFault_": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/LiabilityFault"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[LiabilityFault]"
       },
       "Fact_NewType_": {
         "properties": {
@@ -1477,6 +1708,37 @@
           "recorded_at"
         ],
         "title": "Fact[Outcome]"
+      },
+      "Fact_bool_": {
+        "properties": {
+          "value": {
+            "type": "boolean",
+            "title": "Value"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[bool]"
       },
       "Fact_date_": {
         "properties": {
@@ -1540,6 +1802,40 @@
           "recorded_at"
         ],
         "title": "Fact[int]"
+      },
+      "Fact_list_str__": {
+        "properties": {
+          "value": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Value"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[list[str]]"
       },
       "Fact_str_": {
         "properties": {
@@ -1619,7 +1915,28 @@
         "title": "InputFact",
         "description": "One fact the evaluation read, with where it came from."
       },
+      "IssueType": {
+        "type": "string",
+        "enum": [
+          "FAILED_TRANSACTION",
+          "UNAUTHORISED_TRANSACTION",
+          "FRAUDULENT_TRANSACTION",
+          "OTHER"
+        ],
+        "title": "IssueType",
+        "description": "What kind of transaction problem a complaint raises; selects the B-table rules that apply.\n\nOpen to more members as the rule pack grows."
+      },
       "JsonValue": {},
+      "LiabilityFault": {
+        "type": "string",
+        "enum": [
+          "BANK",
+          "THIRD_PARTY",
+          "CUSTOMER"
+        ],
+        "title": "LiabilityFault",
+        "description": "Whose fault an unauthorised transaction was (RBC-CB paras 67-70, report B5).\n\nOnly a person sets this fact; an LLM never does (CLAUDE.md hard rule 4)."
+      },
       "NextDeadline": {
         "properties": {
           "obligation_id": {
