@@ -90,3 +90,13 @@ def test_liability_never_exceeds_transaction_or_cap(delay: int, txn: int) -> Non
     res = liability(delay, txn, AccountType.OTHER_SAVINGS)
     if res.customer_liability_paise is not None:
         assert res.customer_liability_paise <= min(txn, CAPS[AccountType.OTHER_SAVINGS])
+
+
+def test_amount_and_account_needed_only_for_limited_tier() -> None:
+    """Unknown amount/account is fine for ZERO and BOARD_POLICY, an error for LIMITED."""
+    zero = customer_liability(2, None, None, CAPS, ZERO_MAX, LIMITED_MAX, False)
+    assert zero.tier is LiabilityTier.ZERO
+    board = customer_liability(9, None, None, CAPS, ZERO_MAX, LIMITED_MAX, False)
+    assert board.tier is LiabilityTier.BOARD_POLICY
+    with pytest.raises(CalculatorError):
+        customer_liability(5, None, AccountType.BSBD, CAPS, ZERO_MAX, LIMITED_MAX, False)

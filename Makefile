@@ -50,8 +50,14 @@ console-check:
 		cd console && pnpm install --frozen-lockfile --silent && pnpm check; \
 	fi
 
+## Exports openapi.json from the API; regenerates the console client where pnpm is installed.
 openapi:
-	@echo "openapi: not implemented yet"
+	$(RUN) python -m abhiyogah.api.openapi openapi.json
+	@if command -v pnpm >/dev/null 2>&1 && [ -f console/package.json ]; then \
+		cd console && OPENAPI_SPEC=../openapi.json pnpm openapi; \
+	else \
+		echo "openapi: pnpm not installed, console client not regenerated"; \
+	fi
 
 up:
 	docker compose up --build

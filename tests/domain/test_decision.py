@@ -111,3 +111,25 @@ def test_determined_result_has_no_deadline_or_breach() -> None:
     )
     assert DecisionRecord.model_validate_json(record.model_dump_json()) == record
     assert record.result.value == "DETERMINED"
+
+
+def test_outputs_default_to_empty() -> None:
+    """A record that determined nothing has no outputs (issue #25)."""
+    assert make_record().outputs == {}
+
+
+def test_outputs_round_trip_and_are_hashed() -> None:
+    """Outputs survive JSON, are covered by the hash and do not depend on key order."""
+    base = make_record(DecisionResult.DETERMINED)
+    record = base.model_copy(
+        update={"outputs": {"reply_complete": False, "missing_elements": ["B", "A"]}}
+    ).seal()
+    assert DecisionRecord.model_validate_json(record.model_dump_json()) == record
+    reordered = base.model_copy(
+        update={"outputs": {"missing_elements": ["B", "A"], "reply_complete": False}}
+    ).seal()
+    assert reordered.hash == record.hash
+    assert record.hash != base.seal().hash
+    assert verify_chain([record])
+    tampered = record.model_copy(update={"outputs": {"reply_complete": True}})
+    assert not verify_chain([tampered])

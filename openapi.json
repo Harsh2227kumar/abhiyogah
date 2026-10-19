@@ -1,0 +1,3595 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Abhiyogah engine API",
+    "description": "RBI complaint-compliance engine: clause-cited deadlines and breaches.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "meta"
+        ],
+        "summary": "Health",
+        "description": "Liveness probe; no authentication.",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/complaints/{complaint_id}/events": {
+      "post": {
+        "tags": [
+          "complaints"
+        ],
+        "summary": "Post Events",
+        "description": "Record business events on a complaint, then re-evaluate it.",
+        "operationId": "postEvents",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "complaint_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Complaint Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventsIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventsAccepted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/complaints/{complaint_id}/findings": {
+      "post": {
+        "tags": [
+          "complaints"
+        ],
+        "summary": "Post Finding",
+        "description": "Record a perception finding; a dismissive one opens a human-review task.",
+        "operationId": "postFinding",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "complaint_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Complaint Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FindingIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ReviewTask"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Postfinding"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/complaints": {
+      "get": {
+        "tags": [
+          "complaints"
+        ],
+        "summary": "List Complaints",
+        "description": "Complaints with their next deadline, for the deadline board.",
+        "operationId": "listComplaints",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only.",
+              "title": "As Of"
+            },
+            "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ComplaintSummary"
+                  },
+                  "title": "Response Listcomplaints"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/complaints/{complaint_id}": {
+      "get": {
+        "tags": [
+          "complaints"
+        ],
+        "summary": "Get Complaint",
+        "description": "One complaint: facts, deadlines, breaches, required actions and chain status.",
+        "operationId": "getComplaint",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "complaint_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Complaint Id"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only.",
+              "title": "As Of"
+            },
+            "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplaintDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/complaints/{complaint_id}/closure": {
+      "get": {
+        "tags": [
+          "complaints"
+        ],
+        "summary": "Check Closure",
+        "description": "Whether ``unit`` may close the complaint now, with every reason it may not.",
+        "operationId": "checkClosure",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "complaint_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Complaint Id"
+            }
+          },
+          {
+            "name": "unit",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Unit that would close it.",
+              "title": "Unit"
+            },
+            "description": "Unit that would close it."
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only.",
+              "title": "As Of"
+            },
+            "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClosureCheck"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/complaints/{complaint_id}/decisions": {
+      "get": {
+        "tags": [
+          "decisions"
+        ],
+        "summary": "List Decisions",
+        "description": "The complaint's stored, hash-chained decision records and their verification.",
+        "operationId": "listDecisions",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "complaint_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Complaint Id"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only.",
+              "title": "As Of"
+            },
+            "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionChain"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/complaints/{complaint_id}/decisions/{obligation_id}": {
+      "get": {
+        "tags": [
+          "decisions"
+        ],
+        "summary": "Get Decision",
+        "description": "The latest stored decision record for one obligation on one complaint.",
+        "operationId": "getDecision",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "complaint_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Complaint Id"
+            }
+          },
+          {
+            "name": "obligation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Obligation Id"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only.",
+              "title": "As Of"
+            },
+            "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionReplay"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/decisions/{decision_id}/explain": {
+      "get": {
+        "tags": [
+          "decisions"
+        ],
+        "summary": "Explain Decision",
+        "description": "A stored decision rendered as text from the record itself.",
+        "operationId": "explainDecision",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "decision_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Decision Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Explanation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/obligations": {
+      "get": {
+        "tags": [
+          "rules"
+        ],
+        "summary": "List Obligations",
+        "description": "Every obligation in the loaded rule pack.",
+        "operationId": "listObligations",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Obligation"
+                  },
+                  "type": "array",
+                  "title": "Response Listobligations"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/board/deadlines": {
+      "get": {
+        "tags": [
+          "board"
+        ],
+        "summary": "Board Deadlines",
+        "description": "Running deadlines due within ``within_days`` calendar days, soonest first.",
+        "operationId": "boardDeadlines",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "within_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 366,
+              "minimum": 0,
+              "default": 7,
+              "title": "Within Days"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only.",
+              "title": "As Of"
+            },
+            "description": "Evaluate as of this instant (ISO 8601 with offset). ADMIN only."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ForecastItem"
+                  },
+                  "title": "Response Boarddeadlines"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/review-tasks": {
+      "get": {
+        "tags": [
+          "review"
+        ],
+        "summary": "List Review Tasks",
+        "description": "Human-review tasks, optionally for one complaint or one status.",
+        "operationId": "listReviewTasks",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "complaint_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Complaint Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReviewStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewTask"
+                  },
+                  "title": "Response Listreviewtasks"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountType": {
+        "type": "string",
+        "enum": [
+          "BSBD",
+          "OTHER_SAVINGS",
+          "PPI",
+          "GIFT_CARD",
+          "MSME_CURRENT_CASH_CREDIT_OD",
+          "INDIVIDUAL_CURRENT_CASH_CREDIT_OD_SMALL",
+          "CREDIT_CARD_SMALL_LIMIT",
+          "OTHER_CURRENT_CASH_CREDIT_OD",
+          "CREDIT_CARD_LARGE_LIMIT"
+        ],
+        "title": "AccountType",
+        "description": "Account categories that select the customer-liability cap (RBC-CB paras 67-71, report B5).\n\nThe caps themselves are rule-pack parameters, never constants in code."
+      },
+      "ActionItem": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "'EVALUATOR' or 'WORKFLOW'."
+          },
+          "obligation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Obligation Id"
+          },
+          "action": {
+            "$ref": "#/components/schemas/RequiredAction"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "action"
+        ],
+        "title": "ActionItem",
+        "description": "A required action, from an obligation's clock or from a workflow gate."
+      },
+      "Appellant": {
+        "type": "string",
+        "enum": [
+          "BANK",
+          "COMPLAINANT"
+        ],
+        "title": "Appellant",
+        "description": "Who filed an appeal against an Ombudsman award or decision (RB-IOS 2026 cl. 17, A8)."
+      },
+      "AppliesTo": {
+        "properties": {
+          "entity_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EntityType"
+              },
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EntityType"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Entity Type"
+          },
+          "min_outlets": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Outlets"
+          },
+          "outlets_as_on": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outlets As On"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "entity_type"
+        ],
+        "title": "AppliesTo",
+        "description": "Applicability profile: which regulated entities the obligation binds."
+      },
+      "BasisStatus": {
+        "type": "string",
+        "enum": [
+          "EXPLICIT",
+          "INFERRED"
+        ],
+        "title": "BasisStatus",
+        "description": "Whether the instrument states the day basis or the research inferred it."
+      },
+      "Breach": {
+        "properties": {
+          "obligation_id": {
+            "type": "string",
+            "title": "Obligation Id"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "stop_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stop Date",
+            "description": "When the stop event came, if late."
+          },
+          "days_late": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Days Late",
+            "description": "Days past due_date at stop_date or as_of."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "obligation_id",
+          "due_date",
+          "days_late"
+        ],
+        "title": "Breach",
+        "description": "A deadline missed: no stop by ``due_date``, or a stop after it."
+      },
+      "BreachItem": {
+        "properties": {
+          "clause": {
+            "type": "string",
+            "title": "Clause"
+          },
+          "breach": {
+            "$ref": "#/components/schemas/Breach"
+          },
+          "compensation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Compensation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "clause",
+          "breach"
+        ],
+        "title": "BreachItem",
+        "description": "A breach and any compensation it carries."
+      },
+      "ChainBreak": {
+        "type": "string",
+        "enum": [
+          "UNSEALED",
+          "PREV_HASH_MISMATCH",
+          "HASH_MISMATCH"
+        ],
+        "title": "ChainBreak",
+        "description": "Why a record does not verify."
+      },
+      "ChainStatus": {
+        "properties": {
+          "verified": {
+            "type": "boolean",
+            "title": "Verified"
+          },
+          "length": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Length"
+          },
+          "broken_at": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Broken At",
+            "description": "Index of the first bad record."
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChainBreak"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "head": {
+            "type": "string",
+            "title": "Head",
+            "description": "Hash of the last verified record, or the genesis hash."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "verified",
+          "length",
+          "head"
+        ],
+        "title": "ChainStatus",
+        "description": "Result of verifying one chain of decision records."
+      },
+      "Channel": {
+        "type": "string",
+        "enum": [
+          "UPI_P2P",
+          "UPI_MERCHANT",
+          "IMPS",
+          "ATM",
+          "MICRO_ATM",
+          "CARD_TO_CARD",
+          "POS_CARD_PRESENT",
+          "CARD_NOT_PRESENT",
+          "AEPS_MERCHANT",
+          "AEPS_BENEFICIARY",
+          "APBS",
+          "NACH",
+          "PPI_ON_US",
+          "PPI_OFF_US",
+          "OTHER"
+        ],
+        "title": "Channel",
+        "description": "Payment channel of a transaction, as in the failed-transaction TAT annex (report B1/B2)."
+      },
+      "ClockPause": {
+        "properties": {
+          "on": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "resume": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "open_question": {
+            "type": "string",
+            "title": "Open Question",
+            "description": "Open-question ID authorising the pause, e.g. 'Q3'."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "on",
+          "resume",
+          "open_question"
+        ],
+        "title": "ClockPause",
+        "description": "A pause rule. No obligation may use one until open question Q3 is resolved by the owner."
+      },
+      "ClockSpec": {
+        "properties": {
+          "start": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventType"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Start"
+          },
+          "stop": {
+            "items": {
+              "$ref": "#/components/schemas/EventType"
+            },
+            "type": "array",
+            "title": "Stop"
+          },
+          "basis": {
+            "$ref": "#/components/schemas/DayBasis"
+          },
+          "basis_status": {
+            "$ref": "#/components/schemas/BasisStatus"
+          },
+          "tz": {
+            "type": "string",
+            "const": "Asia/Kolkata",
+            "title": "Tz",
+            "default": "Asia/Kolkata"
+          },
+          "pause": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClockPause"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "start",
+          "basis",
+          "basis_status"
+        ],
+        "title": "ClockSpec",
+        "description": "When the clock starts and stops, and how its days are counted.\n\n``start`` is an event type, or the name of a ``ComplaintFacts`` date field when the anchor is a\nfact rather than an event (for example ``transaction_date_t`` for the failed-transaction TAT).\n``stop`` lists the events that stop the clock; any one of them is enough."
+      },
+      "ClosureCheck": {
+        "properties": {
+          "complaint_id": {
+            "type": "string",
+            "title": "Complaint Id"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "gate": {
+            "$ref": "#/components/schemas/GateResult"
+          },
+          "allowed": {
+            "type": "boolean",
+            "title": "Allowed"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "complaint_id",
+          "unit",
+          "gate",
+          "allowed"
+        ],
+        "title": "ClosureCheck",
+        "description": "Whether a unit may close the complaint now (A14, A15)."
+      },
+      "Compensation": {
+        "properties": {
+          "amount_paise": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Amount Paise"
+          },
+          "formula": {
+            "type": "string",
+            "title": "Formula",
+            "description": "E.g. '100 x max(0, R - (T + n))' rupees."
+          },
+          "inputs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Inputs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "amount_paise",
+          "formula"
+        ],
+        "title": "Compensation",
+        "description": "Money owed, with the formula and inputs that produced it."
+      },
+      "ComplaintDetail": {
+        "properties": {
+          "complaint_id": {
+            "type": "string",
+            "title": "Complaint Id"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/ComplaintEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "facts": {
+            "$ref": "#/components/schemas/ComplaintFacts"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionRecord"
+            },
+            "type": "array",
+            "title": "Decisions"
+          },
+          "deadlines": {
+            "items": {
+              "$ref": "#/components/schemas/DeadlineItem"
+            },
+            "type": "array",
+            "title": "Deadlines"
+          },
+          "breaches": {
+            "items": {
+              "$ref": "#/components/schemas/BreachItem"
+            },
+            "type": "array",
+            "title": "Breaches"
+          },
+          "required_actions": {
+            "items": {
+              "$ref": "#/components/schemas/ActionItem"
+            },
+            "type": "array",
+            "title": "Required Actions"
+          },
+          "review_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewTask"
+            },
+            "type": "array",
+            "title": "Review Tasks"
+          },
+          "chain": {
+            "$ref": "#/components/schemas/ChainStatus"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "complaint_id",
+          "as_of",
+          "events",
+          "facts",
+          "decisions",
+          "deadlines",
+          "breaches",
+          "required_actions",
+          "review_tasks",
+          "chain"
+        ],
+        "title": "ComplaintDetail",
+        "description": "Everything the complaint view shows, as evaluated at ``as_of``.\n\n``decisions`` is the evaluation at ``as_of`` (unsealed; a read never writes). The stored,\nhash-chained records are under ``/complaints/{id}/decisions``; ``chain`` is their status."
+      },
+      "ComplaintEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Event Id"
+          },
+          "complaint_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Complaint Id"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          },
+          "payload": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Payload"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "complaint_id",
+          "type",
+          "occurred_at",
+          "recorded_at",
+          "provenance"
+        ],
+        "title": "ComplaintEvent",
+        "description": "One append-only business event on a complaint.\n\n``occurred_at`` is business time (when it happened); ``recorded_at`` is system time (when the\nengine learned of it). Both must be timezone-aware. ``payload`` holds event-specific facts, for\nexample ``{\"outcome\": \"WHOLLY_REJECTED\"}`` on ``OUTCOME_SET``."
+      },
+      "ComplaintFacts": {
+        "properties": {
+          "complaint_id": {
+            "type": "string",
+            "title": "Complaint Id"
+          },
+          "bank_receipt_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acknowledged_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "info_requested_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Outcome_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "outcome_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "io_referred_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "io_decided_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "final_reply_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "last_bank_communication_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "customer_dissatisfied_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "exclusion_category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Annotated_str__StringConstraints__"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "IO cl. 14(5) exclusion limb, '14_5_a' to '14_5_e' (A14, A16)."
+          },
+          "handling_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_str_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unit that handled the complaint (A15)."
+          },
+          "closing_unit": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_str_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Unit that closed the complaint (A15)."
+          },
+          "senior_review_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "io_upheld": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_bool_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whether the IO upheld the bank's decision (IO_DECIDED, A18)."
+          },
+          "reply_elements": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_list_str__"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Element codes found in the sent reply (A18)."
+          },
+          "rbi_receipt_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rbio_direction_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "written_response_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "award_received_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "acceptance_letter_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "compliance_intimated_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "appeal_filed_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "appellant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Appellant_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Who filed the appeal (APPEAL_FILED payload, A8, Q18)."
+          },
+          "transaction_date_t": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reversal_date_r": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "alert_received_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "customer_reported_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "shadow_credit_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "liability_determined_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "issue_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_IssueType_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "liability_fault": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_LiabilityFault_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Whose fault (B5). Set only by a HUMAN event."
+          },
+          "channel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_Channel_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "account_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_AccountType_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "amount_paise": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_NewType_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "all_documents_received_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "claim_settled_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "full_repayment_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "documents_released_date": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_date_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "home_branch_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_str_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Home branch state as an ISO 3166-2:IN code without 'IN-'."
+          },
+          "entity_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_EntityType_"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external_tat_days": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fact_int_"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "RBI/NPCI/card-network TAT in days, when one applies (A2, A13)."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "complaint_id"
+        ],
+        "title": "ComplaintFacts",
+        "description": "What the engine knows about one complaint. Dates are Asia/Kolkata calendar dates."
+      },
+      "ComplaintSummary": {
+        "properties": {
+          "complaint_id": {
+            "type": "string",
+            "title": "Complaint Id"
+          },
+          "channel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Channel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "obligation_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Obligation Ids",
+            "description": "Obligations triggered on this complaint (applicable and triggered)."
+          },
+          "next_deadline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NextDeadline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "open_breaches": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Open Breaches"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "complaint_id",
+          "obligation_ids",
+          "open_breaches"
+        ],
+        "title": "ComplaintSummary",
+        "description": "One row of the deadline board."
+      },
+      "ConditionTrace": {
+        "properties": {
+          "condition": {
+            "type": "string",
+            "title": "Condition",
+            "description": "What was checked, e.g. 'outcome in [...]'."
+          },
+          "result": {
+            "type": "boolean",
+            "title": "Result"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "condition",
+          "result"
+        ],
+        "title": "ConditionTrace",
+        "description": "One condition checked, in order, and its result."
+      },
+      "DayBasis": {
+        "type": "string",
+        "enum": [
+          "CALENDAR",
+          "WORKING"
+        ],
+        "title": "DayBasis",
+        "description": "How days are counted for a regulatory duration."
+      },
+      "Deadline": {
+        "properties": {
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "basis": {
+            "$ref": "#/components/schemas/DayBasis"
+          },
+          "basis_status": {
+            "$ref": "#/components/schemas/BasisStatus"
+          },
+          "start_event": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "stop_event": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "duration_days": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Days"
+          },
+          "rule": {
+            "type": "string",
+            "title": "Rule",
+            "description": "How it was derived, e.g. 'start + 20d'.",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "due_date",
+          "basis",
+          "basis_status",
+          "start_event",
+          "stop_event"
+        ],
+        "title": "Deadline",
+        "description": "A computed deadline; ``due_date`` is the last IST day on which stopping is on time."
+      },
+      "DeadlineItem": {
+        "properties": {
+          "obligation_id": {
+            "type": "string",
+            "title": "Obligation Id"
+          },
+          "clause": {
+            "type": "string",
+            "title": "Clause"
+          },
+          "result": {
+            "$ref": "#/components/schemas/DecisionResult"
+          },
+          "deadline": {
+            "$ref": "#/components/schemas/Deadline"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "obligation_id",
+          "clause",
+          "result",
+          "deadline"
+        ],
+        "title": "DeadlineItem",
+        "description": "A computed deadline and the state of its clock."
+      },
+      "DecisionChain": {
+        "properties": {
+          "complaint_id": {
+            "type": "string",
+            "title": "Complaint Id"
+          },
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionRecord"
+            },
+            "type": "array",
+            "title": "Records"
+          },
+          "chain": {
+            "$ref": "#/components/schemas/ChainStatus"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "complaint_id",
+          "records",
+          "chain"
+        ],
+        "title": "DecisionChain",
+        "description": "A complaint's stored decision records and the status of their chain."
+      },
+      "DecisionRecord": {
+        "properties": {
+          "complaint_id": {
+            "type": "string",
+            "title": "Complaint Id"
+          },
+          "obligation_id": {
+            "type": "string",
+            "title": "Obligation Id"
+          },
+          "obligation_version": {
+            "type": "string",
+            "title": "Obligation Version",
+            "description": "Rule-pack version or file hash of the obligation."
+          },
+          "clause": {
+            "type": "string",
+            "title": "Clause"
+          },
+          "anchor_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchor Date",
+            "description": "Date used to select parameter versions."
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time",
+            "title": "As Of"
+          },
+          "input_facts": {
+            "items": {
+              "$ref": "#/components/schemas/InputFact"
+            },
+            "type": "array",
+            "title": "Input Facts"
+          },
+          "parameters": {
+            "items": {
+              "$ref": "#/components/schemas/ParameterUse"
+            },
+            "type": "array",
+            "title": "Parameters"
+          },
+          "condition_trace": {
+            "items": {
+              "$ref": "#/components/schemas/ConditionTrace"
+            },
+            "type": "array",
+            "title": "Condition Trace"
+          },
+          "deadline": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Deadline"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "calendar_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calendar Version"
+          },
+          "result": {
+            "$ref": "#/components/schemas/DecisionResult"
+          },
+          "breach": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Breach"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "compensation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Compensation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "required_actions": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredAction"
+            },
+            "type": "array",
+            "title": "Required Actions"
+          },
+          "outputs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Outputs",
+            "description": "Values the obligation determined, by output name (e.g. 'scheme')."
+          },
+          "prev_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Prev Hash",
+            "default": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "hash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hash"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "complaint_id",
+          "obligation_id",
+          "obligation_version",
+          "clause",
+          "anchor_date",
+          "as_of",
+          "result"
+        ],
+        "title": "DecisionRecord",
+        "description": "The replayable record of one obligation evaluation. See the module docstring."
+      },
+      "DecisionReplay": {
+        "properties": {
+          "record": {
+            "$ref": "#/components/schemas/DecisionRecord"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Position",
+            "description": "Index of the record in the complaint's chain."
+          },
+          "chain": {
+            "$ref": "#/components/schemas/ChainStatus"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "record",
+          "position",
+          "chain"
+        ],
+        "title": "DecisionReplay",
+        "description": "One decision record and the status of the chain it belongs to."
+      },
+      "DecisionResult": {
+        "type": "string",
+        "enum": [
+          "NOT_APPLICABLE",
+          "NOT_TRIGGERED",
+          "INSUFFICIENT_FACTS",
+          "RUNNING",
+          "STOPPED_ON_TIME",
+          "STOPPED_LATE",
+          "BREACHED",
+          "DETERMINED"
+        ],
+        "title": "DecisionResult",
+        "description": "Outcome of evaluating one obligation on one complaint at ``as_of``."
+      },
+      "Deontic": {
+        "type": "string",
+        "enum": [
+          "OBLIGATION",
+          "PROHIBITION",
+          "PERMISSION"
+        ],
+        "title": "Deontic",
+        "description": "Deontic type of an obligation: must, must not, or may."
+      },
+      "EntityType": {
+        "type": "string",
+        "enum": [
+          "COMMERCIAL_BANK",
+          "SMALL_FINANCE_BANK",
+          "PAYMENTS_BANK",
+          "LOCAL_AREA_BANK",
+          "REGIONAL_RURAL_BANK",
+          "COOPERATIVE_BANK",
+          "NBFC",
+          "PPI_ISSUER",
+          "CREDIT_INFORMATION_COMPANY",
+          "OTHER"
+        ],
+        "title": "EntityType",
+        "description": "Regulated-entity type, used for applicability profiles (report A12 and open question Q2)."
+      },
+      "EventIn": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Event Id",
+            "description": "Client-chosen, unique; re-sending is a no-op."
+          },
+          "type": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Occurred At"
+          },
+          "payload": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Payload"
+          },
+          "source": {
+            "$ref": "#/components/schemas/FactSource",
+            "default": "HUMAN"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Model identifier, for LLM facts."
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
+          },
+          "span": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TextSpan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "type",
+          "occurred_at"
+        ],
+        "title": "EventIn",
+        "description": "A business event as a client sends it. The server sets ``recorded_at`` and the actor."
+      },
+      "EventType": {
+        "type": "string",
+        "enum": [
+          "BANK_RECEIVED",
+          "ACKNOWLEDGED",
+          "INFO_REQUESTED",
+          "OUTCOME_SET",
+          "IO_REFERRED",
+          "IO_DECIDED",
+          "FINAL_REPLY_SENT",
+          "BANK_COMMUNICATION_SENT",
+          "CUSTOMER_DISSATISFIED",
+          "SENIOR_REVIEWED",
+          "CUSTOMER_REPORTED",
+          "ALERT_RECEIVED",
+          "SHADOW_CREDITED",
+          "REVERSAL_POSTED",
+          "LIABILITY_DETERMINED",
+          "RBI_RECEIVED",
+          "RBIO_DIRECTION_RECEIVED",
+          "WRITTEN_RESPONSE_FILED",
+          "AWARD_RECEIVED",
+          "ACCEPTANCE_LETTER_RECEIVED",
+          "COMPLIANCE_INTIMATED",
+          "APPEAL_FILED",
+          "ALL_DOCUMENTS_RECEIVED",
+          "CLAIM_SETTLED",
+          "FULL_REPAYMENT",
+          "DOCUMENTS_RELEASED",
+          "FACTS_RECORDED"
+        ],
+        "title": "EventType",
+        "description": "Business event types (report architecture diagram [3] and clock table)."
+      },
+      "EventsAccepted": {
+        "properties": {
+          "accepted": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Accepted",
+            "description": "Event IDs stored now."
+          },
+          "already_recorded": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Already Recorded",
+            "description": "Event IDs that were already stored."
+          },
+          "decisions_appended": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Decisions Appended"
+          },
+          "review_tasks_opened": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Review Tasks Opened"
+          },
+          "evaluation_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Error",
+            "description": "Set when the events were stored but the engine could not re-evaluate."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "accepted",
+          "already_recorded",
+          "decisions_appended"
+        ],
+        "title": "EventsAccepted",
+        "description": "What a POST of events did."
+      },
+      "EventsIn": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventIn"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Events"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "events"
+        ],
+        "title": "EventsIn",
+        "description": "One or more events for one complaint."
+      },
+      "Explanation": {
+        "properties": {
+          "decision_id": {
+            "type": "string",
+            "title": "Decision Id",
+            "description": "The record's hash."
+          },
+          "complaint_id": {
+            "type": "string",
+            "title": "Complaint Id"
+          },
+          "obligation_id": {
+            "type": "string",
+            "title": "Obligation Id"
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Position"
+          },
+          "chain": {
+            "$ref": "#/components/schemas/ChainStatus"
+          },
+          "lines": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Lines"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision_id",
+          "complaint_id",
+          "obligation_id",
+          "position",
+          "chain",
+          "lines"
+        ],
+        "title": "Explanation",
+        "description": "A stored decision rendered as text, line by line."
+      },
+      "FactSource": {
+        "type": "string",
+        "enum": [
+          "HUMAN",
+          "SYSTEM",
+          "LLM"
+        ],
+        "title": "FactSource",
+        "description": "Who asserted a fact: a person, a bank system feed, or an LLM extraction."
+      },
+      "Fact_AccountType_": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/AccountType"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[AccountType]"
+      },
+      "Fact_Annotated_str__StringConstraints__": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "pattern": "^14_5_[a-e]$",
+            "title": "Value"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[Annotated[str, StringConstraints]]"
+      },
+      "Fact_Appellant_": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Appellant"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[Appellant]"
+      },
+      "Fact_Channel_": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Channel"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[Channel]"
+      },
+      "Fact_EntityType_": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/EntityType"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[EntityType]"
+      },
+      "Fact_IssueType_": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/IssueType"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[IssueType]"
+      },
+      "Fact_LiabilityFault_": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/LiabilityFault"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[LiabilityFault]"
+      },
+      "Fact_NewType_": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "title": "Value"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[NewType]"
+      },
+      "Fact_Outcome_": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/Outcome"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[Outcome]"
+      },
+      "Fact_bool_": {
+        "properties": {
+          "value": {
+            "type": "boolean",
+            "title": "Value"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[bool]"
+      },
+      "Fact_date_": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "format": "date",
+            "title": "Value"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[date]"
+      },
+      "Fact_int_": {
+        "properties": {
+          "value": {
+            "type": "integer",
+            "title": "Value"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[int]"
+      },
+      "Fact_list_str__": {
+        "properties": {
+          "value": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Value"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[list[str]]"
+      },
+      "Fact_str_": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id",
+            "description": "The event that asserted this value."
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At",
+            "description": "When the engine learned this value."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "provenance",
+          "event_id",
+          "recorded_at"
+        ],
+        "title": "Fact[str]"
+      },
+      "FindingIn": {
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Finding Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/FindingKind"
+          },
+          "source": {
+            "$ref": "#/components/schemas/FactSource",
+            "default": "LLM"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
+          },
+          "span": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TextSpan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "finding_id",
+          "kind"
+        ],
+        "title": "FindingIn",
+        "description": "A perception finding (classification) about a complaint."
+      },
+      "FindingKind": {
+        "type": "string",
+        "enum": [
+          "IS_COMPLAINT",
+          "NOT_A_COMPLAINT",
+          "DEFICIENCY",
+          "NO_DEFICIENCY"
+        ],
+        "title": "FindingKind",
+        "description": "What a perception step concluded about a complaint."
+      },
+      "ForecastItem": {
+        "properties": {
+          "complaint_id": {
+            "type": "string",
+            "title": "Complaint Id"
+          },
+          "obligation_id": {
+            "type": "string",
+            "title": "Obligation Id"
+          },
+          "clause": {
+            "type": "string",
+            "title": "Clause"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "basis": {
+            "$ref": "#/components/schemas/DayBasis"
+          },
+          "calendar_days_left": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Calendar Days Left",
+            "description": "due_date - as_of date, in calendar days."
+          },
+          "required_actions": {
+            "items": {
+              "$ref": "#/components/schemas/RequiredAction"
+            },
+            "type": "array",
+            "title": "Required Actions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "complaint_id",
+          "obligation_id",
+          "clause",
+          "due_date",
+          "basis",
+          "calendar_days_left"
+        ],
+        "title": "ForecastItem",
+        "description": "A running deadline that falls due within the horizon."
+      },
+      "GateReason": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "UPPER_SNAKE reason code, e.g. 'OUTCOME_NOT_SET'."
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "clause": {
+            "type": "string",
+            "title": "Clause",
+            "description": "Instrument and clause, e.g. 'IO Directions 2026 cl. 14(2)'."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "clause"
+        ],
+        "title": "GateReason",
+        "description": "One reason an action is refused, with the clause behind it."
+      },
+      "GateResult": {
+        "properties": {
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/GateReason"
+            },
+            "type": "array",
+            "title": "Reasons"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "GateResult",
+        "description": "``allowed`` is true exactly when there are no reasons."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InputFact": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "value": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "value",
+          "provenance"
+        ],
+        "title": "InputFact",
+        "description": "One fact the evaluation read, with where it came from."
+      },
+      "IssueType": {
+        "type": "string",
+        "enum": [
+          "FAILED_TRANSACTION",
+          "UNAUTHORISED_TRANSACTION",
+          "FRAUDULENT_TRANSACTION",
+          "OTHER"
+        ],
+        "title": "IssueType",
+        "description": "What kind of transaction problem a complaint raises; selects the B-table rules that apply.\n\nOpen to more members as the rule pack grows."
+      },
+      "JsonValue": {},
+      "LiabilityFault": {
+        "type": "string",
+        "enum": [
+          "BANK",
+          "THIRD_PARTY",
+          "CUSTOMER"
+        ],
+        "title": "LiabilityFault",
+        "description": "Whose fault an unauthorised transaction was (RBC-CB paras 67-70, report B5).\n\nOnly a person sets this fact; an LLM never does (CLAUDE.md hard rule 4)."
+      },
+      "NextDeadline": {
+        "properties": {
+          "obligation_id": {
+            "type": "string",
+            "title": "Obligation Id"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Due Date"
+          },
+          "result": {
+            "$ref": "#/components/schemas/DecisionResult"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "obligation_id",
+          "due_date",
+          "result"
+        ],
+        "title": "NextDeadline",
+        "description": "The earliest open deadline on a complaint."
+      },
+      "Obligation": {
+        "properties": {
+          "obligation_id": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9]*(-[A-Za-z0-9]+)+$",
+            "title": "Obligation Id"
+          },
+          "deontic": {
+            "$ref": "#/components/schemas/Deontic"
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Subject"
+          },
+          "instrument": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Instrument"
+          },
+          "instrument_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Instrument Ref"
+          },
+          "clause": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Clause"
+          },
+          "source_url": {
+            "type": "string",
+            "minLength": 1,
+            "format": "uri",
+            "title": "Source Url"
+          },
+          "applies_to": {
+            "$ref": "#/components/schemas/AppliesTo"
+          },
+          "trigger": {
+            "$ref": "#/components/schemas/Trigger"
+          },
+          "clock": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ClockSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "anchor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anchor",
+            "description": "ComplaintFacts date that selects parameter versions; default: clock start."
+          },
+          "parameters": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "$ref": "#/components/schemas/ParameterValue"
+              },
+              "propertyNames": {
+                "format": "date"
+              },
+              "type": "object"
+            },
+            "type": "object",
+            "title": "Parameters"
+          },
+          "overridden_by": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Overridden By"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date",
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Valid To"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RuleStatus"
+          },
+          "verification": {
+            "$ref": "#/components/schemas/Verification"
+          },
+          "signed_off_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signed Off By"
+          },
+          "supersedes_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supersedes Note"
+          },
+          "tests": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tests"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "obligation_id",
+          "deontic",
+          "subject",
+          "instrument",
+          "clause",
+          "source_url",
+          "applies_to",
+          "trigger",
+          "valid_from",
+          "status",
+          "verification"
+        ],
+        "title": "Obligation",
+        "description": "One obligation file. Field order mirrors the report's example YAML."
+      },
+      "Outcome": {
+        "type": "string",
+        "enum": [
+          "FULLY_RESOLVED",
+          "PARTIALLY_RESOLVED",
+          "WHOLLY_REJECTED"
+        ],
+        "title": "Outcome",
+        "description": "The only three complaint outcomes allowed by IO Directions 2026 cl. 14(2) (report A14)."
+      },
+      "ParameterUse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "value": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "effective_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Effective Date"
+          },
+          "reference": {
+            "type": "string",
+            "title": "Reference"
+          },
+          "verification": {
+            "$ref": "#/components/schemas/Verification"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "value",
+          "effective_date",
+          "reference",
+          "verification"
+        ],
+        "title": "ParameterUse",
+        "description": "A dated rule parameter resolved for this evaluation."
+      },
+      "ParameterValue": {
+        "properties": {
+          "value": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reference",
+            "description": "Clause or source of this value."
+          },
+          "verification": {
+            "$ref": "#/components/schemas/Verification"
+          },
+          "open_question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Question",
+            "description": "Open-question ID when the value is flagged, e.g. 'Q5'."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "value",
+          "reference",
+          "verification"
+        ],
+        "title": "ParameterValue",
+        "description": "One dated value of a rule parameter."
+      },
+      "Provenance": {
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/FactSource"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor",
+            "description": "User or system ID for HUMAN/SYSTEM."
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "Model identifier for LLM facts."
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
+          },
+          "span": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TextSpan"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source"
+        ],
+        "title": "Provenance",
+        "description": "Where a fact came from: a person or system (``actor``), or an LLM (model, prompt, span)."
+      },
+      "RequiredAction": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "UPPER_SNAKE action code, e.g. 'REFER_TO_IO'."
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "RequiredAction",
+        "description": "Something the bank must do next, with its due date."
+      },
+      "ReviewKind": {
+        "type": "string",
+        "enum": [
+          "NOT_A_COMPLAINT",
+          "NO_DEFICIENCY",
+          "EXCLUSION_ROUTING"
+        ],
+        "title": "ReviewKind",
+        "description": "Why a person must look at a complaint."
+      },
+      "ReviewStatus": {
+        "type": "string",
+        "enum": [
+          "OPEN",
+          "DONE"
+        ],
+        "title": "ReviewStatus",
+        "description": "Review task lifecycle; a decision is recorded as a new business event, never an edit."
+      },
+      "ReviewTask": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Task Id"
+          },
+          "complaint_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Complaint Id"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ReviewKind"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "source_ref": {
+            "type": "string",
+            "title": "Source Ref",
+            "description": "The finding ID or rule that opened the task."
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Provenance"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Provenance of the finding under review, if any."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReviewStatus",
+            "default": "OPEN"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "task_id",
+          "complaint_id",
+          "kind",
+          "reason",
+          "source_ref",
+          "created_at"
+        ],
+        "title": "ReviewTask",
+        "description": "A task for a person, opened by the engine."
+      },
+      "RuleStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "FUTURE_DATED",
+          "IN_FORCE",
+          "SUPERSEDED",
+          "REPEALED_BUT_SAVED"
+        ],
+        "title": "RuleStatus",
+        "description": "Lifecycle status of an obligation. Only the owner sets ``IN_FORCE``."
+      },
+      "TextSpan": {
+        "properties": {
+          "document_ref": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Document Ref",
+            "description": "ID or URI of the source text (masked)."
+          },
+          "start": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Start"
+          },
+          "end": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "End"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "document_ref",
+          "start",
+          "end"
+        ],
+        "title": "TextSpan",
+        "description": "A character span in a source document that an extracted fact came from."
+      },
+      "Trigger": {
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "condition": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition",
+            "description": "Condition over ComplaintFacts, e.g. 'outcome in [...]'."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event"
+        ],
+        "title": "Trigger",
+        "description": "The event (and optional condition over complaint facts) that makes the obligation bite."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "Verification": {
+        "type": "string",
+        "enum": [
+          "PRIMARY_TEXT_READ",
+          "SECONDARY_ONLY",
+          "UNVERIFIED",
+          "CONFLICTING"
+        ],
+        "title": "Verification",
+        "description": "Research verification grade of a rule or parameter (report grades P/S/U/C)."
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  }
+}

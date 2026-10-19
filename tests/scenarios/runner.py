@@ -7,8 +7,8 @@ name in ``overridden_by``, which the overrides need), and compares the results e
 - ``results``: obligation ID -> ``DecisionResult`` for every listed obligation;
 - ``deadlines``, ``breaches`` and ``required_actions``: compared as sets, no missing and no extra;
 - ``compensation_paise``: obligation ID -> paise owed; obligations owing nothing are left out;
-- ``outputs``: obligation ID -> values. The engine cannot report outputs until the domain has an
-  outputs field (issue #20), so any expected output is a mismatch, never silently ignored.
+- ``outputs``: obligation ID -> values, compared exactly per listed obligation (a missing key or
+  obligation means no outputs).
 
 An obligation named by a scenario but missing from the pack is a mismatch, not a skip.
 """
@@ -182,6 +182,13 @@ def run_scenario(
         {(a["obligation_id"], a["action"]) for a in expect.get("required_actions") or []},
         {(r.obligation_id, a.action) for r in listed for a in r.required_actions},
     )
-    for oid, values in (expect.get("outputs") or {}).items():
-        mismatches.append(f"outputs: {oid} expected {values}; outputs are not supported yet (#20)")
+    want_outputs: Mapping[str, Any] = expect.get("outputs") or {}
+    got_outputs = {r.obligation_id: r.outputs for r in listed}
+    for oid in ids:
+        want_out: dict[str, Any] = dict(want_outputs.get(oid) or {})
+        got_out: dict[str, Any] = dict(got_outputs.get(oid) or {})
+        if want_out != got_out:
+            mismatches.append(f"outputs: {oid} expected {want_out}, got {got_out}")
+    for oid in sorted(set(want_outputs) - set(ids)):
+        mismatches.append(f"outputs: {oid} is not in obligation_ids")
     return ScenarioOutcome(listed, mismatches)
