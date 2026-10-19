@@ -24,7 +24,7 @@
 - [x] Every "not a complaint" or "no deficiency" decision from perception creates a human-review task.
 
 ### Storage
-- [ ] SQLAlchemy 2 models + Alembic migrations: `events` (append-only, occurred_at + recorded_at),
+- [x] SQLAlchemy 2 models + Alembic migrations: `events` (append-only, occurred_at + recorded_at),
       `decision_records` (hash-chained), `review_tasks`. DB-level guard against UPDATE/DELETE on evidence.
 - [ ] `@pytest.mark.db` tests, skipped without `DATABASE_URL`.
 
@@ -57,3 +57,4 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · item 4 done · workflow.can_close(facts, actor): outcome gate + same-unit + senior review before IO + IO decision for adverse outcomes, all reasons cited · next: IO auto-escalation required action (A13)
 - 2026-10-19 · item 5 done · workflow.io_escalation: REFER_TO_IO action with the evaluator's IO_REFERRED deadline; routing via EXCLUSION_ROUTES data · next: human-review tasks for perception 'not a complaint'/'no deficiency'
 - 2026-10-19 · item 6 done · workflow.review: PerceptionFinding → ReviewTask for NOT_A_COMPLAINT/NO_DEFICIENCY (any source), plus routing review for cl. 14(5)(c)-(e) adverse outcomes · next: SQLAlchemy models + Alembic migrations
+- 2026-10-19 · item 7 done · store: Store protocol, MemoryStore, SqlStore (advisory lock + unique chain link), Alembic 0001 with triggers refusing UPDATE/DELETE/TRUNCATE on events and decision_records; alembic check clean on local PG 16 · next: @pytest.mark.db tests
