@@ -9,7 +9,7 @@ from abhiyogah.domain.decision import DecisionRecord, DecisionResult
 from abhiyogah.domain.enums import EntityType, FactSource
 from abhiyogah.domain.events import ComplaintEvent, EventType, Provenance
 from abhiyogah.domain.tz import IST
-from abhiyogah.evaluator import EntityProfile, EvaluationError, evaluate
+from abhiyogah.evaluator import EntityProfile, EvaluationError, ParameterError, evaluate
 from abhiyogah.registry.schema import Obligation
 from tests.clocks.fakes import FakeCalendar
 from tests.evaluator.builders import obligation, ordinary_limb, tat_limb
@@ -221,7 +221,7 @@ def test_no_clock_obligation_not_applicable() -> None:
     """Clockless obligations are left to the workflow gates."""
     rec = one([RECEIVED, REJECTED], date(2026, 8, 25), [obligation(clock=None, parameters={})])
     assert rec.result is DecisionResult.NOT_APPLICABLE
-    assert rec.condition_trace[-1].condition == "obligation has a clock"
+    assert rec.condition_trace[-1].condition == "obligation has a building block"
 
 
 def test_requires_aware_as_of_and_complaint_id() -> None:
@@ -395,3 +395,157 @@ def test_filing_window_in_years() -> None:
     rec = one([RECEIVED], date(2026, 10, 1), [a3_like({"years": 1})], oid="RBIOS-2026-10-1-g")
     assert rec.deadline is not None
     assert rec.deadline.due_date == date(2027, 9, 2)
+
+
+def channel_obligation() -> Obligation:
+    """A B1-shaped obligation keyed by channel (report Table B row B1 values)."""
+    p = {"reference": "RBI/2019-20/67 Annex", "verification": "PRIMARY_TEXT_READ"}
+    return failed_txn_obligation().model_copy(
+        update={
+            "obligation_id": "TAT-2019-FAILED-TXN",
+            "trigger": failed_txn_obligation().trigger.model_copy(
+                update={"event": EventType.FACTS_RECORDED, "condition": "channel is set"}
+            ),
+            "parameters": obligation(
+                parameters={
+                    "tat_days_by_channel": {"2019-10-15": {"value": {"UPI_P2P": 1, "ATM": 5}, **p}},
+                    "follows_underlying_system": {"2019-10-15": {"value": ["PPI_OFF_US"], **p}},
+                    "compensation_per_day_paise": {"2019-10-15": {"value": 10000, **p}},
+                }
+            ).parameters,
+        }
+    )
+
+
+def txn(channel: str) -> ComplaintEvent:
+    """A failed transaction on 3 Aug through ``channel``."""
+    payload: dict[str, JsonValue] = {"transaction_date_t": "2026-08-03", "channel": channel}
+    return ev(1, EventType.FACTS_RECORDED, date(2026, 8, 3), payload)
+
+
+def test_tat_by_channel() -> None:
+    """ATM T+5: due 8 Aug; not reversed by 10 Aug: breached, ₹200 accrued, REVERSE_TRANSACTION."""
+    rec = one([txn("ATM")], date(2026, 8, 10), [channel_obligation()], oid="TAT-2019-FAILED-TXN")
+    assert rec.deadline is not None
+    assert rec.deadline.due_date == date(2026, 8, 8)
+    assert rec.parameters[0].name == "tat_days_by_channel.ATM"
+    assert rec.compensation is not None
+    assert rec.compensation.amount_paise == 20000
+    assert [a.action for a in rec.required_actions] == ["REVERSE_TRANSACTION"]
+
+
+def test_channel_outside_table_or_underlying_is_insufficient() -> None:
+    """A channel without a TAT row, or one that follows its underlying system, is not assumed."""
+    for channel in ("IMPS", "PPI_OFF_US"):
+        rec = one(
+            [txn(channel)], date(2026, 8, 10), [channel_obligation()], oid="TAT-2019-FAILED-TXN"
+        )
+        assert rec.result is DecisionResult.INSUFFICIENT_FACTS, channel
+
+
+def test_future_dated_is_never_evaluated() -> None:
+    """A FUTURE_DATED rule is NOT_APPLICABLE even after valid_from."""
+    rec = one([RECEIVED, REJECTED], date(2026, 8, 25), [obligation(status="FUTURE_DATED")])
+    assert rec.result is DecisionResult.NOT_APPLICABLE
+    assert rec.deadline is None
+
+
+def test_one_action_for_alternative_stops() -> None:
+    """Comply or appeal (two stop events) is one action."""
+    ob = obligation(
+        clock={
+            "start": "BANK_RECEIVED",
+            "stop": ["COMPLIANCE_INTIMATED", "APPEAL_FILED"],
+            "basis": "CALENDAR",
+            "basis_status": "INFERRED",
+        }
+    )
+    rec = one([RECEIVED, REJECTED], date(2026, 8, 25), [ob])
+    assert [a.action for a in rec.required_actions] == ["COMPLY_WITH_AWARD_OR_APPEAL"]
+
+
+def appeal_window(appellant: str) -> Obligation:
+    """An A8-shaped PERMISSION: 30 days from the award to the complainant's appeal (report A8)."""
+    p = {"reference": "RB-IOS 2026 cl. 17", "verification": "PRIMARY_TEXT_READ"}
+    return a2_like(
+        obligation_id="RBIOS-2026-17",
+        clause="17",
+        trigger={"event": "AWARD_RECEIVED"},
+        clock={
+            "start": "AWARD_RECEIVED",
+            "stop": "APPEAL_FILED",
+            "basis": "CALENDAR",
+            "basis_status": "INFERRED",
+        },
+        parameters={
+            "max_days": {"2026-07-01": {"value": 30, **p}},
+            "stop_conditions": {
+                "2026-07-01": {"value": {"APPEAL_FILED": f"appellant in [{appellant}]"}, **p}
+            },
+        },
+    )
+
+
+AWARD = ev(1, EventType.AWARD_RECEIVED, date(2026, 8, 3))
+
+
+def appeal(n: int, d: date, appellant: str) -> ComplaintEvent:
+    """An appeal filed on ``d`` by ``appellant``."""
+    return ev(n, EventType.APPEAL_FILED, d, {"appellant": appellant})
+
+
+def test_stop_filtered_by_payload() -> None:
+    """A bank appeal does not stop the complainant's window; the complainant's own appeal does."""
+    ob = appeal_window("COMPLAINANT")
+    by_bank = [AWARD, appeal(2, date(2026, 8, 10), "BANK")]
+    rec = one(by_bank, date(2026, 8, 20), [ob], oid="RBIOS-2026-17")
+    assert rec.result is DecisionResult.RUNNING
+    assert any("EV-2" in t.condition and not t.result for t in rec.condition_trace)
+    both = [*by_bank, appeal(3, date(2026, 8, 25), "COMPLAINANT")]
+    rec = one(both, date(2026, 9, 10), [ob], oid="RBIOS-2026-17")
+    assert rec.result is DecisionResult.STOPPED_ON_TIME
+    assert rec.deadline is not None
+    assert rec.deadline.stop_event is EventType.APPEAL_FILED
+    assert {p.name for p in rec.parameters} == {"max_days", "stop_conditions"}
+
+
+def test_filtered_stop_never_matched_lapses() -> None:
+    """With only a bank appeal, the complainant's 30-day window lapses after 2 Sep."""
+    rec = one(
+        [AWARD, appeal(2, date(2026, 8, 10), "BANK")],
+        date(2026, 9, 5),
+        [appeal_window("COMPLAINANT")],
+        oid="RBIOS-2026-17",
+    )
+    assert rec.result is DecisionResult.BREACHED
+    assert rec.breach is None  # a PERMISSION never breaches
+
+
+def test_stop_conditions_must_name_stop_events() -> None:
+    """A stop_conditions key that is not a stop event is a rule-pack error."""
+    ob = appeal_window("COMPLAINANT")
+    bad = ob.model_copy(
+        update={
+            "parameters": {
+                **ob.parameters,
+                "stop_conditions": obligation(
+                    parameters={
+                        "stop_conditions": {
+                            "2026-07-01": {
+                                "value": {"IO_REFERRED": "appellant is set"},
+                                "reference": "x",
+                                "verification": "UNVERIFIED",
+                            }
+                        }
+                    }
+                ).parameters["stop_conditions"],
+            }
+        }
+    )
+    with pytest.raises(ParameterError):
+        one(
+            [AWARD, appeal(2, date(2026, 8, 10), "BANK")],
+            date(2026, 9, 5),
+            [bad],
+            oid="RBIOS-2026-17",
+        )

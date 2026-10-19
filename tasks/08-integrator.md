@@ -39,3 +39,4 @@
 
 - 2026-10-19 · #20 domain additions (DETERMINED, cl. 14(5)/A15/A18/B-table facts, SENIOR_REVIEWED, appellant, AEPS split) · PR #23 opened; rules stream must update `failed_txn_aeps_row_ambiguous.yaml` (uses removed `AEPS`) after merge · next: release checklist
 - 2026-10-19 · release checklist done · `docs/release.md` (rule-pack, calendar, migration, replay steps) · next: e2e demo and `scripts/demo.sh` wait on the platform stream (API, store, docker compose)
+- 2026-10-19 · #25 `DecisionRecord.outputs` (hashed, empty by default) · PR opened · next: e2e demo and `scripts/demo.sh` still wait on the platform stream

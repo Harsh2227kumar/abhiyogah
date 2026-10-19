@@ -80,3 +80,55 @@ def test_bad_syntax_raises(condition: str) -> None:
     """Anything outside the grammar is a rule-pack error."""
     with pytest.raises(ConditionSyntaxError):
         evaluate_condition(condition, F)
+
+
+G = facts({"outcome": "WHOLLY_REJECTED", "exclusion_category": "14_5_a"})
+
+
+@pytest.mark.parametrize(
+    ("condition", "expected"),
+    [
+        (
+            "outcome is set and (exclusion_category is not set or exclusion_category not in "
+            "[14_5_c, 14_5_d, 14_5_e])",
+            True,
+        ),
+        ("exclusion_category is not set or exclusion_category in [14_5_c]", False),
+        ("outcome in [FULLY_RESOLVED] or channel is not set", True),
+        ("outcome in [FULLY_RESOLVED] or channel is set and outcome is set", False),
+        ("(outcome in [FULLY_RESOLVED] or channel is not set) and outcome is set", True),
+        ("((outcome is set))", True),
+    ],
+)
+def test_or_and_parentheses(condition: str, expected: bool) -> None:
+    """`or` and grouping, with `and` binding tighter than `or`."""
+    assert evaluate_condition(condition, G).result is expected
+
+
+def test_a14_exemption_on_unknown_category() -> None:
+    """An unknown exclusion category does not exempt the complaint, and the trace shows it."""
+    f = facts({"outcome": "WHOLLY_REJECTED"})
+    out = evaluate_condition(
+        "exclusion_category is not set or exclusion_category not in [14_5_c, 14_5_d, 14_5_e]", f
+    )
+    assert out.result is True
+    assert [t.result for t in out.trace] == [True, False]
+    assert out.missing == ("exclusion_category",)
+    excluded = facts({"exclusion_category": "14_5_d"})
+    assert (
+        evaluate_condition(
+            "exclusion_category is not set or exclusion_category not in [14_5_c, 14_5_d, 14_5_e]",
+            excluded,
+        ).result
+        is False
+    )
+
+
+@pytest.mark.parametrize(
+    "condition",
+    ["outcome is set and", "(outcome is set", "outcome is set)", "or outcome is set", "()", "a [b"],
+)
+def test_bad_grouping_raises(condition: str) -> None:
+    """Unbalanced or dangling operators are rule-pack errors."""
+    with pytest.raises(ConditionSyntaxError):
+        evaluate_condition(condition, G)
