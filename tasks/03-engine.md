@@ -21,7 +21,7 @@
       For each applicable obligation: check applicability (entity profile), resolve parameters at the
       correct anchor date (bank receipt, RBI receipt or T, as the obligation says), build the clock and
       record a per-condition trace. Pure function; no I/O; `as_of` is required.
-- [ ] Breach forecasting: `forecast(…, horizon_days)` lists deadlines falling due within the horizon.
+- [x] Breach forecasting: `forecast(…, horizon_days)` lists deadlines falling due within the horizon.
 - [ ] `calculators/failed_txn.py`: `100 × max(0, R − (T + n))` rupees in paise, payee/originator rule (B1).
 - [ ] `calculators/limited_liability.py`: tier from `delay_working_days` (0 / min(txn, cap) / board
       policy), caps by account type (B5); shadow credit due date (B6); determination date (B7).
@@ -57,3 +57,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · item 1 done · clocks/: Clock (due_date/state/days_remaining/days_late, IST rounding, pauses supported but unused), BankCalendar protocol + FakeCalendar double, build_clock from facts · next: item 2 overrides
 - 2026-10-19 · item 2 done · clocks/overrides.py: resolve_overrides picks one deadline (replacement, conflict is an error) and traces each override · next: item 3 evaluator
 - 2026-10-19 · item 3 done · evaluator/: evaluate() with applicability, trigger condition grammar, anchor/validity, dated parameters (max_days/min_days/tat_minus_days), clock, overrides, breach and required actions, per-step trace · next: item 4 forecast
+- 2026-10-19 · item 4 done · evaluator/forecast.py: forecast()/forecast_records() list RUNNING deadlines due within a calendar-day horizon, soonest first · next: item 5 failed_txn calculator
