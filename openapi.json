@@ -2026,6 +2026,14 @@
             "type": "array",
             "title": "Required Actions"
           },
+          "outputs": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "type": "object",
+            "title": "Outputs",
+            "description": "Values the obligation determined, by output name (e.g. 'scheme')."
+          },
           "prev_hash": {
             "type": "string",
             "pattern": "^[0-9a-f]{64}$",

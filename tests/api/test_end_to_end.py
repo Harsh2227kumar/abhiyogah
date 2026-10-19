@@ -12,6 +12,8 @@ from fastapi.testclient import TestClient
 
 from abhiyogah.api.app import create_app
 from abhiyogah.api.settings import Settings
+from abhiyogah.domain.events import EventType
+from abhiyogah.evaluator.actions import action_code
 from abhiyogah.store import MemoryStore
 from abhiyogah.worker.reevaluate import EngineContext
 from abhiyogah.worker.schedule import sweep
@@ -110,7 +112,7 @@ def test_upi_fraud_complaint_end_to_end() -> None:
     assert res.json()["decisions_appended"] >= 1
     body = client.get(f"/complaints/{CID}", headers=READER).json()
     assert deadlines(body)["IO-CB-2026-14-1-b"] == ("2026-08-23", "RUNNING")
-    assert body["required_actions"][0]["action"]["action"] == "CREDIT_SHADOW_AMOUNT"
+    assert body["required_actions"][0]["action"]["action"] == action_code(EventType.SHADOW_CREDITED)
 
     # The scheduler runs on 25 Aug; the admin time-travels to the same day.
     clock.at = datetime(2026, 8, 25, 6, tzinfo=UTC)
