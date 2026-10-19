@@ -18,7 +18,7 @@
 
 ### Workflow (pure)
 - [x] Three-state outcome gate (A14): closing a complaint requires one of the three outcomes.
-- [ ] No same-unit closure and senior review before IO (A15): `can_close(complaint, actor)` with reasons.
+- [x] No same-unit closure and senior review before IO (A15): `can_close(complaint, actor)` with reasons.
 - [ ] IO auto-escalation (A13): a PARTIALLY_RESOLVED / WHOLLY_REJECTED outcome produces a required
       `IO_REFERRED` action with the evaluator's deadline. Exclusion routing (A16) as data, not code branches.
 - [ ] Every "not a complaint" or "no deficiency" decision from perception creates a human-review task.
@@ -54,3 +54,4 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · item 1 done · ledger.chain: canonical_json, record_hash, seal_chain, chain_head on top of domain DecisionRecord helpers · next: verify_chain pinpointing the first broken link
 - 2026-10-19 · item 2 done · ledger.verify_chain returns ChainStatus (verified, length, broken_at, reason, head); tamper/remove/reorder/unsealed tests + hypothesis · next: three-state outcome gate (A14)
 - 2026-10-19 · item 3 done · workflow.outcome_gate + A16 exclusion routing table (c-e exempt, routed to human review, #26) · next: can_close with same-unit and senior-review checks (A15)
+- 2026-10-19 · item 4 done · workflow.can_close(facts, actor): outcome gate + same-unit + senior review before IO + IO decision for adverse outcomes, all reasons cited · next: IO auto-escalation required action (A13)
