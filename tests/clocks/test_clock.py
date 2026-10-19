@@ -121,6 +121,13 @@ def test_days_remaining_working_basis() -> None:
     assert clock.days_remaining(date(2026, 8, 25)) == -2
 
 
+def test_overdue_on_non_working_day_is_negative() -> None:
+    """Due Sat 22 Aug; on Sun 23 Aug no working day has passed but the clock is overdue: -1."""
+    clock = wd_clock(date(2026, 8, 10), 10)
+    assert clock.state(date(2026, 8, 23)) is ClockState.BREACHED
+    assert clock.days_remaining(date(2026, 8, 23)) == -1
+
+
 def test_working_clock_needs_home_state() -> None:
     """No home-branch state means no working-day arithmetic, and nothing is assumed."""
     with pytest.raises(MissingFactError) as err:

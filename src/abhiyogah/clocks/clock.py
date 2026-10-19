@@ -169,12 +169,16 @@ class Clock:
         return ClockState.RUNNING
 
     def days_remaining(self, as_of: date | datetime) -> int:
-        """Days from ``as_of`` to the due date on the clock's basis; negative once overdue."""
+        """Days from ``as_of`` to the due date on the clock's basis; negative once overdue.
+
+        Overdue is always at least -1, even when no working day has passed since the due date (for
+        example on the Sunday after a Saturday due date), so the sign always matches the state.
+        """
         day = clock_date(as_of)
         due = self.due_date(day)
         if due >= day:
             return self._between(day, due)
-        return -self._between(due, day)
+        return -max(1, self._between(due, day))
 
     def days_late(self, as_of: date | datetime) -> int:
         """Calendar days past due at the stop (if late) or at ``as_of`` (if breached); else 0."""
