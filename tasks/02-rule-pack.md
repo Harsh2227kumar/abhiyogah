@@ -30,7 +30,8 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 - [x] A3 90-day RBI filing window (cl. 10(1)(g)), including the 2021 comparator
 - [x] A13 IO auto-escalation: 20 days (14(1)(b)) and TAT − 10 days (14(1)(a))
 - [x] A14 three-state outcome (14(2))
-- [ ] A15 no same-unit closure and senior review (14(3)–(4))
+- [x] A15 no same-unit closure and senior review (14(3)–(4)): obligation files
+- [ ] A15 scenarios (≥ 2 per limb), once the A15 facts requested below exist in `ComplaintFacts`
 - [ ] A17 final decision within 30 days (14(9))
 - [ ] A18 mandatory reply content (14(11)–(12)): as a checklist obligation consumed by reply QA
 - [ ] B1 failed-transaction TATs: one parameter table covering every verified channel row, plus ₹100/day
@@ -51,8 +52,11 @@ hand calculation; the owner can review each obligation against its clause in und
 
 ## Requests
 
+Tracked together in issue #20.
+
 - `src/abhiyogah/domain/decision.py` (foundation/integrator): add `DecisionResult.DETERMINED` for obligations without a clock that produce an output (A1 scheme, A14/A15/A18 checks, B5 tier). Scenarios already use it; `tests/registry/test_scenario_files.py` accepts it until it exists. See `rules/obligations/_conventions.md`.
 - `src/abhiyogah/domain/complaint.py` (foundation/integrator): add a `ComplaintFacts` fact for the IO cl. 14(5) exclusion category (for example `exclusion_category: Fact[str]` with values `14_5_a` … `14_5_e`). Without it, A14 cannot exempt out-of-purview complaints (cl. 14(5)(c)–(e)) and A16 cannot be encoded.
+- `src/abhiyogah/domain/` (foundation/integrator), for A15: facts `handling_unit: Fact[str]` and `closing_unit: Fact[str]` (set from payloads), and an event `SENIOR_REVIEWED` that sets `senior_review_date: Fact[date]`. The A15 scenarios wait on these.
 
 ## Log
 - 2026-10-19 · item 1 done · registry/loader.py + errors.py: load rules/obligations/*.yaml, duplicate ID is an error; tests/registry/test_loader.py · next: registry/resolve.py
@@ -63,3 +67,4 @@ hand calculation; the owner can review each obligation against its clause in und
 - 2026-10-19 · A2 done · RBIOS-2026-10-1-f as complainant PERMISSION (`base_days` 30, max with external TAT, output `escalation_open`), 5 scenarios; PERMISSION never breaches (convention + test) · next: A3
 - 2026-10-19 · A3 done · RBIOS-2026-10-1-g PERMISSION with `base_days` + `filing_window` dated by rbi_receipt_date (2026: 90 days P; 2021: 1 year S, Q15), output `filed_in_time`, 5 scenarios incl. the 2025-receipt time-bar case · next: A14
 - 2026-10-19 · A14 done · IO-CB-2026-14-2 check obligation (`allowed_outcomes` from 2026-06-30 at final_reply_date, output `classified_at_closure`, action SET_OUTCOME), 5 scenarios; anchor before first effective date → NOT_APPLICABLE; requested an exclusion-category fact for cl. 14(5) · next: A15
+- 2026-10-19 · A15 obligation files done · IO-CB-2026-14-3-4-closure (PROHIBITION) and -review (check obligations, outputs + SENIOR_REVIEW action); clause split and 30 Jun date flagged as Q16; facts requested; scenarios split into a new item · next: A17

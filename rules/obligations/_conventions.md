@@ -68,6 +68,8 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
   | A1 `RBIOS-2026-20-2` | `scheme` | the `scheme` parameter in force at `rbi_receipt_date`: `RB-IOS-2021` or `RB-IOS-2026` |
   | A3 `RBIOS-2026-10-1-g` | `filed_in_time` | once `rbi_receipt_date` is known: `true` for `STOPPED_ON_TIME`, `false` for `STOPPED_LATE`; absent before filing |
   | A14 `IO-CB-2026-14-2` | `classified_at_closure` | `true` when `outcome` is set and `outcome_date` ≤ `final_reply_date` |
+  | A15 `IO-CB-2026-14-3-4-closure` | `closed_by_other_unit` | `true` when `closing_unit` ≠ `handling_unit` (both needed, else `INSUFFICIENT_FACTS`) |
+  | A15 `IO-CB-2026-14-3-4-review` | `senior_reviewed_before_io` | `true` when `senior_review_date` is set and, if `io_referred_date` is set, ≤ it |
   | A2 `RBIOS-2026-10-1-f` | `escalation_open` | `true` when the clock is `BREACHED` or `STOPPED_LATE` (no reply by the due date) or `customer_dissatisfied_date` is set, else `false` |
 
   Clock obligations may also have outputs; `DETERMINED` ones must.
@@ -88,6 +90,7 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
 | Action code | Obligation | Meaning |
 |---|---|---|
 | `REFER_TO_IO` | A13 (both limbs) | Send the complaint to the Internal Ombudsman |
+| `SENIOR_REVIEW` | A15 review limb | Have the outcome reviewed at a senior level before the IO referral (while not yet referred) |
 | `SET_OUTCOME` | A14 | Record one of the three cl. 14(2) outcomes for a complaint already replied to |
 
 ## Scenario inputs that are not regulatory values

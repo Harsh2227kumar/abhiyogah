@@ -21,6 +21,7 @@ the date below it. Agents may add new questions and link obligation IDs.
 | Q13 | State-wise bank holiday lists (NI Act) for each year in use | Calendar overlay data | calendar | Open |
 | Q14 | Anchor of an external RBI/NPCI/card-network TAT: the engine counts `external_tat_days` from the bank's receipt of the complaint (an inference); it may instead run from the transaction or dispute date. Also: what applies when the TAT leaves fewer than 10 days for the IO | A13 limb (a) due date `receipt + TAT − 10`, and A2's `max(30, TAT)` | IO-CB-2026-14-1-a (`io_review_days`), RBIOS-2026-10-1-f | Open (#15) |
 | Q15 | Commencement date of RB-IOS 2021 (12 Nov 2021 from background knowledge; the report gives none) | First effective date of the 2021 scheme in the A1 router and the A3 2021 comparator; earlier RBI receipts get no scheme | RBIOS-2026-20-2 (`scheme`), RBIOS-2026-10-1-g | Open (#17) |
+| Q16 | IO Directions cl. 14(3)–(4): which limb (SOP, no same-unit closure, senior review) sits in which sub-clause, and so which one applies only from 30 Jun 2026; and what rank "a fairly senior level" means | Effective date and evidence needed for the A15 checks | IO-CB-2026-14-3-4-closure, IO-CB-2026-14-3-4-review | Open (#19) |
 
 ## Answers
 
