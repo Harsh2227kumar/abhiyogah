@@ -16,7 +16,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 ## Checklist
 
 ### Registry code
-- [ ] `registry/loader.py`: load every `rules/obligations/*.yaml` into the schema models; a duplicate ID is an error.
+- [x] `registry/loader.py`: load every `rules/obligations/*.yaml` into the schema models; a duplicate ID is an error.
 - [ ] `registry/resolve.py`: `parameter_at(obligation, name, anchor_date)` returns the value whose effective
       date is the latest ≤ anchor (OpenFisca-style), or raises `NoParameterInForce`.
 - [ ] `registry/lint.py` + `python -m abhiyogah.registry.lint` wired into `make rules`. Errors for: missing
@@ -52,3 +52,4 @@ hand calculation; the owner can review each obligation against its clause in und
 ## Requests
 
 ## Log
+- 2026-10-19 · item 1 done · registry/loader.py + errors.py: load rules/obligations/*.yaml, duplicate ID is an error; tests/registry/test_loader.py · next: registry/resolve.py
