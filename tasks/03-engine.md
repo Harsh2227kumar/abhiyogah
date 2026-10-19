@@ -41,12 +41,16 @@
 - [x] Filtered clock stops: a `stop_conditions` parameter maps a stop event to a condition checked
       against that event's own payload, so A8 stops only on `APPEAL_FILED` by the complainant and A7
       only on one by the bank (rules request; `ClockSpec.stop` itself stays a list of events).
-- [ ] Clockless obligations end `DETERMINED` with `outputs` (A1 scheme, A2 `escalation_open`, A3
-      `filed_in_time`, A14, A15, A18, B5 determination). `DETERMINED` landed in #23; the outputs field
-      on `DecisionRecord` is requested in #25.
-- [x] Scenario runner harness `tests/scenarios/runner.py` (events, profile, overrides closure, exact
-      comparison of results, deadlines, breaches, paise, actions; outputs reported as unsupported),
-      unit-tested against the example scenario.
+- [ ] Clockless obligations end `DETERMINED` with `outputs` and required actions (A1 `scheme`; A14
+      `classified_at_closure` + `SET_OUTCOME`; A15 `closed_by_other_unit`, `senior_reviewed_before_io`
+      + `SENIOR_REVIEW`; A18 `reply_complete`/`missing_elements` + `SEND_CORRECTED_REPLY`), and clock
+      obligations carry their outputs (A2 `escalation_open`, A3 `filed_in_time`, A6 `award_lapsed`,
+      A8 `appeal_in_time`). Needs `DecisionRecord.outputs` (#25 → PR #28).
+- [ ] B5 `RBCCB-2025-67-71` is a determination: its clock only counts `delay_working_days`; it ends
+      `DETERMINED` with `delay_working_days`, `liability_tier`, `customer_liability_paise` (uses
+      `calculators.limited_liability`).
+- [ ] The scenario runner compares `outputs` exactly and runs on the real bank calendar
+      (`load_bank_calendar`), not the test double.
 - [ ] Scenario runner `tests/scenarios/test_scenarios.py`: loads every `rules/scenarios/*.yaml`, runs the
       evaluator, compares deadlines, breaches and paise exactly. Wired into `make rules`.
 - [x] Replay test: evaluating the same events at the same `as_of` twice yields byte-identical records.
