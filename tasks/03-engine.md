@@ -17,7 +17,7 @@
       `state(as_of) -> RUNNING | STOPPED_ON_TIME | STOPPED_LATE | BREACHED`, `days_remaining(as_of)`.
 - [x] Overrides: `overridden_by` (for example 20 days vs TAT − 10 days) resolves to one deadline with
       the reason recorded in the trace.
-- [ ] `evaluator/`: `evaluate(complaint_events, obligations, calendar, as_of) -> list[DecisionRecord]`.
+- [x] `evaluator/`: `evaluate(complaint_events, obligations, calendar, as_of) -> list[DecisionRecord]`.
       For each applicable obligation: check applicability (entity profile), resolve parameters at the
       correct anchor date (bank receipt, RBI receipt or T, as the obligation says), build the clock and
       record a per-condition trace. Pure function; no I/O; `as_of` is required.
@@ -43,7 +43,17 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
   (e.g. IO-CB-2026-14-1-a), it reports the deadline, breach and actions; the overridden obligation
   (IO-CB-2026-14-1-b) reports `NOT_APPLICABLE` with the override in its trace and no deadline. If
   more than one override applies the engine raises `OverrideConflictError` rather than choosing.
+- To the rule-pack stream (02), FYI on what the evaluator reads: a clocked obligation names its
+  duration with exactly one parameter, `max_days` (fixed), `min_days` (max with `external_tat_days`,
+  A2) or `tat_minus_days` (`external_tat_days` − n, A13 cl. 14(1)(a)). Trigger conditions use the
+  grammar in `src/abhiyogah/evaluator/conditions.py` (`in [...]`, `not in`, `==`, `!=`, integer
+  `<`/`>`, `is known`/`is unknown`, joined by `and`).
+- To the foundation/domain owner: a `DecisionResult` for "triggered, no deadline" (e.g. `TRIGGERED`)
+  would let clockless obligations (A14, A18) report honestly; today they report `NOT_APPLICABLE`
+  with an "obligation has a clock: false" trace line.
+- Engine side, once 02 merges: switch `evaluator/parameters.parameter_at` to `registry/resolve.py`.
 
 ## Log
 - 2026-10-19 · item 1 done · clocks/: Clock (due_date/state/days_remaining/days_late, IST rounding, pauses supported but unused), BankCalendar protocol + FakeCalendar double, build_clock from facts · next: item 2 overrides
 - 2026-10-19 · item 2 done · clocks/overrides.py: resolve_overrides picks one deadline (replacement, conflict is an error) and traces each override · next: item 3 evaluator
+- 2026-10-19 · item 3 done · evaluator/: evaluate() with applicability, trigger condition grammar, anchor/validity, dated parameters (max_days/min_days/tat_minus_days), clock, overrides, breach and required actions, per-step trace · next: item 4 forecast

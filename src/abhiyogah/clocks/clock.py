@@ -221,11 +221,13 @@ def build_clock(
     duration_days: int,
     calendar: BankCalendar,
     pauses: Sequence[Pause] = (),
+    default_state: str | None = None,
 ) -> Clock:
     """Build a clock from an obligation's clock spec and a complaint's folded facts.
 
     The start is the start fact; the stop is the earliest of the stop facts that are known. The
-    home-branch state is read from the facts and is required only for working-day clocks.
+    home-branch state is the ``home_branch_state`` fact, else ``default_state``; it is required only
+    for working-day clocks.
     """
     start_name = start_fact_name(spec)
     start = _date_fact(facts, start_name)
@@ -234,7 +236,7 @@ def build_clock(
     stops = [f.value for n in stop_fact_names(spec) if (f := _date_fact(facts, n)) is not None]
     if pauses and spec.pause is None:
         raise ClockSpecError("pauses given for a clock spec without a pause rule")
-    state = facts.home_branch_state.value if facts.home_branch_state is not None else None
+    state = facts.home_branch_state.value if facts.home_branch_state is not None else default_state
     return Clock(
         start_date=start.value,
         duration_days=duration_days,
