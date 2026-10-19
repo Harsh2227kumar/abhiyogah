@@ -160,6 +160,7 @@ COMPLAINTS: dict[str, list[ComplaintEvent]] = {
 }
 
 OPEN = (DecisionResult.RUNNING, DecisionResult.BREACHED)
+NOT_IN_PLAY = (DecisionResult.NOT_APPLICABLE, DecisionResult.NOT_TRIGGERED)
 
 EVALUATED = {"IO-CB-2026-14-1-a", "IO-CB-2026-14-1-b", "IO-CB-2026-14-9", "RBIOS-2026-10-1-f"}
 """Obligations run on the complaints. The others need facts ``main`` lacks (``issue_type``, #20);
@@ -201,9 +202,7 @@ def summary(
     return ComplaintSummary(
         complaint_id=cid,
         channel=facts.channel.value if facts.channel else None,
-        obligation_ids=[
-            r.obligation_id for r in records if r.result is not DecisionResult.NOT_APPLICABLE
-        ],
+        obligation_ids=[r.obligation_id for r in records if r.result not in NOT_IN_PLAY],
         next_deadline=(
             NextDeadline(
                 obligation_id=nxt.obligation_id, due_date=nxt.deadline.due_date, result=nxt.result

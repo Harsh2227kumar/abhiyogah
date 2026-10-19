@@ -39,3 +39,57 @@ main {
 .brand {
   font-weight: 700;
 }
+
+a {
+  color: var(--accent);
+}
+
+.topbar nav {
+  display: flex;
+  gap: 16px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.legend {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+/* Deadline bands */
+.urgency-breached .pill { background: #fde2e1; color: #9b1c1c; }
+.urgency-today .pill { background: #feecdc; color: #8a2c0d; }
+.urgency-soon .pill { background: #fdf6b2; color: #723b13; }
+.urgency-week .pill { background: #e1effe; color: #1e429f; }
+.urgency-later .pill { background: #def7ec; color: #03543f; }
+.urgency-none .pill { color: var(--muted); }
+.urgency-breached td:first-child { box-shadow: inset 4px 0 #c81e1e; }
+.urgency-today td:first-child { box-shadow: inset 4px 0 #d03801; }
+.urgency-soon td:first-child { box-shadow: inset 4px 0 #c27803; }

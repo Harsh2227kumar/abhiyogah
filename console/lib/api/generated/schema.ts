@@ -313,7 +313,7 @@ export interface components {
             channel?: components["schemas"]["Channel"] | null;
             /**
              * Obligation Ids
-             * @description Obligations evaluated on this complaint.
+             * @description Obligations triggered on this complaint (applicable and triggered).
              */
             obligation_ids: string[];
             next_deadline?: components["schemas"]["NextDeadline"] | null;

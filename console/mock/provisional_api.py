@@ -41,7 +41,9 @@ class ComplaintSummary(_Model):
 
     complaint_id: str
     channel: Channel | None = None
-    obligation_ids: list[str] = Field(description="Obligations evaluated on this complaint.")
+    obligation_ids: list[str] = Field(
+        description="Obligations triggered on this complaint (applicable and triggered)."
+    )
     next_deadline: NextDeadline | None = None
     open_breaches: int = Field(ge=0)
 

@@ -944,7 +944,7 @@
             },
             "type": "array",
             "title": "Obligation Ids",
-            "description": "Obligations evaluated on this complaint."
+            "description": "Obligations triggered on this complaint (applicable and triggered)."
           },
           "next_deadline": {
             "anyOf": [

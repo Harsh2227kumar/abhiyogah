@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import "./globals.css";
 
@@ -14,6 +15,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <header className="topbar">
           <span className="brand">Abhiyogah</span>
+          <nav aria-label="Main">
+            <Link href="/">Deadline board</Link>
+          </nav>
         </header>
         <main>{children}</main>
       </body>
