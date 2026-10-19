@@ -19,7 +19,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 - [x] `registry/loader.py`: load every `rules/obligations/*.yaml` into the schema models; a duplicate ID is an error.
 - [x] `registry/resolve.py`: `parameter_at(obligation, name, anchor_date)` returns the value whose effective
       date is the latest ≤ anchor (OpenFisca-style), or raises `NoParameterInForce`.
-- [ ] `registry/lint.py` + `python -m abhiyogah.registry.lint` wired into `make rules`. Errors for: missing
+- [x] `registry/lint.py` + `python -m abhiyogah.registry.lint` wired into `make rules`. Errors for: missing
       clause or source_url; IN_FORCE without PRIMARY_TEXT_READ and signed_off_by; overlapping validity
       periods for the same obligation; `overridden_by` pointing to an unknown ID; a test file that doesn't
       exist; a non-null `pause` (pause semantics not researched); parameters with no reference.
@@ -55,3 +55,4 @@ hand calculation; the owner can review each obligation against its clause in und
 - 2026-10-19 · item 1 done · registry/loader.py + errors.py: load rules/obligations/*.yaml, duplicate ID is an error; tests/registry/test_loader.py · next: registry/resolve.py
 - 2026-10-19 · item 2 done · registry/resolve.py parameter_at (latest effective ≤ anchor, else NoParameterInForce) with property test · next: registry/lint.py
 - 2026-10-19 · A13 done (ahead of lint, because the linter refuses the foundation scenario until IO-CB-2026-14-1-b exists) · IO-CB-2026-14-1-a/-b with mutually exclusive limbs, 8 scenarios, `expect.results` key, rules/obligations/_conventions.md, Q14, scenario consistency test · next: registry/lint.py
+- 2026-10-19 · item 3 done · registry/lint.py (citations, IN_FORCE gate, pause, references, file name, duplicates/overlap, overridden_by, test files, scenario obligation IDs); `make rules` runs it · next: A1 scheme router
