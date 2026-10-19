@@ -12,7 +12,7 @@
 - [x] LLM gateway interface with adapters: a deterministic fake (default in tests), Anthropic, AWS Bedrock
       (ap-south-1) and an OpenAI-compatible endpoint (for self-hosted vLLM). Region and model come
       from config; refuse non-India regions unless explicitly allowed.
-- [ ] PII masking before any model call: Presidio + custom recognisers for Aadhaar, PAN, account number,
+- [x] PII masking before any model call: Presidio + custom recognisers for Aadhaar, PAN, account number,
       IFSC, UPI VPA, card number, mobile. Re-identification only inside the engine.
 - [ ] Triage: complaint vs query (high-recall gate; every "not a complaint" goes to human review), RBI
       category, language, schema-constrained output with confidence.
@@ -34,3 +34,4 @@
 
 ## Log
 - 2026-10-19 · item 1 done · `perception.gateway` (config, India-region check, LlmRequest/Response) + `perception.adapters` (FakeModel, Anthropic, Bedrock Converse, OpenAI-compatible; SDKs injected/lazy) · next: item 2 PII masking
+- 2026-10-19 · item 2 done · `perception.pii`: Aadhaar (Verhoeff), PAN, account (keyword), IFSC, VPA, card (Luhn), mobile, email, catch-all 9+ digits; UTR/RRN kept; `PiiVault` re-identifies in-process only; optional Presidio NER hook · next: item 3 triage
