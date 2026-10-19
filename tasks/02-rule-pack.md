@@ -45,7 +45,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 
 ### Open questions
 - [x] Keep `docs/open-questions.md` current: every flagged parameter links to its obligation ID.
-- [ ] Write `STREAM COMPLETE`.
+- [x] Write `STREAM COMPLETE`.
 
 ## Definition of done
 `make rules` lints every file clean; each scenario's expected values include a short comment showing the
@@ -85,3 +85,5 @@ Tracked together in issue #20.
 - 2026-10-19 · A5–A8 done · RBIOS-2026-14-2 (15d), -15-4 (30d, complainant PERMISSION, award_lapsed), -15-5 (30d, comply or appeal), -17 (30d complainant appeal, appeal_in_time); no extensions encoded (Q18/#22); appellant fact requested; 9 scenarios · next: open-questions sweep
 - 2026-10-19 · open-questions done · every Q row now lists the obligation IDs it affects; registry linter checks each parameter's open_question exists and names its obligation · next: A15 and A18 scenarios (written against the facts requested in #20, like the B-table scenarios)
 - 2026-10-19 · A15 + A18 scenarios done · 3 per A15 limb (senior review via HUMAN FACTS_RECORDED until SENIOR_REVIEWED exists), 4 for A18; like the B-table, they rely on facts requested in #20 · next: final PR update, STREAM COMPLETE
+- 2026-10-19 · stream done · 20 obligations (19 DRAFT, B10 FUTURE_DATED), 71 scenarios, linter clean; open dependencies for the engine runner: domain request #20; owner decisions: Q14–Q18 (#15, #17, #19, #21, #22)
+STREAM COMPLETE
