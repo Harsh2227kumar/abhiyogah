@@ -33,7 +33,7 @@
       `EntityType`, `Channel` (UPI_P2P, UPI_MERCHANT, IMPS, ATM, MICRO_ATM, CARD_TO_CARD, POS_CARD_PRESENT,
       CARD_NOT_PRESENT, AEPS, APBS, NACH, PPI_ON_US, PPI_OFF_US, OTHER), `AccountType` (for the B5 caps),
       `FactSource` (HUMAN, SYSTEM, LLM).
-- [ ] `domain/money.py`: `Paise` NewType plus helpers `rupees(n) -> Paise` and `format_inr(p)`.
+- [x] `domain/money.py`: `Paise` NewType plus helpers `rupees(n) -> Paise` and `format_inr(p)`.
 - [ ] `domain/events.py`: `EventType` enum with at least the events in the report's architecture diagram
       and clock table (BANK_RECEIVED, ACKNOWLEDGED, INFO_REQUESTED, OUTCOME_SET, IO_REFERRED, IO_DECIDED,
       FINAL_REPLY_SENT, CUSTOMER_REPORTED, ALERT_RECEIVED, SHADOW_CREDITED, REVERSAL_POSTED,
@@ -78,3 +78,4 @@ _(other streams add requests for changes to owned paths here)_
 - 2026-10-19 · item 4 done · Makefile (setup/check/test/rules/openapi/up); `rules` auto-runs registry.lint and tests/scenarios once they exist; make check green · next: item 5 CI workflow
 - 2026-10-19 · item 5 done · .github/workflows/ci.yml runs make setup && make check on push and PR (uv, py3.12) · next: item 6 domain/enums.py
 - 2026-10-19 · item 6 done · domain/enums.py: StrEnums with value == UPPER_SNAKE name (YAML uses COMMERCIAL_BANK etc.); B5 cap amounts left to the rule pack · next: item 7 domain/money.py
+- 2026-10-19 · item 7 done · domain/money.py: Paise NewType, rupees() (int only), format_inr() with lakh/crore grouping, hypothesis round-trip · next: item 8 domain/events.py
