@@ -32,7 +32,7 @@ __all__ = [
 ]
 
 _NUMBER = re.compile(r"^(\d{1,3}\.(?:\d{1,3}\.?)*|\((?:[a-z]{1,2}|[ivxlc]{1,6}|\d{1,3})\))\s+")
-"""A leading paragraph number: ``3.``, ``14.2``, ``(a)``, ``(iv)``, ``(2)``; a bare ``10`` is not."""
+"""A leading paragraph number: ``3.``, ``14.2``, ``(a)``, ``(iv)``, ``(2)``; not a bare ``10``."""
 
 _BLOCKS = frozenset(
     {"p", "li", "h1", "h2", "h3", "h4", "h5", "h6", "td", "th", "div", "tr", "table", "blockquote"}
