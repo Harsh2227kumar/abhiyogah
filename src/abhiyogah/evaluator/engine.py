@@ -3,21 +3,27 @@
 A pure function of its arguments. It reads no clock, file, database or network; ``as_of`` is
 required, so the same inputs always give byte-identical records (replay) and tests can time-travel.
 
-For each obligation, in this order, every step leaving a ``ConditionTrace`` line:
+The semantics follow ``rules/obligations/_conventions.md`` (rule-pack stream). For each
+obligation, in this order, every step leaving a ``ConditionTrace`` line:
 
 1. **Applicability.** The entity type (the complaint's ``entity_type`` fact, else the profile) is
-   bound by ``applies_to``, and the outlet count meets ``min_outlets`` as on ``outlets_as_on``.
-   Otherwise ``NOT_APPLICABLE`` (or ``INSUFFICIENT_FACTS`` if the count is unknown).
+   bound by ``applies_to``, the outlet count meets ``min_outlets`` as on ``outlets_as_on``, and the
+   ``as_of`` date is within ``valid_from``..``valid_to``. Otherwise ``NOT_APPLICABLE`` (or
+   ``INSUFFICIENT_FACTS`` if the outlet count is unknown).
 2. **Trigger.** The trigger event has occurred by ``as_of`` and the trigger condition holds
-   (``evaluator.conditions``). Otherwise ``NOT_TRIGGERED`` (``INSUFFICIENT_FACTS`` if undecidable).
-3. **Anchor and validity.** The anchor date (``anchor`` fact, else the clock start) must fall within
-   ``valid_from``..``valid_to``; parameters are resolved at that date.
+   (``evaluator.conditions``). Otherwise ``NOT_TRIGGERED``.
+3. **Anchor.** Parameters are resolved at the anchor date: the ``anchor`` fact, else the clock
+   start. When the anchor fact is unknown and it is one of the clock's own stop facts (A3: RBI
+   receipt), the ``as_of`` date stands in ("if it stopped now"); any other unknown anchor gives
+   ``INSUFFICIENT_FACTS``.
 4. **Clock.** The duration parameter (``evaluator.parameters``) and the clock spec build a ``Clock``
    (``abhiyogah.clocks``). A missing fact gives ``INSUFFICIENT_FACTS``; nothing is assumed.
 5. **Overrides.** ``overridden_by`` is resolved to one deadline (``clocks.overrides``). The
    overriding obligation reports the deadline; the overridden one reports
    ``NOT_APPLICABLE`` with the reason.
 6. **State.** The clock state at ``as_of`` gives the result, any breach, and the required actions.
+   A ``PERMISSION`` (a complainant's right, such as A2 and A3) never produces a breach, a required
+   action or compensation; its result only says whether the window has lapsed.
 7. **Compensation.** If the obligation has a ``compensation_per_day_paise`` parameter, a breached or
    late clock owes that amount per calendar day late (``calculators.per_day_compensation``).
 
@@ -60,7 +66,7 @@ from abhiyogah.domain.decision import (
     ParameterUse,
     RequiredAction,
 )
-from abhiyogah.domain.enums import EntityType, FactSource
+from abhiyogah.domain.enums import Deontic, EntityType, FactSource
 from abhiyogah.domain.events import ComplaintEvent, EventType, Provenance
 from abhiyogah.domain.tz import ist_date
 from abhiyogah.evaluator.actions import action_code
@@ -153,6 +159,17 @@ def _check_applicability(d: _Draft, facts: ComplaintFacts, profile: EntityProfil
     return True
 
 
+def _check_validity(d: _Draft, day: date) -> bool:
+    """Step 1 (cont.): is this version of the rule in the pack on the ``as_of`` date?"""
+    ob = d.obligation
+    valid_to = ob.valid_to.isoformat() if ob.valid_to is not None else "open"
+    in_force = ob.valid_from <= day and (ob.valid_to is None or day <= ob.valid_to)
+    if not d.check(f"{ob.valid_from} <= as_of <= {valid_to}", in_force, f"as_of = {day}"):
+        d.stop(DecisionResult.NOT_APPLICABLE)
+        return False
+    return True
+
+
 def _check_trigger(d: _Draft, facts: ComplaintFacts, events: Sequence[ComplaintEvent]) -> bool:
     """Step 2: trigger event and condition."""
     trigger = d.obligation.trigger
@@ -164,9 +181,6 @@ def _check_trigger(d: _Draft, facts: ComplaintFacts, events: Sequence[ComplaintE
     outcome = evaluate_condition(trigger.condition, facts)
     d.trace.extend(outcome.trace)
     d.read(*outcome.facts_read)
-    if outcome.result is None:
-        d.stop(DecisionResult.INSUFFICIENT_FACTS)
-        return False
     if not outcome.result:
         d.stop(DecisionResult.NOT_TRIGGERED)
         return False
@@ -185,8 +199,9 @@ def _build_candidate(
     events: Sequence[ComplaintEvent],
     calendar: BankCalendar,
     profile: EntityProfile,
+    day: date,
 ) -> None:
-    """Steps 3 and 4: anchor, validity, duration and clock."""
+    """Steps 3 and 4: anchor, duration and clock."""
     ob = d.obligation
     spec = ob.clock
     if spec is None:
@@ -194,26 +209,26 @@ def _build_candidate(
         d.stop(DecisionResult.NOT_APPLICABLE)
         return
     start_name = start_fact_name(spec)
+    start = _date_fact(facts, start_name)
+    d.read(start_name)
+    if start is None:
+        d.check(f"{start_name} is known", False, "clock start unknown")
+        d.stop(DecisionResult.INSUFFICIENT_FACTS)
+        return
     anchor_name = ob.anchor or start_name
-    anchor = _date_fact(facts, anchor_name)
+    anchor_fact = _date_fact(facts, anchor_name)
     d.read(anchor_name)
-    if anchor is None:
+    if anchor_fact is not None:
+        anchor = anchor_fact.value
+    elif anchor_name in stop_fact_names(spec):
+        anchor = day
+        d.check(f"{anchor_name} is known", False, f"not yet: as_of {day} stands in")
+    else:
         d.check(f"{anchor_name} is known", False, "anchor date unknown")
         d.stop(DecisionResult.INSUFFICIENT_FACTS)
         return
-    d.anchor_date = anchor.value
-    valid_to = ob.valid_to.isoformat() if ob.valid_to is not None else "open"
-    in_force = ob.valid_from <= anchor.value and (
-        ob.valid_to is None or anchor.value <= ob.valid_to
-    )
-    if not d.check(
-        f"{ob.valid_from} <= {anchor_name} <= {valid_to}",
-        in_force,
-        f"{anchor_name} = {anchor.value}",
-    ):
-        d.stop(DecisionResult.NOT_APPLICABLE)
-        return
-    duration = resolve_duration(ob, facts, anchor.value, start_name)
+    d.anchor_date = anchor
+    duration = resolve_duration(ob, facts, anchor, start.value, start_name)
     d.parameters.extend(duration.parameters)
     d.read(*duration.facts_read)
     if isinstance(duration, DurationUndecided):
@@ -222,9 +237,9 @@ def _build_candidate(
         return
     d.check("duration resolved", True, duration.rule)
     if PER_DAY_PARAMETER in ob.parameters:
-        per_day = int_parameter(ob, PER_DAY_PARAMETER, anchor.value)
+        per_day = int_parameter(ob, PER_DAY_PARAMETER, anchor)
         if per_day is None:
-            d.check(f"{PER_DAY_PARAMETER} in force", False, f"none on {anchor.value}")
+            d.check(f"{PER_DAY_PARAMETER} in force", False, f"none on {anchor}")
             d.stop(DecisionResult.NOT_APPLICABLE)
             return
         d.per_day_paise, use = per_day
@@ -326,8 +341,9 @@ def _finish(
         state in (ClockState.STOPPED_ON_TIME, ClockState.RUNNING),
         f"state {state}" + (f", stopped {stop}" if stop is not None else ""),
     )
+    permission = ob.deontic is Deontic.PERMISSION
     breach = None
-    if state in (ClockState.BREACHED, ClockState.STOPPED_LATE):
+    if not permission and state in (ClockState.BREACHED, ClockState.STOPPED_LATE):
         breach = Breach(
             obligation_id=ob.obligation_id,
             due_date=due,
@@ -335,7 +351,7 @@ def _finish(
             days_late=clock.days_late(day),
         )
     actions: list[RequiredAction] = []
-    if ob.subject.strip().lower() == "bank" and state in (ClockState.RUNNING, ClockState.BREACHED):
+    if not permission and state in (ClockState.RUNNING, ClockState.BREACHED):
         actions = [
             RequiredAction(
                 action=action_code(ev), due_date=due, reason=f"{ob.clause}: clock {state}"
@@ -407,8 +423,12 @@ def evaluate(
             raise EvaluationError(f"duplicate obligation {ob.obligation_id}")
         by_id[ob.obligation_id] = _Draft(ob)
     for d in by_id.values():
-        if _check_applicability(d, facts, profile) and _check_trigger(d, facts, seen):
-            _build_candidate(d, facts, seen, calendar, profile)
+        if (
+            _check_applicability(d, facts, profile)
+            and _check_validity(d, day)
+            and _check_trigger(d, facts, seen)
+        ):
+            _build_candidate(d, facts, seen, calendar, profile, day)
     _resolve(by_id, day)
     records = []
     for oid in sorted(by_id):

@@ -35,19 +35,24 @@ F = facts({"outcome": "WHOLLY_REJECTED", "external_tat_days": 25, "channel": "UP
         ("external_tat_days is known", True),
         ("amount_paise is unknown", True),
         ("amount_paise is known", False),
-        ("amount_paise > 5", None),
+        ("amount_paise > 5", False),
+        ("external_tat_days is set", True),
+        ("external_tat_days is not set", False),
+        ("amount_paise is not set", True),
+        ("outcome in [WHOLLY_REJECTED] and amount_paise is set", False),
         ("amount_paise > 5 and channel == ATM", False),
     ],
 )
-def test_conditions(condition: str | None, expected: bool | None) -> None:
-    """Each supported clause form evaluates as documented; unknown facts are undecided."""
+def test_conditions(condition: str | None, expected: bool) -> None:
+    """Each supported clause form evaluates as documented; an unknown fact makes a clause false."""
     assert evaluate_condition(condition, F).result is expected
 
 
 def test_missing_fact_is_reported() -> None:
-    """Undecided conditions name the fact that is missing."""
+    """A clause false for an unknown fact names it, in the result and the trace."""
     out = evaluate_condition("amount_paise > 5", F)
     assert out.missing == ("amount_paise",)
+    assert out.trace[0].detail == "amount_paise is unknown"
 
 
 def test_dates_compare_by_iso_spelling() -> None:

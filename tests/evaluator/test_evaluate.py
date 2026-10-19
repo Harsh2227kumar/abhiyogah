@@ -138,18 +138,29 @@ def test_missing_receipt_is_insufficient_facts() -> None:
     assert rec.condition_trace[-1].result is False
 
 
-def test_missing_outcome_value_is_insufficient() -> None:
-    """A condition on an unknown fact cannot be decided."""
+def test_condition_on_unknown_fact_is_not_triggered() -> None:
+    """An unknown fact makes an `in` clause false (rule-pack conventions); nothing is assumed."""
     ob = obligation(trigger={"event": "BANK_RECEIVED", "condition": "outcome in [WHOLLY_REJECTED]"})
-    assert one([RECEIVED], date(2026, 8, 30), [ob]).result is DecisionResult.INSUFFICIENT_FACTS
+    rec = one([RECEIVED], date(2026, 8, 30), [ob])
+    assert rec.result is DecisionResult.NOT_TRIGGERED
+    assert rec.condition_trace[-1].detail == "outcome is unknown"
 
 
-def test_receipt_before_valid_from_not_applicable() -> None:
-    """A complaint received before the Directions took effect is outside this version."""
+def test_anchor_before_first_parameter_not_applicable() -> None:
+    """A complaint received before the first parameter version: the rule did not apply then."""
     early = ev(1, EventType.BANK_RECEIVED, date(2026, 1, 5))
     rec = one([early, REJECTED], date(2026, 8, 30))
     assert rec.result is DecisionResult.NOT_APPLICABLE
     assert rec.anchor_date == date(2026, 1, 5)
+
+
+def test_validity_checked_at_as_of() -> None:
+    """valid_from/valid_to bound the as_of date: is the rule in the pack at evaluation time?"""
+    ended = obligation(valid_to="2026-08-20")
+    assert one([RECEIVED, REJECTED], date(2026, 8, 25), [ended]).result is (
+        DecisionResult.NOT_APPLICABLE
+    )
+    assert one([RECEIVED, REJECTED], date(2026, 8, 19), [ended]).result is DecisionResult.RUNNING
 
 
 def test_parameter_version_selected_by_anchor() -> None:
@@ -296,3 +307,91 @@ def test_failed_txn_compensation_through_evaluator() -> None:
     accruing = one([facts], date(2026, 8, 6), [failed_txn_obligation()], oid="TAT-2019-UPI-P2P")
     assert accruing.compensation is not None
     assert accruing.compensation.amount_paise == 20000
+
+
+def a2_like(**overrides: object) -> Obligation:
+    """An A2-shaped PERMISSION: 30 days, or the external TAT if longer (report Table A row A2)."""
+    p = {"reference": "RB-IOS 2026 cl. 10(1)(f)", "verification": "PRIMARY_TEXT_READ"}
+    fields: dict[str, object] = {
+        "obligation_id": "RBIOS-2026-10-1-f",
+        "deontic": "PERMISSION",
+        "subject": "complainant",
+        "clause": "10(1)(f)",
+        "applies_to": {"entity_type": "COMMERCIAL_BANK"},
+        "trigger": {"event": "BANK_RECEIVED"},
+        "clock": {
+            "start": "BANK_RECEIVED",
+            "stop": "FINAL_REPLY_SENT",
+            "basis": "CALENDAR",
+            "basis_status": "INFERRED",
+        },
+        "valid_from": "2026-07-01",
+        "parameters": {"base_days": {"2026-07-01": {"value": 30, **p}}},
+    }
+    fields.update(overrides)
+    return obligation(**fields)
+
+
+def test_base_days_takes_longer_external_tat() -> None:
+    """A2: max(30, TAT): 30 days without a TAT, 40 with a synthetic 40-day TAT."""
+    plain = one([RECEIVED], date(2026, 8, 10), [a2_like()], oid="RBIOS-2026-10-1-f")
+    assert plain.deadline is not None
+    assert plain.deadline.due_date == date(2026, 9, 2)
+    tat = ev(3, EventType.FACTS_RECORDED, date(2026, 8, 3), {"external_tat_days": 40})
+    longer = one([RECEIVED, tat], date(2026, 8, 10), [a2_like()], oid="RBIOS-2026-10-1-f")
+    assert longer.deadline is not None
+    assert longer.deadline.due_date == date(2026, 9, 12)
+
+
+def test_permission_lapses_without_breach_or_action() -> None:
+    """A complainant's right never breaches or requires a bank action; it just lapses."""
+    rec = one([RECEIVED], date(2026, 9, 10), [a2_like()], oid="RBIOS-2026-10-1-f")
+    assert rec.result is DecisionResult.BREACHED
+    assert rec.breach is None
+    assert rec.required_actions == []
+
+
+def a3_like(window: dict[str, int]) -> Obligation:
+    """An A3-shaped filing window: max(receipt + 30d, last communication) + window (Table A A3)."""
+    p = {"reference": "RB-IOS 2026 cl. 10(1)(g)", "verification": "PRIMARY_TEXT_READ"}
+    return a2_like(
+        obligation_id="RBIOS-2026-10-1-g",
+        clause="10(1)(g)",
+        clock={
+            "start": "BANK_RECEIVED",
+            "stop": "RBI_RECEIVED",
+            "basis": "CALENDAR",
+            "basis_status": "INFERRED",
+        },
+        anchor="rbi_receipt_date",
+        parameters={
+            "base_days": {"2026-07-01": {"value": 30, **p}},
+            "filing_window": {"2026-07-01": {"value": window, **p}},
+        },
+    )
+
+
+def test_filing_window_with_as_of_standing_in() -> None:
+    """Receipt 3 Aug: base end 2 Sep, last communication 10 Sep, + 90 days = 9 Dec."""
+    comm = ev(3, EventType.BANK_COMMUNICATION_SENT, date(2026, 9, 10))
+    rec = one([RECEIVED, comm], date(2026, 10, 1), [a3_like({"days": 90})], oid="RBIOS-2026-10-1-g")
+    assert rec.deadline is not None
+    assert rec.deadline.due_date == date(2026, 12, 9)
+    assert rec.anchor_date == date(2026, 10, 1)  # RBI receipt unknown: as_of stands in
+    assert rec.result is DecisionResult.RUNNING
+    filed = ev(4, EventType.RBI_RECEIVED, date(2026, 12, 10))
+    late = one(
+        [RECEIVED, comm, filed],
+        date(2026, 12, 20),
+        [a3_like({"days": 90})],
+        oid="RBIOS-2026-10-1-g",
+    )
+    assert late.result is DecisionResult.STOPPED_LATE
+    assert late.anchor_date == date(2026, 12, 10)
+
+
+def test_filing_window_in_years() -> None:
+    """A {years: 1} window keeps month and day: 2 Sep 2026 + 1 year = 2 Sep 2027."""
+    rec = one([RECEIVED], date(2026, 10, 1), [a3_like({"years": 1})], oid="RBIOS-2026-10-1-g")
+    assert rec.deadline is not None
+    assert rec.deadline.due_date == date(2027, 9, 2)

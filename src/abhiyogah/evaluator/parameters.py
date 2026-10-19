@@ -4,19 +4,22 @@
 (the rule in ``rules/README.md``). It stands in for the registry resolver until the rule-pack stream
 ships ``registry/resolve.py``.
 
-A clocked obligation names its duration with exactly one of these parameters. They are the only
-duration shapes the report's formulas need; the numbers themselves always come from the rule pack.
+A clocked obligation names its duration with exactly one of these parameters, as set out in
+``rules/obligations/_conventions.md``. The numbers always come from the rule pack. ``s`` is the
+clock's start date and ``TAT`` the ``external_tat_days`` fact.
 
 ``max_days``
-    A fixed number of days: ``due = start + max_days`` (e.g. A13 ordinary limb, 20 days).
-``min_days``
-    That many days, or the external TAT if it is longer: ``due = start + max(min_days, TAT)``
-    (A2: "30 days, or RBI/NPCI/card-network TAT if higher"). With no ``external_tat_days`` fact, no
-    external TAT applies and ``min_days`` is used.
-``tat_minus_days``
-    The external TAT less that many days: ``due = start + (TAT - tat_minus_days)``
-    (A13 cl. 14(1)(a), 10 days for IO review). Without an
-    ``external_tat_days`` fact the obligation is not triggered.
+    ``due = s + max_days`` (e.g. A13 ordinary limb, 20 days).
+``base_days``
+    ``due = s + max(base_days, TAT)``, or ``s + base_days`` when no external TAT is known
+    (A2: "30 days, or RBI/NPCI/card-network TAT if higher").
+``base_days`` + ``filing_window``
+    ``due = max(s + max(base_days, TAT), last_bank_communication_date) + filing_window`` (A3).
+    ``filing_window`` is ``{days: n}`` or ``{years: n}``; adding years keeps month and day. Calendar
+    basis only.
+``io_review_days``
+    ``due = s + TAT - io_review_days`` (A13 cl. 14(1)(a), 10 days for IO review). Without a TAT the
+    obligation is not triggered.
 """
 
 from dataclasses import dataclass, field
@@ -24,11 +27,13 @@ from datetime import date
 
 from abhiyogah.domain.complaint import ComplaintFacts
 from abhiyogah.domain.decision import DecisionResult, ParameterUse
+from abhiyogah.domain.enums import DayBasis
 from abhiyogah.evaluator.errors import ParameterError
 from abhiyogah.registry.schema import Obligation, ParameterValue
 
 __all__ = [
     "DURATION_PARAMETERS",
+    "FILING_WINDOW",
     "PER_DAY_PARAMETER",
     "Duration",
     "DurationUndecided",
@@ -37,7 +42,8 @@ __all__ = [
     "resolve_duration",
 ]
 
-DURATION_PARAMETERS = ("max_days", "min_days", "tat_minus_days")
+DURATION_PARAMETERS = ("max_days", "base_days", "io_review_days")
+FILING_WINDOW = "filing_window"
 
 PER_DAY_PARAMETER = "compensation_per_day_paise"
 """Optional parameter: paise owed per calendar day late (e.g. B1 ₹100/day = 10000)."""
@@ -97,10 +103,39 @@ class DurationUndecided:
     facts_read: tuple[str, ...] = ()
 
 
+def _filing_window(obligation: Obligation, anchor: date) -> tuple[str, int, ParameterUse] | None:
+    """The ``filing_window`` in force: (unit, amount, use), or None if none yet."""
+    found = parameter_at(obligation, FILING_WINDOW, anchor)
+    if found is None:
+        return None
+    effective, pv = found
+    value = pv.value
+    if (
+        not isinstance(value, dict)
+        or len(value) != 1
+        or not set(value) <= {"days", "years"}
+        or not isinstance(next(iter(value.values())), int)
+        or isinstance(next(iter(value.values())), bool)
+    ):
+        raise ParameterError(
+            f"{obligation.obligation_id}: filing_window must be {{days: n}} or {{years: n}}"
+        )
+    ((unit, amount),) = value.items()
+    assert isinstance(amount, int)  # noqa: S101 - checked above
+    use = ParameterUse(
+        name=FILING_WINDOW,
+        value=value,
+        effective_date=effective,
+        reference=pv.reference,
+        verification=pv.verification,
+    )
+    return unit, amount, use
+
+
 def resolve_duration(
-    obligation: Obligation, facts: ComplaintFacts, anchor: date, start_name: str
+    obligation: Obligation, facts: ComplaintFacts, anchor: date, start: date, start_name: str
 ) -> Duration | DurationUndecided:
-    """Resolve the obligation's duration parameter at ``anchor`` (see the module docstring)."""
+    """Resolve the obligation's duration at ``anchor`` for a clock starting on ``start``."""
     names = [n for n in DURATION_PARAMETERS if n in obligation.parameters]
     if len(names) != 1:
         raise ParameterError(
@@ -108,6 +143,9 @@ def resolve_duration(
             f"{', '.join(DURATION_PARAMETERS)}; found {names or 'none'}"
         )
     (name,) = names
+    has_window = FILING_WINDOW in obligation.parameters
+    if has_window and name != "base_days":
+        raise ParameterError(f"{obligation.obligation_id}: filing_window needs base_days")
     found = int_parameter(obligation, name, anchor)
     if found is None:
         return DurationUndecided(
@@ -118,22 +156,55 @@ def resolve_duration(
     read: tuple[str, ...] = () if tat is None else ("external_tat_days",)
     if name == "max_days":
         return Duration(n, f"{start_name} + {n}d", (use,))
-    if name == "min_days":
-        if tat is None or tat <= n:
-            detail = "no external TAT" if tat is None else f"external TAT {tat}d <= {n}d"
-            return Duration(n, f"{start_name} + {n}d ({detail})", (use,), read)
-        return Duration(tat, f"{start_name} + {tat}d (external TAT > {n}d)", (use,), read)
-    if tat is None:
+    if name == "io_review_days":
+        if tat is None:
+            return DurationUndecided(
+                "external_tat_days unknown: no external TAT applies",
+                DecisionResult.NOT_TRIGGERED,
+                (use,),
+            )
+        if tat < n:
+            return DurationUndecided(
+                f"external TAT {tat}d is shorter than {name} {n}d",
+                DecisionResult.INSUFFICIENT_FACTS,
+                (use,),
+                read,
+            )
+        return Duration(tat - n, f"{start_name} + ({tat}d TAT - {n}d)", (use,), read)
+    days = n if tat is None else max(n, tat)
+    base_rule = (
+        f"{start_name} + max({n}d, {tat}d TAT)" if tat is not None else f"{start_name} + {n}d"
+    )
+    if not has_window:
+        return Duration(days, base_rule, (use,), read)
+    if obligation.clock is None or obligation.clock.basis is not DayBasis.CALENDAR:
+        raise ParameterError(f"{obligation.obligation_id}: filing_window needs a calendar clock")
+    window = _filing_window(obligation, anchor)
+    if window is None:
         return DurationUndecided(
-            "external_tat_days unknown: no external TAT applies",
-            DecisionResult.NOT_TRIGGERED,
-            (use,),
-        )
-    if tat < n:
-        return DurationUndecided(
-            f"external TAT {tat}d is shorter than {name} {n}d",
-            DecisionResult.INSUFFICIENT_FACTS,
+            f"no {FILING_WINDOW} in force on anchor date {anchor}",
+            DecisionResult.NOT_APPLICABLE,
             (use,),
             read,
         )
-    return Duration(tat - n, f"{start_name} + ({tat}d TAT - {n}d)", (use,), read)
+    unit, amount, wuse = window
+    base_end = date.fromordinal(start.toordinal() + days)
+    rule = f"max({base_rule}"
+    if facts.last_bank_communication_date is not None:
+        read = (*read, "last_bank_communication_date")
+        base_end = max(base_end, facts.last_bank_communication_date.value)
+        rule += ", last_bank_communication_date"
+    rule += f") + {amount} {unit}"
+    if unit == "days":
+        due = date.fromordinal(base_end.toordinal() + amount)
+    else:
+        try:
+            due = base_end.replace(year=base_end.year + amount)
+        except ValueError:
+            return DurationUndecided(
+                f"no rule for adding {amount} years to {base_end}",
+                DecisionResult.INSUFFICIENT_FACTS,
+                (use, wuse),
+                read,
+            )
+    return Duration((due - start).days, rule, (use, wuse), read)

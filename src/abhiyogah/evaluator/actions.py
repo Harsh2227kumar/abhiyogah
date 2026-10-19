@@ -1,8 +1,8 @@
 """Required-action codes: what the bank must do to stop a running or breached clock.
 
 The action for a clock is the business event that stops it. Each stop event has an ``UPPER_SNAKE``
-action code; a stop event without one in the table uses its own name. Only obligations whose subject
-is the bank produce actions (the RBI filing window binds the complainant, not the bank).
+action code; a stop event without one in the table uses its own name. A ``PERMISSION`` (a
+complainant's right, such as the RBI filing window) produces no actions.
 """
 
 from abhiyogah.domain.events import EventType

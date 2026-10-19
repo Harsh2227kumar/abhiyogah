@@ -60,7 +60,7 @@ def tat_limb() -> Obligation:
         obligation_id="IO-CB-2026-14-1-a",
         clause="14(1)(a)",
         parameters={
-            "tat_minus_days": {
+            "io_review_days": {
                 "2026-01-14": {
                     "value": 10,
                     "reference": "cl. 14(1)(a)",

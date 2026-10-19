@@ -28,6 +28,14 @@
 - [x] `calculators/service_events.py`: the C-table formulas listed in the report (property documents
       ₹5,000/day, deceased deposits Bank Rate + 4%, card closure ₹500/day, credit information ₹100/day).
       Parameters always come from the registry, never from constants in code.
+- [x] Align the evaluator with `rules/obligations/_conventions.md` (rule-pack PR #16): `is set` /
+      `is not set`, an unknown fact makes a clause false, validity checked at `as_of`, duration
+      parameters `max_days` / `base_days` / `io_review_days` / `base_days` + `filing_window` (A3, with
+      `as_of` standing in for an unknown anchor that is the clock's own stop), `PERMISSION` never
+      breaches or requires actions.
+- [ ] Clockless obligations end `DETERMINED` with `outputs` (A1 scheme, A2 `escalation_open`, A3
+      `filed_in_time`, A14, A15). Needs `DecisionResult.DETERMINED` and an outputs field from the domain
+      owner (issue #20).
 - [ ] Scenario runner `tests/scenarios/test_scenarios.py`: loads every `rules/scenarios/*.yaml`, runs the
       evaluator, compares deadlines, breaches and paise exactly. Wired into `make rules`.
 - [ ] Replay test: evaluating the same events at the same `as_of` twice yields byte-identical records.
@@ -43,15 +51,13 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
   (e.g. IO-CB-2026-14-1-a), it reports the deadline, breach and actions; the overridden obligation
   (IO-CB-2026-14-1-b) reports `NOT_APPLICABLE` with the override in its trace and no deadline. If
   more than one override applies the engine raises `OverrideConflictError` rather than choosing.
-- To the rule-pack stream (02), FYI on what the evaluator reads: a clocked obligation names its
-  duration with exactly one parameter, `max_days` (fixed), `min_days` (max with `external_tat_days`,
-  A2) or `tat_minus_days` (`external_tat_days` − n, A13 cl. 14(1)(a)). Trigger conditions use the
-  grammar in `src/abhiyogah/evaluator/conditions.py` (`in [...]`, `not in`, `==`, `!=`, integer
-  `<`/`>`, `is known`/`is unknown`, joined by `and`). Per-day compensation (B1, C-table) is the
-  optional parameter `compensation_per_day_paise`, owed per calendar day late.
-- To the foundation/domain owner: a `DecisionResult` for "triggered, no deadline" (e.g. `TRIGGERED`)
-  would let clockless obligations (A14, A18) report honestly; today they report `NOT_APPLICABLE`
-  with an "obligation has a clock: false" trace line.
+- To the rule-pack stream (02), FYI: the evaluator follows `rules/obligations/_conventions.md`. It
+  also accepts `is known`/`is unknown`, `==`, `!=` and integer `<`/`>` clauses, and an optional
+  `compensation_per_day_paise` parameter (per calendar day late) for B1 and the C-table.
+- To the foundation/domain owner (same as the rule-pack request in issue #20): `DecisionResult.DETERMINED`
+  and an `outputs` field on `DecisionRecord`, so clockless obligations (A1, A14, A15, A18) and outputs
+  such as `escalation_open` can be reported. Today clockless obligations end `NOT_APPLICABLE` with
+  an "obligation has a clock: false" trace line.
 - Engine side, once 02 merges: switch `evaluator/parameters.parameter_at` to `registry/resolve.py`.
 
 ## Log
@@ -62,3 +68,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · item 5 done · calculators/failed_txn.py (per_day x max(0, R-(T+n)), recipient rule) + per_day.py; evaluator applies compensation_per_day_paise to late clocks · next: item 6 limited liability
 - 2026-10-19 · item 6 done · calculators/limited_liability.py: delay_wd (receipt day excluded), ZERO/LIMITED/BOARD_POLICY/UNDETERMINED tiers with caps passed from the rule pack, shadow-credit and determination due dates · next: item 7 service events
 - 2026-10-19 · item 7 done · calculators/service_events.py: property documents, deceased locker, deceased deposit interest (Decimal, explicit rounding), card closure (explicit late-day basis), credit information; all amounts/rates passed in · next: item 8 scenario runner
+- 2026-10-19 · alignment item done · evaluator follows rules/_conventions.md: is set/is not set, unknown fact → clause false, validity at as_of, base_days/io_review_days/filing_window (as_of stands in for an unknown stop-fact anchor), PERMISSION never breaches or acts · next: DETERMINED/outputs blocked on #20; doing replay + time-travel tests while rules PR #16 is open

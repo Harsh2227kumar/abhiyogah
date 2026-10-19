@@ -1,6 +1,7 @@
 """Trigger conditions over ``ComplaintFacts``: a deliberately tiny grammar, no ``eval``.
 
-A condition is one or more clauses joined by `` and ``. Each clause names a ``ComplaintFacts`` field
+The grammar and its semantics follow ``rules/obligations/_conventions.md`` (rule-pack stream). A
+condition is one or more clauses joined by `` and ``. Each clause names a ``ComplaintFacts`` field
 and one of these tests::
 
     outcome in [PARTIALLY_RESOLVED, WHOLLY_REJECTED]
@@ -8,13 +9,12 @@ and one of these tests::
     entity_type == COMMERCIAL_BANK
     channel != OTHER
     amount_paise >= 100000          (also >, <, <=; integer facts only)
-    external_tat_days is known
-    external_tat_days is unknown
+    external_tat_days is set        (also: is known)
+    external_tat_days is not set    (also: is unknown)
 
 Values compare by their YAML/JSON spelling: enum values, ISO dates, integers. A clause on an unknown
-fact (other than ``is known`` / ``is unknown``) cannot be decided, so the condition is undecided and
-the evaluator reports ``INSUFFICIENT_FACTS``. Nothing is assumed. Anything outside this grammar
-raises ``ConditionSyntaxError``.
+fact (other than the set/known tests) is false: the fact never defaults to a value, and the trace
+says it was unknown. Anything outside this grammar raises ``ConditionSyntaxError``.
 """
 
 import re
@@ -31,7 +31,7 @@ __all__ = ["ConditionOutcome", "evaluate_condition", "fact_spelling"]
 _FIELDS = frozenset(name for name in ComplaintFacts.model_fields if name != "complaint_id")
 _CLAUSE = re.compile(
     r"^(?P<field>[a-z][a-z0-9_]*)\s+"
-    r"(?:(?P<known>is\s+(?:known|unknown))"
+    r"(?:(?P<known>is\s+(?:not\s+set|set|known|unknown))"
     r"|(?P<setop>not\s+in|in)\s*\[(?P<items>[^\]]*)\]"
     r"|(?P<cmp>==|!=|>=|<=|>|<)\s*(?P<value>\S+))$"
 )
@@ -56,16 +56,16 @@ def _unquote(s: str) -> str:
 
 @dataclass(frozen=True, slots=True)
 class ConditionOutcome:
-    """``result`` is True/False, or None when a needed fact is unknown."""
+    """Whether the condition holds, its trace, the facts read and those that were unknown."""
 
-    result: bool | None
+    result: bool
     trace: tuple[ConditionTrace, ...]
     facts_read: tuple[str, ...]
     missing: tuple[str, ...]
 
 
 def _check_clause(clause: str, facts: ComplaintFacts) -> tuple[bool | None, str, str]:
-    """Evaluate one clause: (result, field name, detail)."""
+    """Evaluate one clause: (result or None if the fact is unknown, field name, detail)."""
     m = _CLAUSE.match(clause.strip())
     if m is None:
         raise ConditionSyntaxError(f"unsupported condition clause: {clause!r}")
@@ -74,7 +74,7 @@ def _check_clause(clause: str, facts: ComplaintFacts) -> tuple[bool | None, str,
         raise ConditionSyntaxError(f"{field!r} is not a ComplaintFacts field")
     fact: Fact[object] | None = getattr(facts, field)
     if m["known"]:
-        want_known = m["known"].split()[-1] == "known"
+        want_known = m["known"].split()[-1] in ("known", "set") and "not" not in m["known"]
         return (fact is not None) == want_known, field, f"{field} is {_shown(fact)}"
     if fact is None:
         return None, field, f"{field} is unknown"
@@ -114,14 +114,13 @@ def evaluate_condition(condition: str | None, facts: ComplaintFacts) -> Conditio
     trace: list[ConditionTrace] = []
     read: list[str] = []
     missing: list[str] = []
-    overall: bool | None = True
+    overall = True
     for clause in re.split(r"\s+and\s+", condition.strip()):
         result, field, detail = _check_clause(clause, facts)
         read.append(field)
         if result is None:
             missing.append(field)
-            overall = None if overall is not False else False
-        elif not result:
+        if not result:
             overall = False
         trace.append(ConditionTrace(condition=clause.strip(), result=bool(result), detail=detail))
     return ConditionOutcome(overall, tuple(trace), tuple(read), tuple(missing))
