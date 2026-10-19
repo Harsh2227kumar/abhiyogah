@@ -47,3 +47,4 @@
 - 2026-10-19 · e2e demo test done · `tests/e2e/test_demo.py` (B6, B5 tier, A13 breach after time travel, sweep, REFER_TO_IO, cited explain, replay) on DRAFT copies of #16 · next: `scripts/demo.sh`
 - 2026-10-19 · demo.sh done · `scripts/demo.sh` + `demo.compose.yml` (demo rule pack, profile, per-run API keys) + stdlib client `demo.py`; ran against Postgres 16 in Docker with migrations (the uv image pull from ghcr is blocked here, so API ran on the host) · next: MCP step (stream 07) and real rule pack (#16)
 - 2026-10-19 · e2e MCP step done · `test_demo.py` step 5: `evaluate_complaint` (now and time-travelled), `get_deadlines` and `explain_decision` equal the API's JSON; demo.py points to the MCP server · next: real rule pack (waits on #16)
+- 2026-10-19 · CI runs console checks · `.github/workflows/ci.yml` adds pnpm (pinned via console/package.json packageManager) and Node 22, so `make check` runs console-check in CI · next: real rule pack (waits on #16)
