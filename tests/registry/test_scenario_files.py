@@ -14,7 +14,7 @@ import yaml
 
 from abhiyogah.domain.complaint import fold_events
 from abhiyogah.domain.decision import DecisionResult
-from abhiyogah.domain.enums import FactSource
+from abhiyogah.domain.enums import Deontic, FactSource
 from abhiyogah.domain.events import ComplaintEvent, Provenance
 from abhiyogah.domain.tz import ist_date
 from abhiyogah.registry.loader import load_registry
@@ -82,9 +82,13 @@ def test_scenario_is_consistent(path: Path) -> None:
         assert isinstance(d["due_date"], date)
         assert DecisionResult(d["result"]) is results[oid]
 
+    registry = load_registry(RULES / "obligations")
     breaches = {b["obligation_id"]: b for b in expect.get("breaches") or []}
     late = {DecisionResult.STOPPED_LATE, DecisionResult.BREACHED}
-    assert set(breaches) == {oid for oid, r in results.items() if r in late}
+    duties = {oid for oid in ids if registry[oid].deontic is not Deontic.PERMISSION}
+    assert set(breaches) == {oid for oid, r in results.items() if r in late and oid in duties}
+    actions = {a["obligation_id"] for a in expect.get("required_actions") or []}
+    assert actions <= duties, "a PERMISSION never requires an action"
     for oid, b in breaches.items():
         assert b["due_date"] == deadlines[oid]["due_date"]
         assert b["days_late"] >= 1
@@ -92,13 +96,13 @@ def test_scenario_is_consistent(path: Path) -> None:
             assert b["days_late"] == (ist_date(as_of) - b["due_date"]).days
 
     outputs = expect.get("outputs") or {}
-    assert set(outputs) == {oid for oid, r in results.items() if r == DETERMINED}
+    assert set(outputs) >= {oid for oid, r in results.items() if r == DETERMINED}
+    assert set(outputs) <= set(ids)
     assert all(isinstance(v, dict) and v for v in outputs.values())
 
     for amount in (expect.get("compensation_paise") or {}).values():
         assert isinstance(amount, int)
         assert amount > 0
 
-    registry = load_registry(RULES / "obligations")
     for oid in ids:
         assert path.name in registry[oid].tests, f"{oid} does not list {path.name} in tests"

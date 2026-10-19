@@ -60,6 +60,12 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
   | Obligation | Output | Values |
   |---|---|---|
   | A1 `RBIOS-2026-20-2` | `scheme` | the `scheme` parameter in force at `rbi_receipt_date`: `RB-IOS-2021` or `RB-IOS-2026` |
+  | A2 `RBIOS-2026-10-1-f` | `escalation_open` | `true` when the clock is `BREACHED` or `STOPPED_LATE` (no reply by the due date) or `customer_dissatisfied_date` is set, else `false` |
+
+  Clock obligations may also have outputs; `DETERMINED` ones must.
+- `deontic: PERMISSION` (a right of the complainant, such as A2 and A3) never produces a breach or a
+  required action. Its clock result says whether the window has lapsed; what that means comes out as
+  an output (`escalation_open`).
 
 - A scenario's `expect.results` maps each obligation in `obligation_ids` to its `DecisionResult`,
   including results that have no deadline (`NOT_TRIGGERED`, `NOT_APPLICABLE`, `INSUFFICIENT_FACTS`).
