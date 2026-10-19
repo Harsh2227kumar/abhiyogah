@@ -20,6 +20,9 @@ clock's start date and ``TAT`` the ``external_tat_days`` fact.
 ``io_review_days``
     ``due = s + TAT - io_review_days`` (A13 cl. 14(1)(a), 10 days for IO review). Without a TAT the
     obligation is not triggered.
+``tat_days_by_channel``
+    ``due = s + table[channel]`` (B1, B2). An unknown channel, a channel missing from the table or a
+    channel listed in ``follows_underlying_system`` gives ``INSUFFICIENT_FACTS``.
 """
 
 from dataclasses import dataclass, field
@@ -35,6 +38,7 @@ __all__ = [
     "DURATION_PARAMETERS",
     "FILING_WINDOW",
     "PER_DAY_PARAMETER",
+    "UNDERLYING_SYSTEM",
     "Duration",
     "DurationUndecided",
     "int_parameter",
@@ -42,7 +46,8 @@ __all__ = [
     "resolve_duration",
 ]
 
-DURATION_PARAMETERS = ("max_days", "base_days", "io_review_days")
+DURATION_PARAMETERS = ("max_days", "base_days", "io_review_days", "tat_days_by_channel")
+UNDERLYING_SYSTEM = "follows_underlying_system"
 FILING_WINDOW = "filing_window"
 
 PER_DAY_PARAMETER = "compensation_per_day_paise"
@@ -132,6 +137,56 @@ def _filing_window(obligation: Obligation, anchor: date) -> tuple[str, int, Para
     return unit, amount, use
 
 
+def _channel_duration(
+    obligation: Obligation, facts: ComplaintFacts, anchor: date, start_name: str
+) -> Duration | DurationUndecided:
+    """``tat_days_by_channel``: the TAT for the complaint's channel (B1, B2)."""
+    name = "tat_days_by_channel"
+    found = parameter_at(obligation, name, anchor)
+    if found is None:
+        return DurationUndecided(
+            f"no {name} in force on anchor date {anchor}", DecisionResult.NOT_APPLICABLE
+        )
+    effective, pv = found
+    table = pv.value
+    if not isinstance(table, dict) or not all(
+        isinstance(v, int) and not isinstance(v, bool) for v in table.values()
+    ):
+        raise ParameterError(f"{obligation.obligation_id}: {name} must map channels to integers")
+    if facts.channel is None:
+        return DurationUndecided("channel unknown", DecisionResult.INSUFFICIENT_FACTS)
+    channel = facts.channel.value.value
+    read = ("channel",)
+    if UNDERLYING_SYSTEM in obligation.parameters:
+        underlying = parameter_at(obligation, UNDERLYING_SYSTEM, anchor)
+        if (
+            underlying is not None
+            and isinstance(underlying[1].value, list)
+            and channel in underlying[1].value
+        ):
+            return DurationUndecided(
+                f"{channel} follows the underlying system, which is not known",
+                DecisionResult.INSUFFICIENT_FACTS,
+                facts_read=read,
+            )
+    days = table.get(channel)
+    if days is None:
+        return DurationUndecided(
+            f"{channel} is not in this obligation's {name}",
+            DecisionResult.INSUFFICIENT_FACTS,
+            facts_read=read,
+        )
+    assert isinstance(days, int)  # noqa: S101 - checked above
+    use = ParameterUse(
+        name=f"{name}.{channel}",
+        value=days,
+        effective_date=effective,
+        reference=pv.reference,
+        verification=pv.verification,
+    )
+    return Duration(days, f"{start_name} + {days}d ({channel})", (use,), read)
+
+
 def resolve_duration(
     obligation: Obligation, facts: ComplaintFacts, anchor: date, start: date, start_name: str
 ) -> Duration | DurationUndecided:
@@ -146,6 +201,8 @@ def resolve_duration(
     has_window = FILING_WINDOW in obligation.parameters
     if has_window and name != "base_days":
         raise ParameterError(f"{obligation.obligation_id}: filing_window needs base_days")
+    if name == "tat_days_by_channel":
+        return _channel_duration(obligation, facts, anchor, start_name)
     found = int_parameter(obligation, name, anchor)
     if found is None:
         return DurationUndecided(

@@ -395,3 +395,70 @@ def test_filing_window_in_years() -> None:
     rec = one([RECEIVED], date(2026, 10, 1), [a3_like({"years": 1})], oid="RBIOS-2026-10-1-g")
     assert rec.deadline is not None
     assert rec.deadline.due_date == date(2027, 9, 2)
+
+
+def channel_obligation() -> Obligation:
+    """A B1-shaped obligation keyed by channel (report Table B row B1 values)."""
+    p = {"reference": "RBI/2019-20/67 Annex", "verification": "PRIMARY_TEXT_READ"}
+    return failed_txn_obligation().model_copy(
+        update={
+            "obligation_id": "TAT-2019-FAILED-TXN",
+            "trigger": failed_txn_obligation().trigger.model_copy(
+                update={"event": EventType.FACTS_RECORDED, "condition": "channel is set"}
+            ),
+            "parameters": obligation(
+                parameters={
+                    "tat_days_by_channel": {"2019-10-15": {"value": {"UPI_P2P": 1, "ATM": 5}, **p}},
+                    "follows_underlying_system": {"2019-10-15": {"value": ["PPI_OFF_US"], **p}},
+                    "compensation_per_day_paise": {"2019-10-15": {"value": 10000, **p}},
+                }
+            ).parameters,
+        }
+    )
+
+
+def txn(channel: str) -> ComplaintEvent:
+    """A failed transaction on 3 Aug through ``channel``."""
+    payload: dict[str, JsonValue] = {"transaction_date_t": "2026-08-03", "channel": channel}
+    return ev(1, EventType.FACTS_RECORDED, date(2026, 8, 3), payload)
+
+
+def test_tat_by_channel() -> None:
+    """ATM T+5: due 8 Aug; not reversed by 10 Aug: breached, ₹200 accrued, REVERSE_TRANSACTION."""
+    rec = one([txn("ATM")], date(2026, 8, 10), [channel_obligation()], oid="TAT-2019-FAILED-TXN")
+    assert rec.deadline is not None
+    assert rec.deadline.due_date == date(2026, 8, 8)
+    assert rec.parameters[0].name == "tat_days_by_channel.ATM"
+    assert rec.compensation is not None
+    assert rec.compensation.amount_paise == 20000
+    assert [a.action for a in rec.required_actions] == ["REVERSE_TRANSACTION"]
+
+
+def test_channel_outside_table_or_underlying_is_insufficient() -> None:
+    """A channel without a TAT row, or one that follows its underlying system, is not assumed."""
+    for channel in ("IMPS", "PPI_OFF_US"):
+        rec = one(
+            [txn(channel)], date(2026, 8, 10), [channel_obligation()], oid="TAT-2019-FAILED-TXN"
+        )
+        assert rec.result is DecisionResult.INSUFFICIENT_FACTS, channel
+
+
+def test_future_dated_is_never_evaluated() -> None:
+    """A FUTURE_DATED rule is NOT_APPLICABLE even after valid_from."""
+    rec = one([RECEIVED, REJECTED], date(2026, 8, 25), [obligation(status="FUTURE_DATED")])
+    assert rec.result is DecisionResult.NOT_APPLICABLE
+    assert rec.deadline is None
+
+
+def test_one_action_for_alternative_stops() -> None:
+    """Comply or appeal (two stop events) is one action."""
+    ob = obligation(
+        clock={
+            "start": "BANK_RECEIVED",
+            "stop": ["COMPLIANCE_INTIMATED", "APPEAL_FILED"],
+            "basis": "CALENDAR",
+            "basis_status": "INFERRED",
+        }
+    )
+    rec = one([RECEIVED, REJECTED], date(2026, 8, 25), [ob])
+    assert [a.action for a in rec.required_actions] == ["COMPLY_WITH_AWARD_OR_APPEAL"]

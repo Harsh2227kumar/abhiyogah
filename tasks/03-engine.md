@@ -33,9 +33,12 @@
       parameters `max_days` / `base_days` / `io_review_days` / `base_days` + `filing_window` (A3, with
       `as_of` standing in for an unknown anchor that is the clock's own stop), `PERMISSION` never
       breaches or requires actions.
+- [x] Follow the updated conventions: `FUTURE_DATED` rules are never evaluated, `tat_days_by_channel`
+      / `follows_underlying_system` durations (B1, B2), one action per obligation with the convention
+      codes (`REVERSE_TRANSACTION`, `SHADOW_CREDIT`, `SEND_FINAL_DECISION`, ...).
 - [ ] Clockless obligations end `DETERMINED` with `outputs` (A1 scheme, A2 `escalation_open`, A3
-      `filed_in_time`, A14, A15). Needs `DecisionResult.DETERMINED` and an outputs field from the domain
-      owner (issue #20).
+      `filed_in_time`, A14, A15, A18, B5 determination). `DETERMINED` landed in #23; the outputs field
+      on `DecisionRecord` is requested in #25.
 - [x] Scenario runner harness `tests/scenarios/runner.py` (events, profile, overrides closure, exact
       comparison of results, deadlines, breaches, paise, actions; outputs reported as unsupported),
       unit-tested against the example scenario.
@@ -77,3 +80,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · runner harness done · tests/scenarios/runner.py + test_runner.py. Trial run on a local merge of rules (#16) + calendar (#14), not pushed: 12/26 scenarios pass, the other 14 only fail on DETERMINED/outputs (#20) · next: test_scenarios.py over rules/scenarios once #16 and #14 are on main
 - 2026-10-19 · BLOCKED: test_scenarios.py needs rule-pack PR #16 (loader, obligations) and calendar PR #14 merged into main; DETERMINED/outputs needs the domain change in #20. Resume by merging origin/main.
 - 2026-10-19 · resume · merged main (#18 engine, #14 calendar); clocks now re-export calendar.protocol.BankCalendar and a clock test runs on the real bank calendar · still BLOCKED: test_scenarios.py on rules PR #16, DETERMINED/outputs on #20
+- 2026-10-19 · conventions item done · FUTURE_DATED never evaluated, tat_days_by_channel + follows_underlying_system, one action per obligation with convention codes. Local trial against rules branch: 40/72 scenarios pass; all 32 failures are DETERMINED/outputs (A1, A14, A15, A18, B5) · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16

@@ -6,10 +6,11 @@ required, so the same inputs always give byte-identical records (replay) and tes
 The semantics follow ``rules/obligations/_conventions.md`` (rule-pack stream). For each
 obligation, in this order, every step leaving a ``ConditionTrace`` line:
 
-1. **Applicability.** The entity type (the complaint's ``entity_type`` fact, else the profile) is
-   bound by ``applies_to``, the outlet count meets ``min_outlets`` as on ``outlets_as_on``, and the
-   ``as_of`` date is within ``valid_from``..``valid_to``. Otherwise ``NOT_APPLICABLE`` (or
-   ``INSUFFICIENT_FACTS`` if the outlet count is unknown).
+1. **Applicability.** A ``FUTURE_DATED`` rule is never evaluated (B10's draft figures stay
+   blocked until the owner changes its status). The entity type (the complaint's
+   ``entity_type`` fact, else the profile) is bound by ``applies_to``; the outlet count meets
+   ``min_outlets`` as on ``outlets_as_on``; the ``as_of`` date is within ``valid_from`` to
+   ``valid_to``. Otherwise ``NOT_APPLICABLE`` (``INSUFFICIENT_FACTS`` if outlets are unknown).
 2. **Trigger.** The trigger event has occurred by ``as_of`` and the trigger condition holds
    (``evaluator.conditions``). Otherwise ``NOT_TRIGGERED``.
 3. **Anchor.** Parameters are resolved at the anchor date: the ``anchor`` fact, else the clock
@@ -66,7 +67,7 @@ from abhiyogah.domain.decision import (
     ParameterUse,
     RequiredAction,
 )
-from abhiyogah.domain.enums import Deontic, EntityType, FactSource
+from abhiyogah.domain.enums import Deontic, EntityType, FactSource, RuleStatus
 from abhiyogah.domain.events import ComplaintEvent, EventType, Provenance
 from abhiyogah.domain.tz import ist_date
 from abhiyogah.evaluator.actions import action_code
@@ -127,7 +128,11 @@ class _Draft:
 
 
 def _check_applicability(d: _Draft, facts: ComplaintFacts, profile: EntityProfile) -> bool:
-    """Step 1: entity type and outlet threshold."""
+    """Step 1: status, entity type and outlet threshold."""
+    if d.obligation.status is RuleStatus.FUTURE_DATED:
+        d.check("status is not FUTURE_DATED", False, "future-dated rules are never evaluated")
+        d.stop(DecisionResult.NOT_APPLICABLE)
+        return False
     applies = d.obligation.applies_to
     if facts.entity_type is not None:
         entity: EntityType = facts.entity_type.value
@@ -343,7 +348,7 @@ def _finish(
     )
     permission = ob.deontic is Deontic.PERMISSION
     breach = None
-    if not permission and state in (ClockState.BREACHED, ClockState.STOPPED_LATE):
+    if not permission and spec.stop and state in (ClockState.BREACHED, ClockState.STOPPED_LATE):
         breach = Breach(
             obligation_id=ob.obligation_id,
             due_date=due,
@@ -354,9 +359,10 @@ def _finish(
     if not permission and state in (ClockState.RUNNING, ClockState.BREACHED):
         actions = [
             RequiredAction(
-                action=action_code(ev), due_date=due, reason=f"{ob.clause}: clock {state}"
+                action=action_code(spec.stop[0]),
+                due_date=due,
+                reason=f"{ob.clause}: clock {state}",
             )
-            for ev in spec.stop
         ]
     compensation = None
     if d.per_day_paise is not None and breach is not None:
