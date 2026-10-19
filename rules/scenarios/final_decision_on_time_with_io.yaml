@@ -1,0 +1,43 @@
+name: final_decision_on_time_with_io
+description: >
+  A wholly rejected complaint goes to the IO by day 15 and the final decision reaches the complainant
+  on day 28; both the IO clock and the final-decision clock stop on time.
+obligation_ids: [IO-CB-2026-14-9, IO-CB-2026-14-1-b]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(9) (report Table A, row A17, verification P): final decision
+  to the complainant within 30 days of the bank's receipt. Report formula:
+  final_reply_due = bank_receipt + 30d. Day basis: calendar, inferred (Q4). No pause (Q3).
+  bank_receipt_date = 2026-08-03
+  A17: due_date = 2026-08-03 + 30 days = 2026-09-02; FINAL_REPLY_SENT 2026-08-31 <= 2026-09-02:
+  STOPPED_ON_TIME.
+  A13 (cl. 14(1)(b), row A13, P): due_date = 2026-08-03 + 20 days = 2026-08-23; outcome
+  WHOLLY_REJECTED 2026-08-12 triggers it; IO_REFERRED 2026-08-18 <= 2026-08-23: STOPPED_ON_TIME.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-12T15:00:00+05:30
+    payload: {outcome: WHOLLY_REJECTED}
+    source: HUMAN
+  - type: IO_REFERRED
+    occurred_at: 2026-08-18T10:00:00+05:30
+  - type: IO_DECIDED
+    occurred_at: 2026-08-28T17:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-08-31T12:00:00+05:30
+as_of: 2026-09-05T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-9: STOPPED_ON_TIME
+    IO-CB-2026-14-1-b: STOPPED_ON_TIME
+  deadlines:
+    - {obligation_id: IO-CB-2026-14-9, due_date: 2026-09-02, result: STOPPED_ON_TIME}
+    - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-08-23, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

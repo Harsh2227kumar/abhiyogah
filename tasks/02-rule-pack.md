@@ -32,7 +32,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 - [x] A14 three-state outcome (14(2))
 - [x] A15 no same-unit closure and senior review (14(3)–(4)): obligation files
 - [ ] A15 scenarios (≥ 2 per limb), once the A15 facts requested below exist in `ComplaintFacts`
-- [ ] A17 final decision within 30 days (14(9))
+- [x] A17 final decision within 30 days (14(9))
 - [ ] A18 mandatory reply content (14(11)–(12)): as a checklist obligation consumed by reply QA
 - [ ] B1 failed-transaction TATs: one parameter table covering every verified channel row, plus ₹100/day
 - [ ] B2 illegible rows: encoded but `verification: UNVERIFIED`
@@ -68,3 +68,4 @@ Tracked together in issue #20.
 - 2026-10-19 · A3 done · RBIOS-2026-10-1-g PERMISSION with `base_days` + `filing_window` dated by rbi_receipt_date (2026: 90 days P; 2021: 1 year S, Q15), output `filed_in_time`, 5 scenarios incl. the 2025-receipt time-bar case · next: A14
 - 2026-10-19 · A14 done · IO-CB-2026-14-2 check obligation (`allowed_outcomes` from 2026-06-30 at final_reply_date, output `classified_at_closure`, action SET_OUTCOME), 5 scenarios; anchor before first effective date → NOT_APPLICABLE; requested an exclusion-category fact for cl. 14(5) · next: A15
 - 2026-10-19 · A15 obligation files done · IO-CB-2026-14-3-4-closure (PROHIBITION) and -review (check obligations, outputs + SENIOR_REVIEW action); clause split and 30 Jun date flagged as Q16; facts requested; scenarios split into a new item · next: A17
+- 2026-10-19 · A17 done · IO-CB-2026-14-9 (30 calendar days, inferred, no pause), action SEND_FINAL_DECISION, 4 scenarios incl. combined A13+A17 and INFO_REQUESTED-does-not-pause · next: A18

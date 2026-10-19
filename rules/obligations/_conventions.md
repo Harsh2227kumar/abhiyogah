@@ -91,6 +91,7 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
 |---|---|---|
 | `REFER_TO_IO` | A13 (both limbs) | Send the complaint to the Internal Ombudsman |
 | `SENIOR_REVIEW` | A15 review limb | Have the outcome reviewed at a senior level before the IO referral (while not yet referred) |
+| `SEND_FINAL_DECISION` | A17 | Communicate the bank's final decision to the complainant |
 | `SET_OUTCOME` | A14 | Record one of the three cl. 14(2) outcomes for a complaint already replied to |
 
 ## Scenario inputs that are not regulatory values

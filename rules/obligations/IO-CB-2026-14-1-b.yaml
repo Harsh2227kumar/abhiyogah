@@ -32,3 +32,4 @@ tests:
   - io_tat_minus_10_upi.yaml
   - io_tat_minus_10_breach.yaml
   - io_not_applicable_below_outlet_threshold.yaml
+  - final_decision_on_time_with_io.yaml

@@ -1,0 +1,34 @@
+name: final_decision_breached
+description: >
+  No final decision 31 days after receipt, evaluated just after midnight IST; the clock is breached
+  by one day and the decision must still be sent.
+obligation_ids: [IO-CB-2026-14-9]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(9) (report Table A, row A17, verification P): final decision
+  to the complainant within 30 days of the bank's receipt. Report formula:
+  final_reply_due = bank_receipt + 30d. Day basis: calendar, inferred (Q4). No pause (Q3).
+  bank_receipt_date = 2026-08-03
+  due_date = 2026-08-03 + 30 days = 2026-09-02
+  as_of 2026-09-03T00:10+05:30 = 2026-09-02T18:40Z; the IST date 2026-09-03 > 2026-09-02: BREACHED.
+  days_late = 2026-09-03 - 2026-09-02 = 1. Required action: SEND_FINAL_DECISION.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: ACKNOWLEDGED
+    occurred_at: 2026-08-03T11:05:00+05:30
+as_of: 2026-09-03T00:10:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-9: BREACHED
+  deadlines:
+    - {obligation_id: IO-CB-2026-14-9, due_date: 2026-09-02, result: BREACHED}
+  breaches:
+    - {obligation_id: IO-CB-2026-14-9, due_date: 2026-09-02, days_late: 1}
+  compensation_paise: {}
+  required_actions:
+    - {obligation_id: IO-CB-2026-14-9, action: SEND_FINAL_DECISION}
