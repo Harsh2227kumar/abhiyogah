@@ -13,7 +13,7 @@
 
 ## Checklist
 
-- [ ] `pyproject.toml` for Python 3.12 with uv: package `abhiyogah` under `src/`. Runtime deps: pydantic>=2,
+- [x] `pyproject.toml` for Python 3.12 with uv: package `abhiyogah` under `src/`. Runtime deps: pydantic>=2,
       pyyaml, holidays, fastapi, uvicorn, sqlalchemy>=2, psycopg[binary]>=3, alembic, procrastinate,
       httpx, structlog. Dev deps: pytest, hypothesis, mypy, ruff, import-linter, types-PyYAML. Ruff and
       mypy (`strict = true`) configured in `pyproject.toml`.
@@ -72,3 +72,4 @@ docstrings; other streams can start without editing `domain/` beyond small addit
 _(other streams add requests for changes to owned paths here)_
 
 ## Log
+- 2026-10-19 · item 1 done · pyproject.toml (uv, py3.12, ruff + mypy strict), uv.lock, package root, tests/conftest.py with db skip · next: item 2 subpackages
