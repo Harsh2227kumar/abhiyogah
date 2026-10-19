@@ -23,7 +23,7 @@
 - [x] Time-travel control (admin) that sets `as_of` for demos.
 - [x] Indian formats throughout: ₹ with lakh/crore grouping, DD-MM-YYYY, IST.
 - [x] Switch to the platform API: generate the client from `openapi.json` (`OPENAPI_SPEC=../openapi.json pnpm openapi`), point the drift test at it, adapt `lib/api` to the real endpoints, delete `console/mock/`, and click through the plan's end-to-end demo against a local API. Needs 04-platform.
-- [ ] Write `STREAM COMPLETE`.
+- [x] Write `STREAM COMPLETE`.
 
 ## Definition of done
 The plan's end-to-end demo can be clicked through in the console against a local API.
@@ -42,3 +42,5 @@ The plan's end-to-end demo can be clicked through in the console against a local
 - 2026-10-19 · added item 9 (switch to the real API and click through the demo) so the definition of done is tracked · BLOCKED: 04-platform has not published `openapi.json` or a local API yet; everything else is done and runs on the mock
 - 2026-10-19 · resumed after PR #24 merged; merged `main` (#23 domain additions) and regenerated the provisional OpenAPI doc, client types and mock fixtures to match (`pnpm mock`) · BLOCKED: item 9 still needs 04-platform's `openapi.json` and a local API
 - 2026-10-19 · item 9 done · client generated from `openapi.json`, drift test points at it; `lib/api` calls the real endpoints with `X-API-Key` (ABHIYOGAH_API_URL/KEY), complaint view uses the API's deadlines/breaches/actions (incl. workflow gates) and review tasks, decision trace flags when the live result differs from the stored record; `console/mock/` deleted; tests replay responses recorded from a live API seeded with synthetic complaints (`scripts/seed-demo.mjs`, `scripts/record-fixtures.mjs`); demo clicked through in Chromium against uvicorn (in-memory store, DRAFT rule pack): IO 20-day clock Running → +3 days → Breached, REFER_TO_IO, trace with verified chain · next: item 10
+- 2026-10-19 · item 10 done · every item checked; final PR into `main` closes #7
+STREAM COMPLETE
