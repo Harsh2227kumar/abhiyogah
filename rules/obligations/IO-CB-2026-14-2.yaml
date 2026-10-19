@@ -3,9 +3,10 @@
 # (rules/obligations/_conventions.md): when the final reply goes out, the outcome must already be
 # recorded. The Outcome enum already refuses any fourth value, so the check is that one of the three
 # was set on or before the final reply.
-# Out-of-purview complaints under cl. 14(5)(c)-(e) are exempt. ComplaintFacts has no fact for that
-# yet (requested in tasks/02-rule-pack.md), so the exemption is not applied: such a complaint is
-# flagged and needs human review.
+# Out-of-purview complaints under cl. 14(5)(c)-(e) are exempt. The exclusion_category fact exists,
+# but the condition grammar cannot say "unknown, or not in [14_5_c, 14_5_d, 14_5_e]" (a clause on an
+# unknown fact is false), so the exemption is not applied yet: an exempt complaint is flagged and
+# needs human review (request in tasks/02-rule-pack.md).
 # The parameter is dated from the compliance date and resolved at final_reply_date, so replies sent
 # before 30 Jun 2026 are NOT_APPLICABLE.
 obligation_id: IO-CB-2026-14-2

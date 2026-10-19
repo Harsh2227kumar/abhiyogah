@@ -4,8 +4,8 @@
 # address. Which element sits in cl. 14(11) and which in 14(12) is not in the report, so both are cited.
 # A checklist obligation consumed by the reply QA gate: parameters list the element codes, nothing
 # else. The CRPC address text itself is not in the report (Q17), so QA checks presence, not wording.
-# Per-complaint evaluation needs the facts reply_elements and io_upheld (requested in
-# tasks/02-rule-pack.md, issue #20). LLM QA only perceives which elements a draft contains; whether
+# Per-complaint evaluation uses the facts reply_elements and io_upheld (from the IO_DECIDED
+# payload). LLM QA only perceives which elements a draft contains; whether
 # the reply complies is decided here.
 obligation_id: IO-CB-2026-14-11-12
 deontic: OBLIGATION

@@ -21,9 +21,6 @@ from abhiyogah.registry.loader import load_registry
 
 RULES = Path(__file__).parents[2] / "rules"
 SCENARIOS = sorted(p for p in (RULES / "scenarios").glob("*.yaml") if not p.name.startswith("_"))
-# DETERMINED is requested as a DecisionResult member (tasks/02-rule-pack.md, Requests);
-# accept it here until the domain adds it.
-DETERMINED = "DETERMINED"
 WITH_DEADLINE = {
     DecisionResult.RUNNING,
     DecisionResult.STOPPED_ON_TIME,
@@ -70,9 +67,7 @@ def test_scenario_is_consistent(path: Path) -> None:
     assert as_of.tzinfo is not None
     expect = spec["expect"]
     ids = spec["obligation_ids"]
-    results = {
-        oid: r if r == DETERMINED else DecisionResult(r) for oid, r in expect["results"].items()
-    }
+    results = {oid: DecisionResult(r) for oid, r in expect["results"].items()}
     assert set(results) == set(ids), "expect.results must cover every obligation_id"
 
     deadlines = {d["obligation_id"]: d for d in expect.get("deadlines") or []}
@@ -96,7 +91,7 @@ def test_scenario_is_consistent(path: Path) -> None:
             assert b["days_late"] == (ist_date(as_of) - b["due_date"]).days
 
     outputs = expect.get("outputs") or {}
-    assert set(outputs) >= {oid for oid, r in results.items() if r == DETERMINED}
+    assert set(outputs) >= {oid for oid, r in results.items() if r is DecisionResult.DETERMINED}
     assert set(outputs) <= set(ids)
     assert all(isinstance(v, dict) and v for v in outputs.values())
 

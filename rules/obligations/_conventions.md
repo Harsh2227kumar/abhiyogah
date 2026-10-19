@@ -16,6 +16,7 @@ stream implements these as the "small set of Python clock and condition building
 | `<fact> in [A, B]` | the fact is known and its value is one of the listed values |
 | `<fact> is set` | the fact is known |
 | `<fact> is not set` | the fact is unknown |
+| `<fact> not in [A, B]` | the fact is known and its value is not in the list (unknown → false) |
 
 A fact the condition needs that is unknown makes an `in` clause false; it never defaults to a value.
 Each clause is one `ConditionTrace` entry in the decision record.
@@ -24,9 +25,6 @@ Limbs of one clause that override each other (A13: 20 days vs TAT − 10 days) u
 conditions (`external_tat_days is set` / `is not set`) **and** list the override in `overridden_by`, so
 exactly one limb produces a deadline and the trace still names the override.
 
-Facts the rule pack needs that `ComplaintFacts` does not have yet are requested in issue #20
-(`issue_type`, `liability_fault`, the A15 and A18 facts, the cl. 14(5) exclusion category). Scenarios already set
-them in payloads; until they exist those payload keys are ignored by folding.
 
 ## Validity and anchor dates
 
@@ -78,8 +76,7 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
 ## Results, outputs and required actions
 
 - Obligations without a clock (the scheme router, classifications, checklists) end in
-  `DETERMINED` when they produce an output. `DETERMINED` is not yet a `DecisionResult` member; it is
-  requested under **Requests** in `tasks/02-rule-pack.md`.
+  `DETERMINED` when they produce an output.
 - A scenario's `expect.outputs` maps an obligation ID to the values it determined, by output name:
 
   | Obligation | Output | Values |

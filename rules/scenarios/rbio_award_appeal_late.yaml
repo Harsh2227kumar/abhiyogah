@@ -27,6 +27,7 @@ events:
     occurred_at: 2026-09-22T11:00:00+05:30
   - type: APPEAL_FILED
     occurred_at: 2026-10-25T15:00:00+05:30
+    payload: {appellant: BANK}
 as_of: 2026-10-26T12:00:00+05:30
 expect:
   results:

@@ -1,8 +1,9 @@
 # A8 (report Table A row A8): the complainant may appeal within 30 days of receiving the award, plus
 # up to 30 more days the Appellate Authority may allow. A PERMISSION of the complainant: never a bank
 # breach. The extra 30 days are discretionary and have no event, so only the base 30 days are encoded
-# (Q18). AWARD_RECEIVED stands in for the complainant's receipt. APPEAL_FILED does not yet say who
-# appealed, so a bank appeal would also stop this clock (Q18; fact requested in issue #20).
+# (Q18). AWARD_RECEIVED stands in for the complainant's receipt. APPEAL_FILED carries the appellant
+# fact, but a clock stop cannot yet be filtered by a fact, so a bank appeal would also stop this
+# clock (Q18).
 # "Days" read as calendar (Q4).
 obligation_id: RBIOS-2026-17
 deontic: PERMISSION

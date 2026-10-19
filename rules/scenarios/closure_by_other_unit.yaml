@@ -6,7 +6,7 @@ hand_check: |
   Source: IO Directions 2026 cl. 14(3)-(4) (report Table A, row A15, verification P; limb mapping
   Q16): a complaint is not closed by the branch/unit/touch point that handled it. Check obligation at
   FINAL_REPLY_SENT: closed_by_other_unit = closing_unit != handling_unit. Unit codes are synthetic.
-  handling_unit and closing_unit are facts requested in issue #20.
+  handling_unit and closing_unit are ComplaintFacts facts.
   handling_unit BR-0412, closing_unit GRC-CENTRAL: different, so closed_by_other_unit = true.
 entity_profile:
   entity_type: COMMERCIAL_BANK

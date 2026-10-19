@@ -6,8 +6,8 @@ hand_check: |
   Source: IO Directions 2026 cl. 14(3)-(4) (report Table A, row A15, verification P; limb mapping
   and "fairly senior" Q16): a partially resolved or wholly rejected complaint is reviewed at a senior
   level before it goes to the IO. Check obligation: senior_reviewed_before_io = senior_review_date set
-  and <= io_referred_date (if referred). senior_review_date is a fact requested in issue #20; until the
-  SENIOR_REVIEWED event exists it arrives on a HUMAN FACTS_RECORDED event.
+  and <= io_referred_date (if referred). senior_review_date is set by the
+  SENIOR_REVIEWED event (business event, HUMAN).
   No senior_review_date and IO_REFERRED on 2026-08-14: senior_reviewed_before_io = false.
   Already referred, so no SENIOR_REVIEW action; the record is the evidence.
 entity_profile:

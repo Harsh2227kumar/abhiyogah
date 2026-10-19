@@ -53,16 +53,14 @@ hand calculation; the owner can review each obligation against its clause in und
 
 ## Requests
 
-Tracked together in issue #20.
+Issue #20 (DETERMINED, issue_type, liability_fault, A15/A18 facts, SENIOR_REVIEWED, appellant, AEPS split,
+cl. 14(5) exclusion fact) was delivered by PR #23.
 
-- `src/abhiyogah/domain/decision.py` (foundation/integrator): add `DecisionResult.DETERMINED` for obligations without a clock that produce an output (A1 scheme, A14/A15/A18 checks, B5 tier). Scenarios already use it; `tests/registry/test_scenario_files.py` accepts it until it exists. See `rules/obligations/_conventions.md`.
-- `src/abhiyogah/domain/complaint.py` (foundation/integrator): add a `ComplaintFacts` fact for the IO cl. 14(5) exclusion category (for example `exclusion_category: Fact[str]` with values `14_5_a` … `14_5_e`). Without it, A14 cannot exempt out-of-purview complaints (cl. 14(5)(c)–(e)) and A16 cannot be encoded.
-- `src/abhiyogah/domain/` (foundation/integrator), for A15: facts `handling_unit: Fact[str]` and `closing_unit: Fact[str]` (set from payloads), and an event `SENIOR_REVIEWED` that sets `senior_review_date: Fact[date]`. The A15 scenarios wait on these.
-- `src/abhiyogah/domain/` (foundation/integrator), for A18: facts `reply_elements: Fact[list[str]]` (element codes found in the sent reply, from reply QA or a human) and `io_upheld: Fact[bool]` (from the `IO_DECIDED` payload). The A18 scenarios wait on these.
-- `src/abhiyogah/domain/` (foundation/integrator), for B1–B7: a fact `issue_type` (values `FAILED_TRANSACTION`, `UNAUTHORISED_TRANSACTION`, open to more) so failed-transaction and limited-liability rules do not both trigger on every transaction complaint; and split `Channel.AEPS` into `AEPS_MERCHANT` (T+5, B1) and `AEPS_BENEFICIARY` (T+1, B2), since the annex has two AePS rows.
-- `issue_type` also needs `FRAUDULENT_TRANSACTION` for B10 (other fraud types under the 1 Jan 2027 regime).
-- `src/abhiyogah/domain/` (foundation/integrator), for A8: an `appellant` fact (`BANK`/`COMPLAINANT`) on `APPEAL_FILED`, or separate events, so a bank appeal does not stop the complainant's appeal clock (Q18).
-- `src/abhiyogah/domain/` (foundation/integrator), for B5: a fact `liability_fault` (values `BANK`, `THIRD_PARTY`, `CUSTOMER`), set by a human (never by an LLM) on the limited-liability case.
+- `src/abhiyogah/evaluator/` (engine): A14 needs a condition meaning "exclusion_category is unknown, or
+  not in [14_5_c, 14_5_d, 14_5_e]" to exempt out-of-purview complaints (IO cl. 14(5)). The grammar has
+  no `or`, and a clause on an unknown fact is false. Until then the exemption is not applied.
+- `src/abhiyogah/evaluator/` (engine): A8's clock should stop only on an `APPEAL_FILED` whose `appellant`
+  is `COMPLAINANT` (and A7's on one whose appellant is `BANK`); clock stops cannot be filtered by a fact.
 
 ## Log
 - 2026-10-19 · item 1 done · registry/loader.py + errors.py: load rules/obligations/*.yaml, duplicate ID is an error; tests/registry/test_loader.py · next: registry/resolve.py
@@ -86,4 +84,5 @@ Tracked together in issue #20.
 - 2026-10-19 · open-questions done · every Q row now lists the obligation IDs it affects; registry linter checks each parameter's open_question exists and names its obligation · next: A15 and A18 scenarios (written against the facts requested in #20, like the B-table scenarios)
 - 2026-10-19 · A15 + A18 scenarios done · 3 per A15 limb (senior review via HUMAN FACTS_RECORDED until SENIOR_REVIEWED exists), 4 for A18; like the B-table, they rely on facts requested in #20 · next: final PR update, STREAM COMPLETE
 - 2026-10-19 · stream done · 20 obligations (19 DRAFT, B10 FUTURE_DATED), 71 scenarios, linter clean; open dependencies for the engine runner: domain request #20; owner decisions: Q14–Q18 (#15, #17, #19, #21, #22)
+- 2026-10-19 · follow-up after #23 · merged main; AEPS scenario split into AEPS_MERCHANT (B1) / AEPS_BENEFICIARY (B2); DETERMINED placeholder dropped; A15 scenarios use SENIOR_REVIEWED; appellant set on APPEAL_FILED; requests left for the engine (A14 exemption condition, appeal stop by appellant); no regulatory value changed
 STREAM COMPLETE

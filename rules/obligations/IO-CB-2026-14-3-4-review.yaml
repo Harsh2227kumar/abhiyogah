@@ -3,7 +3,7 @@
 # and the 30 Jun 2026 date: see IO-CB-2026-14-3-4-closure and Q16. "Fairly senior" is not defined
 # in the report; the engine only checks that a senior review was recorded, not the reviewer's rank.
 # Check obligation: senior_review_date is set and is on or before io_referred_date.
-# Needs the fact senior_review_date / event SENIOR_REVIEWED (requested in tasks/02-rule-pack.md).
+# Uses senior_review_date, set by the SENIOR_REVIEWED event.
 obligation_id: IO-CB-2026-14-3-4-review
 deontic: OBLIGATION
 subject: bank

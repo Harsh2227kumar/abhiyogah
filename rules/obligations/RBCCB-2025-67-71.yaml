@@ -8,7 +8,7 @@
 # Working days follow the home branch's schedule and exclude the day the communication was received
 # (para 71): basis WORKING, EXPLICIT. The clock here only counts delay_wd; it sets no due date.
 # A determination, not a deadline: result DETERMINED with outputs (rules/obligations/_conventions.md).
-# The fault attribution is a human finding (fact liability_fault, requested in issue #20); an LLM
+# The fault attribution is a human finding (fact liability_fault, HUMAN events only); an LLM
 # never decides it (CLAUDE.md hard rule 4). Customer-negligence liability is outside row B5 and not
 # encoded: liability_fault CUSTOMER does not trigger this rule.
 obligation_id: RBCCB-2025-67-71

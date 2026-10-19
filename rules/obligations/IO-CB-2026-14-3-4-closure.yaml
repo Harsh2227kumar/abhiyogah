@@ -4,8 +4,8 @@
 # and so which one has the 30 Jun 2026 date, is not in the report (Q16). Both A15 limbs therefore
 # cite "14(3)-(4)" and are valid from the Directions' date.
 # Check obligation: at FINAL_REPLY_SENT, closing_unit must differ from handling_unit.
-# Needs the facts handling_unit and closing_unit (requested in tasks/02-rule-pack.md); until then
-# the result is INSUFFICIENT_FACTS. The SOP limb is a governance duty with no per-complaint check.
+# Uses the facts handling_unit and closing_unit; if either is unknown the result is
+# INSUFFICIENT_FACTS. The SOP limb is a governance duty with no per-complaint check.
 obligation_id: IO-CB-2026-14-3-4-closure
 deontic: PROHIBITION
 subject: bank
