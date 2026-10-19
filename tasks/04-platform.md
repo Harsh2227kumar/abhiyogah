@@ -17,7 +17,7 @@
 - [x] `verify_chain(records)` that pinpoints the first broken link; tests that tamper with a record.
 
 ### Workflow (pure)
-- [ ] Three-state outcome gate (A14): closing a complaint requires one of the three outcomes.
+- [x] Three-state outcome gate (A14): closing a complaint requires one of the three outcomes.
 - [ ] No same-unit closure and senior review before IO (A15): `can_close(complaint, actor)` with reasons.
 - [ ] IO auto-escalation (A13): a PARTIALLY_RESOLVED / WHOLLY_REJECTED outcome produces a required
       `IO_REFERRED` action with the evaluator's deadline. Exclusion routing (A16) as data, not code branches.
@@ -47,7 +47,10 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 
 ## Requests
 
+- docs/open-questions.md owner: add the cl. 14(5)(c)-(e) IO-routing question (#26) as the next Q; the workflow routes those limbs to human review until it is answered.
+
 ## Log
 
 - 2026-10-19 · item 1 done · ledger.chain: canonical_json, record_hash, seal_chain, chain_head on top of domain DecisionRecord helpers · next: verify_chain pinpointing the first broken link
 - 2026-10-19 · item 2 done · ledger.verify_chain returns ChainStatus (verified, length, broken_at, reason, head); tamper/remove/reorder/unsealed tests + hypothesis · next: three-state outcome gate (A14)
+- 2026-10-19 · item 3 done · workflow.outcome_gate + A16 exclusion routing table (c-e exempt, routed to human review, #26) · next: can_close with same-unit and senior-review checks (A15)
