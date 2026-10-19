@@ -36,6 +36,9 @@
 - [ ] Clockless obligations end `DETERMINED` with `outputs` (A1 scheme, A2 `escalation_open`, A3
       `filed_in_time`, A14, A15). Needs `DecisionResult.DETERMINED` and an outputs field from the domain
       owner (issue #20).
+- [x] Scenario runner harness `tests/scenarios/runner.py` (events, profile, overrides closure, exact
+      comparison of results, deadlines, breaches, paise, actions; outputs reported as unsupported),
+      unit-tested against the example scenario.
 - [ ] Scenario runner `tests/scenarios/test_scenarios.py`: loads every `rules/scenarios/*.yaml`, runs the
       evaluator, compares deadlines, breaches and paise exactly. Wired into `make rules`.
 - [x] Replay test: evaluating the same events at the same `as_of` twice yields byte-identical records.
@@ -71,3 +74,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · alignment item done · evaluator follows rules/_conventions.md: is set/is not set, unknown fact → clause false, validity at as_of, base_days/io_review_days/filing_window (as_of stands in for an unknown stop-fact anchor), PERMISSION never breaches or acts · next: DETERMINED/outputs blocked on #20; doing replay + time-travel tests while rules PR #16 is open
 - 2026-10-19 · replay item done · tests/evaluator/test_replay.py: identical canonical JSON and sealed hashes across runs and shuffled inputs; later-recorded events don't change a past replay. Also fixed days_remaining on a non-working day after a working-day due date (found by hypothesis) · next: time-travel test
 - 2026-10-19 · time-travel item done · tests/evaluator/test_time_travel.py: days 5/19/20 RUNNING, day 21 BREACHED, IST midnight boundary · next: scenario runner, waits on rules PR #16 (obligations not on main yet); DETERMINED/outputs waits on #20
+- 2026-10-19 · runner harness done · tests/scenarios/runner.py + test_runner.py. Trial run on a local merge of rules (#16) + calendar (#14), not pushed: 12/26 scenarios pass, the other 14 only fail on DETERMINED/outputs (#20) · next: test_scenarios.py over rules/scenarios once #16 and #14 are on main
