@@ -1,0 +1,62 @@
+%PDF-1.4
+% SYNTHETIC fixture for Abhiyogah Regulatory Watch tests
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 5 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 312 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+72 760 Td
+(SYNTHETIC TEST PDF - not a real RBI document) Tj T*
+(RBI/2099-2100/903) Tj T*
+() Tj T*
+(1. This synthetic master direction exists only for offline tests.) Tj T*
+(It continues on a second line.) Tj T*
+() Tj T*
+(2. Customer service and complaint handling are mentioned here.) Tj T*
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 7 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 123 >>
+stream
+BT
+/F1 11 Tf
+14 TL
+72 760 Td
+(3. Paragraph three is on page two.) Tj T*
+() Tj T*
+(\(a\) A lettered sub-paragraph.) Tj T*
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000066 00000 n 
+0000000115 00000 n 
+0000000178 00000 n 
+0000000304 00000 n 
+0000000667 00000 n 
+0000000793 00000 n 
+0000000967 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R >>
+startxref
+1037
+%%EOF

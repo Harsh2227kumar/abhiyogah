@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SYNTHETIC fixture shaped like an RBI notifications feed; not a real RBI document. -->
+<rss version="2.0">
+  <channel>
+    <title>Synthetic RBI Notifications</title>
+    <link>https://www.rbi.org.in/</link>
+    <description>Synthetic feed for offline tests</description>
+    <item>
+      <title>Synthetic Directions on Internal Ombudsman – Amendment (TEST ONLY)</title>
+      <link>https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=990001</link>
+      <pubDate>Mon, 05 Jan 2099 18:30:00 +0530</pubDate>
+      <description>RBI/2099-2100/901 · synthetic test notification</description>
+    </item>
+    <item>
+      <title>Synthetic notification on currency chest timings (TEST ONLY)</title>
+      <link>https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=990002</link>
+      <pubDate>Tue, 06 Jan 2099 17:00:00 +0530</pubDate>
+      <description>RBI/2099-2100/902 · synthetic test notification</description>
+    </item>
+    <item>
+      <title>Item with an unparseable date (TEST ONLY)</title>
+      <link>https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=990003</link>
+      <pubDate>sometime soon</pubDate>
+    </item>
+  </channel>
+</rss>

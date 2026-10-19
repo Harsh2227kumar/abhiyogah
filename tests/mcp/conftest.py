@@ -17,6 +17,7 @@ from abhiyogah.worker.reevaluate import EngineContext
 from tests.api.conftest import KEYS, READER, WRITER, Clock
 from tests.api.test_end_to_end import CID, CTX, EVENTS, REJECTED
 from tests.evaluator.test_determinations import P, clockless
+from tests.regwatch.conftest import no_network  # noqa: F401 - autouse: MCP tests are offline too
 
 REPLY = clockless(
     "IO-CB-2026-14-11-12",
