@@ -14,7 +14,7 @@
       from config; refuse non-India regions unless explicitly allowed.
 - [x] PII masking before any model call: Presidio + custom recognisers for Aadhaar, PAN, account number,
       IFSC, UPI VPA, card number, mobile. Re-identification only inside the engine.
-- [ ] Triage: complaint vs query (high-recall gate; every "not a complaint" goes to human review), RBI
+- [x] Triage: complaint vs query (high-recall gate; every "not a complaint" goes to human review), RBI
       category, language, schema-constrained output with confidence.
 - [ ] Fact extraction: amount, UTR, transaction date T, channel, account type. Output becomes
       `ComplaintEvent`s with source LLM, model, prompt version and text span.
@@ -31,7 +31,10 @@
   Perception loads these lazily (`importlib`) and tests inject fakes, so nothing breaks without them.
 - `.env.example` (foundation/platform): add `LLM_MODEL=`, `LLM_REGION=` (India region, e.g. `ap-south-1`)
   and `LLM_ALLOW_NON_INDIA_REGION=false` next to the existing `LLM_*` placeholders.
+- `docs/open-questions.md` (rule pack): add the RBI complaint category list as the next Q (issue #35).
+  Until answered, triage categories come from configuration and default to none.
 
 ## Log
 - 2026-10-19 · item 1 done · `perception.gateway` (config, India-region check, LlmRequest/Response) + `perception.adapters` (FakeModel, Anthropic, Bedrock Converse, OpenAI-compatible; SDKs injected/lazy) · next: item 2 PII masking
 - 2026-10-19 · item 2 done · `perception.pii`: Aadhaar (Verhoeff), PAN, account (keyword), IFSC, VPA, card (Luhn), mobile, email, catch-all 9+ digits; UTR/RRN kept; `PiiVault` re-identifies in-process only; optional Presidio NER hook · next: item 3 triage
+- 2026-10-19 · item 3 done · `perception.triage`: schema-constrained answer (label, confidence, issue type, category, language, evidence span); gate keeps anything unsure or with a deficiency cue as a complaint; every NOT_A_COMPLAINT opens a review task; model failure → manual queue; categories configurable (#35) · next: item 4 fact extraction
