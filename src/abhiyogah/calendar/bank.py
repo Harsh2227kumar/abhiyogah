@@ -74,7 +74,7 @@ class HolidaysBankCalendar:
         return self._version
 
     def is_working_day(self, d: date, state: str) -> bool:
-        """Return True if banks in ``state`` are open on ``d`` (see the module docstring)."""
+        """Return True if banks in ``state`` are open on ``d`` (report row 19; para 71 schedule)."""
         _check_state(state)
         if is_bank_weekend(d):
             return False
