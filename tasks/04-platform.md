@@ -21,7 +21,7 @@
 - [x] No same-unit closure and senior review before IO (A15): `can_close(complaint, actor)` with reasons.
 - [x] IO auto-escalation (A13): a PARTIALLY_RESOLVED / WHOLLY_REJECTED outcome produces a required
       `IO_REFERRED` action with the evaluator's deadline. Exclusion routing (A16) as data, not code branches.
-- [ ] Every "not a complaint" or "no deficiency" decision from perception creates a human-review task.
+- [x] Every "not a complaint" or "no deficiency" decision from perception creates a human-review task.
 
 ### Storage
 - [ ] SQLAlchemy 2 models + Alembic migrations: `events` (append-only, occurred_at + recorded_at),
@@ -56,3 +56,4 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · item 3 done · workflow.outcome_gate + A16 exclusion routing table (c-e exempt, routed to human review, #26) · next: can_close with same-unit and senior-review checks (A15)
 - 2026-10-19 · item 4 done · workflow.can_close(facts, actor): outcome gate + same-unit + senior review before IO + IO decision for adverse outcomes, all reasons cited · next: IO auto-escalation required action (A13)
 - 2026-10-19 · item 5 done · workflow.io_escalation: REFER_TO_IO action with the evaluator's IO_REFERRED deadline; routing via EXCLUSION_ROUTES data · next: human-review tasks for perception 'not a complaint'/'no deficiency'
+- 2026-10-19 · item 6 done · workflow.review: PerceptionFinding → ReviewTask for NOT_A_COMPLAINT/NO_DEFICIENCY (any source), plus routing review for cl. 14(5)(c)-(e) adverse outcomes · next: SQLAlchemy models + Alembic migrations
