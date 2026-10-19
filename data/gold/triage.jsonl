@@ -1,0 +1,60 @@
+{"id": "SYN-EN-001", "language": "ENGLISH", "label": "COMPLAINT", "text": "I sent 2,500 by UPI yesterday, the amount was debited but the receiver never got it.", "synthetic": true}
+{"id": "SYN-EN-002", "language": "ENGLISH", "label": "COMPLAINT", "text": "ATM did not dispense cash but my account was debited 10,000. Please reverse it.", "synthetic": true}
+{"id": "SYN-EN-003", "language": "ENGLISH", "label": "COMPLAINT", "text": "There is a transaction of 4,999 on my card that I never made. I did not share any OTP.", "synthetic": true}
+{"id": "SYN-EN-004", "language": "ENGLISH", "label": "COMPLAINT", "text": "Your branch staff were rude and refused to accept my cash deposit for no reason.", "synthetic": true}
+{"id": "SYN-EN-005", "language": "ENGLISH", "label": "COMPLAINT", "text": "You charged me a minimum balance penalty even though I kept the balance all month.", "synthetic": true}
+{"id": "SYN-EN-006", "language": "ENGLISH", "label": "COMPLAINT", "text": "My IMPS transfer failed three days ago and the money is still not back in my account.", "synthetic": true}
+{"id": "SYN-EN-007", "language": "ENGLISH", "label": "COMPLAINT", "text": "I closed my loan last month but you still have not returned my property documents.", "synthetic": true}
+{"id": "SYN-EN-008", "language": "ENGLISH", "label": "COMPLAINT", "text": "The bank keeps calling me about a loan I never took. This is harassment.", "synthetic": true}
+{"id": "SYN-EN-009", "language": "ENGLISH", "label": "COMPLAINT", "text": "My cheque was returned saying signature mismatch, but the signature is correct. I lost the deal.", "synthetic": true}
+{"id": "SYN-EN-010", "language": "ENGLISH", "label": "COMPLAINT", "text": "Someone withdrew money from my account through AePS without my fingerprint.", "synthetic": true}
+{"id": "SYN-EN-011", "language": "ENGLISH", "label": "COMPLAINT", "text": "The merchant refund was processed ten days ago but I still don't see it.", "synthetic": true}
+{"id": "SYN-EN-012", "language": "ENGLISH", "label": "COMPLAINT", "text": "I have been waiting six weeks for my debit card replacement and nobody responds.", "synthetic": true}
+{"id": "SYN-EN-013", "language": "ENGLISH", "label": "QUERY", "text": "What is the interest rate on a one-year fixed deposit for senior citizens?", "synthetic": true}
+{"id": "SYN-EN-014", "language": "ENGLISH", "label": "QUERY", "text": "How do I link my mobile number to my savings account?", "synthetic": true}
+{"id": "SYN-EN-015", "language": "ENGLISH", "label": "QUERY", "text": "What are the branch timings on the second Saturday?", "synthetic": true}
+{"id": "SYN-EN-016", "language": "ENGLISH", "label": "QUERY", "text": "Is there any charge for NEFT transfers made through net banking?", "synthetic": true}
+{"id": "SYN-EN-017", "language": "ENGLISH", "label": "QUERY", "text": "Can I open a joint account with my mother online?", "synthetic": true}
+{"id": "SYN-EN-018", "language": "ENGLISH", "label": "REQUEST", "text": "Please send me a new cheque book to my registered address.", "synthetic": true}
+{"id": "SYN-EN-019", "language": "ENGLISH", "label": "REQUEST", "text": "I would like to update my email address on my account.", "synthetic": true}
+{"id": "SYN-EN-020", "language": "ENGLISH", "label": "REQUEST", "text": "Kindly issue an account statement for April to June.", "synthetic": true}
+{"id": "SYN-HI-001", "language": "HINDI", "label": "COMPLAINT", "text": "मैंने यूपीआई से 3000 रुपये भेजे, पैसे खाते से कट गए लेकिन सामने वाले को नहीं मिले।", "synthetic": true}
+{"id": "SYN-HI-002", "language": "HINDI", "label": "COMPLAINT", "text": "एटीएम से पैसे नहीं निकले पर मेरे खाते से 5000 रुपये कट गए।", "synthetic": true}
+{"id": "SYN-HI-003", "language": "HINDI", "label": "COMPLAINT", "text": "मेरे कार्ड से एक लेनदेन हुआ जो मैंने नहीं किया, मैंने किसी को ओटीपी नहीं बताया।", "synthetic": true}
+{"id": "SYN-HI-004", "language": "HINDI", "label": "COMPLAINT", "text": "शाखा के कर्मचारी ने बदतमीजी की और मेरा काम नहीं किया, मैं शिकायत दर्ज करना चाहता हूँ।", "synthetic": true}
+{"id": "SYN-HI-005", "language": "HINDI", "label": "COMPLAINT", "text": "बिना कारण मेरे खाते से जुर्माना काटा गया है, कृपया वापस करें।", "synthetic": true}
+{"id": "SYN-HI-006", "language": "HINDI", "label": "COMPLAINT", "text": "मेरा आईएमपीएस लेनदेन विफल हो गया और पैसा अभी तक वापस नहीं आया।", "synthetic": true}
+{"id": "SYN-HI-007", "language": "HINDI", "label": "COMPLAINT", "text": "लोन बंद हुए एक महीना हो गया लेकिन मेरे संपत्ति के कागज़ अभी तक वापस नहीं मिले।", "synthetic": true}
+{"id": "SYN-HI-008", "language": "HINDI", "label": "COMPLAINT", "text": "मेरे साथ धोखा हुआ है, किसी ने मेरे खाते से पैसे निकाल लिए।", "synthetic": true}
+{"id": "SYN-HI-009", "language": "HINDI", "label": "COMPLAINT", "text": "दुकानदार ने रिफंड कर दिया पर मेरे खाते में पैसे नहीं आए।", "synthetic": true}
+{"id": "SYN-HI-010", "language": "HINDI", "label": "COMPLAINT", "text": "छह हफ्ते से नया डेबिट कार्ड नहीं मिला और कोई जवाब नहीं देता।", "synthetic": true}
+{"id": "SYN-HI-011", "language": "HINDI", "label": "COMPLAINT", "text": "मेरा चेक गलत तरीके से लौटा दिया गया, हस्ताक्षर सही थे।", "synthetic": true}
+{"id": "SYN-HI-012", "language": "HINDI", "label": "COMPLAINT", "text": "बैंक वाले बार बार फोन करके परेशान करते हैं ऐसे लोन के लिए जो मैंने लिया ही नहीं।", "synthetic": true}
+{"id": "SYN-HI-013", "language": "HINDI", "label": "QUERY", "text": "वरिष्ठ नागरिकों के लिए एक साल की एफडी पर ब्याज दर क्या है?", "synthetic": true}
+{"id": "SYN-HI-014", "language": "HINDI", "label": "QUERY", "text": "अपना मोबाइल नंबर खाते से कैसे जोड़ें?", "synthetic": true}
+{"id": "SYN-HI-015", "language": "HINDI", "label": "QUERY", "text": "दूसरे शनिवार को शाखा कितने बजे खुलती है?", "synthetic": true}
+{"id": "SYN-HI-016", "language": "HINDI", "label": "QUERY", "text": "क्या नेट बैंकिंग से एनईएफटी करने पर कोई शुल्क लगता है?", "synthetic": true}
+{"id": "SYN-HI-017", "language": "HINDI", "label": "QUERY", "text": "क्या मैं अपनी माँ के साथ ऑनलाइन संयुक्त खाता खोल सकता हूँ?", "synthetic": true}
+{"id": "SYN-HI-018", "language": "HINDI", "label": "REQUEST", "text": "कृपया मेरे पते पर नई चेक बुक भेज दें।", "synthetic": true}
+{"id": "SYN-HI-019", "language": "HINDI", "label": "REQUEST", "text": "मुझे अपने खाते में ईमेल पता बदलना है।", "synthetic": true}
+{"id": "SYN-HI-020", "language": "HINDI", "label": "REQUEST", "text": "कृपया अप्रैल से जून का खाता विवरण भेजें।", "synthetic": true}
+{"id": "SYN-HG-001", "language": "HINGLISH", "label": "COMPLAINT", "text": "Maine UPI se 2000 bheje, paise kat gaye par receiver ko mile nahi.", "synthetic": true}
+{"id": "SYN-HG-002", "language": "HINGLISH", "label": "COMPLAINT", "text": "ATM se cash nahi nikla lekin account se 5000 debit ho gaya, wapas karo.", "synthetic": true}
+{"id": "SYN-HG-003", "language": "HINGLISH", "label": "COMPLAINT", "text": "Mere card pe ek transaction hua jo maine kiya hi nahi, OTP kisi ko nahi diya.", "synthetic": true}
+{"id": "SYN-HG-004", "language": "HINGLISH", "label": "COMPLAINT", "text": "Branch wale staff ne bahut badtameezi ki aur kaam nahi kiya.", "synthetic": true}
+{"id": "SYN-HG-005", "language": "HINGLISH", "label": "COMPLAINT", "text": "Bina wajah minimum balance ka penalty kaat liya, balance pura tha.", "synthetic": true}
+{"id": "SYN-HG-006", "language": "HINGLISH", "label": "COMPLAINT", "text": "IMPS fail ho gaya teen din pehle, paisa abhi tak wapas nahi aaya.", "synthetic": true}
+{"id": "SYN-HG-007", "language": "HINGLISH", "label": "COMPLAINT", "text": "Loan close ho gaya par property ke papers abhi tak nahi diye.", "synthetic": true}
+{"id": "SYN-HG-008", "language": "HINGLISH", "label": "COMPLAINT", "text": "Mere saath dhokha hua hai, kisi ne account se paise nikaal liye.", "synthetic": true}
+{"id": "SYN-HG-009", "language": "HINGLISH", "label": "COMPLAINT", "text": "Merchant ne refund kar diya bola, par mere account me nahi aaya.", "synthetic": true}
+{"id": "SYN-HG-010", "language": "HINGLISH", "label": "COMPLAINT", "text": "Chhe hafte ho gaye naya debit card nahi mila, koi reply nahi karta.", "synthetic": true}
+{"id": "SYN-HG-011", "language": "HINGLISH", "label": "COMPLAINT", "text": "Mera cheque galat tarike se return kar diya, signature sahi tha.", "synthetic": true}
+{"id": "SYN-HG-012", "language": "HINGLISH", "label": "COMPLAINT", "text": "Bank wale roz call karke pareshan karte hain ek loan ke liye jo maine liya hi nahi.", "synthetic": true}
+{"id": "SYN-HG-013", "language": "HINGLISH", "label": "QUERY", "text": "Senior citizen ke liye 1 saal ki FD ka interest rate kya hai?", "synthetic": true}
+{"id": "SYN-HG-014", "language": "HINGLISH", "label": "QUERY", "text": "Mobile number account se kaise link karein?", "synthetic": true}
+{"id": "SYN-HG-015", "language": "HINGLISH", "label": "QUERY", "text": "Second Saturday ko branch kitne baje khulti hai?", "synthetic": true}
+{"id": "SYN-HG-016", "language": "HINGLISH", "label": "QUERY", "text": "Net banking se NEFT karne pe koi charge lagta hai kya?", "synthetic": true}
+{"id": "SYN-HG-017", "language": "HINGLISH", "label": "QUERY", "text": "Kya main mummy ke saath online joint account khol sakta hoon?", "synthetic": true}
+{"id": "SYN-HG-018", "language": "HINGLISH", "label": "REQUEST", "text": "Mere address pe nayi cheque book bhej dijiye.", "synthetic": true}
+{"id": "SYN-HG-019", "language": "HINGLISH", "label": "REQUEST", "text": "Mujhe account me email address update karna hai.", "synthetic": true}
+{"id": "SYN-HG-020", "language": "HINGLISH", "label": "REQUEST", "text": "April se June ka statement bhej dijiye please.", "synthetic": true}
