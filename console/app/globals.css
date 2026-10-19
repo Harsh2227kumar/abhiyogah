@@ -1,0 +1,158 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #5f6368;
+  --border: #dadce0;
+  --accent: #1a56db;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --fg: #e8eaed;
+    --muted: #9aa0a6;
+    --border: #3c4043;
+    --accent: #8ab4f8;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+main {
+  padding: 16px 24px;
+  max-width: 1200px;
+}
+
+.topbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-weight: 700;
+}
+
+a {
+  color: var(--accent);
+}
+
+.topbar nav {
+  display: flex;
+  gap: 16px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.pill {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.legend {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+/* Deadline bands */
+.urgency-breached .pill { background: #fde2e1; color: #9b1c1c; }
+.urgency-today .pill { background: #feecdc; color: #8a2c0d; }
+.urgency-soon .pill { background: #fdf6b2; color: #723b13; }
+.urgency-week .pill { background: #e1effe; color: #1e429f; }
+.urgency-later .pill { background: #def7ec; color: #03543f; }
+.urgency-none .pill { color: var(--muted); }
+.urgency-breached td:first-child { box-shadow: inset 4px 0 #c81e1e; }
+.urgency-today td:first-child { box-shadow: inset 4px 0 #d03801; }
+.urgency-soon td:first-child { box-shadow: inset 4px 0 #c27803; }
+
+.muted { color: var(--muted); }
+.small { font-size: 0.85em; }
+h2 { margin-top: 28px; font-size: 1.15em; }
+
+.badge {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border: 1px solid currentColor;
+}
+.badge-human { color: #1e429f; }
+.badge-system { color: #4b5563; }
+.badge-llm { color: #9b1c1c; background: #fdf2f2; border-style: dashed; }
+
+.result { font-weight: 600; }
+.result-breached, .result-stopped_late { color: #c81e1e; }
+.result-running { color: #b45309; }
+.result-stopped_on_time { color: #057a55; }
+.result-insufficient_facts { color: #7e3af2; }
+.result-not_applicable, .result-not_triggered { color: var(--muted); font-weight: 400; }
+
+.chain-ok { color: #057a55; }
+.chain-broken { color: #c81e1e; font-weight: 700; }
+.breach { color: #9b1c1c; }
+
+.timeline { padding-left: 20px; }
+.timeline li { margin-bottom: 10px; }
+.payload { font-family: ui-monospace, monospace; font-size: 0.85em; }
+
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+.hash { word-break: break-all; font-size: 0.85em; }
+.trace { padding-left: 22px; }
+.trace .pass span:first-child { color: #057a55; }
+.trace .fail span:first-child { color: #c81e1e; }
+
+.grade { font-size: 0.85em; }
+.grade-weak { color: #9b1c1c; font-weight: 700; }
+.grade-primary { color: #057a55; }
+.status { font-size: 0.8em; font-weight: 700; padding: 1px 6px; border-radius: 4px; border: 1px solid currentColor; }
+.status-draft { color: #b45309; }
+.status-future_dated { color: #7e3af2; }
+.status-in_force { color: #057a55; }
+.status-superseded, .status-repealed_but_saved { color: var(--muted); }
+
+.rule { border: 1px solid var(--border); border-radius: 6px; padding: 4px 16px 12px; margin-bottom: 16px; }
+.rule-flagged { border-left: 5px solid #c27803; }
+.rule[data-verification="UNVERIFIED"], .rule[data-verification="CONFLICTING"] { border-left-color: #c81e1e; }
+.warnings { list-style: none; padding: 0; color: #9b1c1c; font-weight: 600; }
+.params { margin-top: 10px; font-size: 0.9em; }
+.nowrap { white-space: nowrap; }
+.params td { overflow-wrap: anywhere; }
+
+.topbar { flex-wrap: wrap; }
+.timetravel { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 0.9em; padding: 4px 8px; border-radius: 6px; }
+.timetravel-active { background: #fdf6b2; color: #723b13; }
+.timetravel-note { font-weight: 700; }
+.admin-tag { font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
