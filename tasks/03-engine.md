@@ -38,7 +38,7 @@
       codes (`REVERSE_TRANSACTION`, `SHADOW_CREDIT`, `SEND_FINAL_DECISION`, ...).
 - [x] Conditions support `or` and parentheses (`and` binds tighter), for the A14 cl. 14(5) exemption
       "exclusion_category is not set or exclusion_category not in [...]" (rules request).
-- [ ] Filtered clock stops: a `stop_conditions` parameter maps a stop event to a condition checked
+- [x] Filtered clock stops: a `stop_conditions` parameter maps a stop event to a condition checked
       against that event's own payload, so A8 stops only on `APPEAL_FILED` by the complainant and A7
       only on one by the bank (rules request; `ClockSpec.stop` itself stays a list of events).
 - [ ] Clockless obligations end `DETERMINED` with `outputs` (A1 scheme, A2 `escalation_open`, A3
@@ -87,3 +87,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · resume · merged main (#18 engine, #14 calendar); clocks now re-export calendar.protocol.BankCalendar and a clock test runs on the real bank calendar · still BLOCKED: test_scenarios.py on rules PR #16, DETERMINED/outputs on #20
 - 2026-10-19 · conventions item done · FUTURE_DATED never evaluated, tat_days_by_channel + follows_underlying_system, one action per obligation with convention codes. Local trial against rules branch: 40/72 scenarios pass; all 32 failures are DETERMINED/outputs (A1, A14, A15, A18, B5) · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16
 - 2026-10-19 · or-conditions item done · evaluator/conditions.py: recursive-descent grammar with `or`, `and` (tighter) and parentheses; every clause still traced · next: filtered clock stops
+- 2026-10-19 · filtered-stops item done · `stop_conditions` parameter: a stop event counts only if its own payload passes the condition; each candidate is traced · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16

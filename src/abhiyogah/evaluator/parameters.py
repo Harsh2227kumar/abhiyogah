@@ -20,6 +20,10 @@ clock's start date and ``TAT`` the ``external_tat_days`` fact.
 ``io_review_days``
     ``due = s + TAT - io_review_days`` (A13 cl. 14(1)(a), 10 days for IO review). Without a TAT the
     obligation is not triggered.
+Optionally, ``stop_conditions`` maps a stop event to a condition (``evaluator.conditions``)
+checked against that event's own payload, so only matching events stop the clock (A8 stops on an
+``APPEAL_FILED`` with ``appellant`` = ``COMPLAINANT``, A7 on one with ``BANK``).
+
 ``tat_days_by_channel``
     ``due = s + table[channel]`` (B1, B2). An unknown channel, a channel missing from the table or a
     channel listed in ``follows_underlying_system`` gives ``INSUFFICIENT_FACTS``.
@@ -31,6 +35,7 @@ from datetime import date
 from abhiyogah.domain.complaint import ComplaintFacts
 from abhiyogah.domain.decision import DecisionResult, ParameterUse
 from abhiyogah.domain.enums import DayBasis
+from abhiyogah.domain.events import EventType
 from abhiyogah.evaluator.errors import ParameterError
 from abhiyogah.registry.schema import Obligation, ParameterValue
 
@@ -38,16 +43,20 @@ __all__ = [
     "DURATION_PARAMETERS",
     "FILING_WINDOW",
     "PER_DAY_PARAMETER",
+    "STOP_CONDITIONS",
     "UNDERLYING_SYSTEM",
     "Duration",
     "DurationUndecided",
     "int_parameter",
     "parameter_at",
     "resolve_duration",
+    "stop_conditions_at",
 ]
 
 DURATION_PARAMETERS = ("max_days", "base_days", "io_review_days", "tat_days_by_channel")
 UNDERLYING_SYSTEM = "follows_underlying_system"
+STOP_CONDITIONS = "stop_conditions"
+"""Optional parameter: ``{STOP_EVENT: condition}``; that stop counts only if its payload passes."""
 FILING_WINDOW = "filing_window"
 
 PER_DAY_PARAMETER = "compensation_per_day_paise"
@@ -135,6 +144,33 @@ def _filing_window(obligation: Obligation, anchor: date) -> tuple[str, int, Para
         verification=pv.verification,
     )
     return unit, amount, use
+
+
+def stop_conditions_at(
+    obligation: Obligation, anchor: date
+) -> tuple[dict[EventType, str], ParameterUse] | None:
+    """The ``stop_conditions`` in force on ``anchor``: stop event -> condition on its payload."""
+    found = parameter_at(obligation, STOP_CONDITIONS, anchor)
+    if found is None:
+        return None
+    effective, pv = found
+    value = pv.value
+    stops = obligation.clock.stop if obligation.clock is not None else []
+    if not isinstance(value, dict) or not all(
+        isinstance(k, str) and k in stops and isinstance(v, str) for k, v in value.items()
+    ):
+        raise ParameterError(
+            f"{obligation.obligation_id}: {STOP_CONDITIONS} must map the clock's stop events to "
+            "condition strings"
+        )
+    use = ParameterUse(
+        name=STOP_CONDITIONS,
+        value=value,
+        effective_date=effective,
+        reference=pv.reference,
+        verification=pv.verification,
+    )
+    return {EventType(k): v for k, v in value.items() if isinstance(v, str)}, use
 
 
 def _channel_duration(

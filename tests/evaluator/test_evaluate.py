@@ -9,7 +9,7 @@ from abhiyogah.domain.decision import DecisionRecord, DecisionResult
 from abhiyogah.domain.enums import EntityType, FactSource
 from abhiyogah.domain.events import ComplaintEvent, EventType, Provenance
 from abhiyogah.domain.tz import IST
-from abhiyogah.evaluator import EntityProfile, EvaluationError, evaluate
+from abhiyogah.evaluator import EntityProfile, EvaluationError, ParameterError, evaluate
 from abhiyogah.registry.schema import Obligation
 from tests.clocks.fakes import FakeCalendar
 from tests.evaluator.builders import obligation, ordinary_limb, tat_limb
@@ -462,3 +462,90 @@ def test_one_action_for_alternative_stops() -> None:
     )
     rec = one([RECEIVED, REJECTED], date(2026, 8, 25), [ob])
     assert [a.action for a in rec.required_actions] == ["COMPLY_WITH_AWARD_OR_APPEAL"]
+
+
+def appeal_window(appellant: str) -> Obligation:
+    """An A8-shaped PERMISSION: 30 days from the award to the complainant's appeal (report A8)."""
+    p = {"reference": "RB-IOS 2026 cl. 17", "verification": "PRIMARY_TEXT_READ"}
+    return a2_like(
+        obligation_id="RBIOS-2026-17",
+        clause="17",
+        trigger={"event": "AWARD_RECEIVED"},
+        clock={
+            "start": "AWARD_RECEIVED",
+            "stop": "APPEAL_FILED",
+            "basis": "CALENDAR",
+            "basis_status": "INFERRED",
+        },
+        parameters={
+            "max_days": {"2026-07-01": {"value": 30, **p}},
+            "stop_conditions": {
+                "2026-07-01": {"value": {"APPEAL_FILED": f"appellant in [{appellant}]"}, **p}
+            },
+        },
+    )
+
+
+AWARD = ev(1, EventType.AWARD_RECEIVED, date(2026, 8, 3))
+
+
+def appeal(n: int, d: date, appellant: str) -> ComplaintEvent:
+    """An appeal filed on ``d`` by ``appellant``."""
+    return ev(n, EventType.APPEAL_FILED, d, {"appellant": appellant})
+
+
+def test_stop_filtered_by_payload() -> None:
+    """A bank appeal does not stop the complainant's window; the complainant's own appeal does."""
+    ob = appeal_window("COMPLAINANT")
+    by_bank = [AWARD, appeal(2, date(2026, 8, 10), "BANK")]
+    rec = one(by_bank, date(2026, 8, 20), [ob], oid="RBIOS-2026-17")
+    assert rec.result is DecisionResult.RUNNING
+    assert any("EV-2" in t.condition and not t.result for t in rec.condition_trace)
+    both = [*by_bank, appeal(3, date(2026, 8, 25), "COMPLAINANT")]
+    rec = one(both, date(2026, 9, 10), [ob], oid="RBIOS-2026-17")
+    assert rec.result is DecisionResult.STOPPED_ON_TIME
+    assert rec.deadline is not None
+    assert rec.deadline.stop_event is EventType.APPEAL_FILED
+    assert {p.name for p in rec.parameters} == {"max_days", "stop_conditions"}
+
+
+def test_filtered_stop_never_matched_lapses() -> None:
+    """With only a bank appeal, the complainant's 30-day window lapses after 2 Sep."""
+    rec = one(
+        [AWARD, appeal(2, date(2026, 8, 10), "BANK")],
+        date(2026, 9, 5),
+        [appeal_window("COMPLAINANT")],
+        oid="RBIOS-2026-17",
+    )
+    assert rec.result is DecisionResult.BREACHED
+    assert rec.breach is None  # a PERMISSION never breaches
+
+
+def test_stop_conditions_must_name_stop_events() -> None:
+    """A stop_conditions key that is not a stop event is a rule-pack error."""
+    ob = appeal_window("COMPLAINANT")
+    bad = ob.model_copy(
+        update={
+            "parameters": {
+                **ob.parameters,
+                "stop_conditions": obligation(
+                    parameters={
+                        "stop_conditions": {
+                            "2026-07-01": {
+                                "value": {"IO_REFERRED": "appellant is set"},
+                                "reference": "x",
+                                "verification": "UNVERIFIED",
+                            }
+                        }
+                    }
+                ).parameters["stop_conditions"],
+            }
+        }
+    )
+    with pytest.raises(ParameterError):
+        one(
+            [AWARD, appeal(2, date(2026, 8, 10), "BANK")],
+            date(2026, 9, 5),
+            [bad],
+            oid="RBIOS-2026-17",
+        )

@@ -35,7 +35,7 @@ they are enforced by the workflow gates, not by deadlines.
 import hashlib
 import json
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime
 
 from pydantic import JsonValue
@@ -75,9 +75,11 @@ from abhiyogah.evaluator.conditions import evaluate_condition, fact_spelling
 from abhiyogah.evaluator.errors import EvaluationError
 from abhiyogah.evaluator.parameters import (
     PER_DAY_PARAMETER,
+    STOP_CONDITIONS,
     DurationUndecided,
     int_parameter,
     resolve_duration,
+    stop_conditions_at,
 )
 from abhiyogah.evaluator.profile import EntityProfile
 from abhiyogah.registry.schema import Obligation
@@ -112,6 +114,8 @@ class _Draft:
     result: DecisionResult | None = None
     candidate: DeadlineCandidate | None = None
     per_day_paise: int | None = None
+    stop_event: EventType | None = None
+    """The event that stopped the clock, when a filtered stop chose it."""
 
     def check(self, condition: str, result: bool, detail: str = "") -> bool:
         """Add a trace line and return ``result``."""
@@ -267,7 +271,64 @@ def _build_candidate(
         d.check("clock facts are consistent", False, str(exc))
         d.stop(DecisionResult.INSUFFICIENT_FACTS)
         return
+    if STOP_CONDITIONS in ob.parameters:
+        ok, filtered = _filtered_stop(d, facts, events, anchor)
+        if not ok:
+            return
+        try:
+            clock = replace(clock, stop_date=filtered)
+        except ClockError as exc:
+            d.check("clock facts are consistent", False, str(exc))
+            d.stop(DecisionResult.INSUFFICIENT_FACTS)
+            return
     d.candidate = DeadlineCandidate(ob.obligation_id, clock, duration.rule)
+
+
+def _filtered_stop(
+    d: _Draft, facts: ComplaintFacts, events: Sequence[ComplaintEvent], anchor: date
+) -> tuple[bool, date | None]:
+    """The stop date when some stop events must pass a condition on their own payload.
+
+    Returns ``(False, None)`` and finishes the draft when no ``stop_conditions`` are in force;
+    otherwise ``(True, earliest qualifying stop)``, or ``(True, None)`` if nothing stopped it yet.
+    """
+    ob = d.obligation
+    spec = ob.clock
+    assert spec is not None  # noqa: S101 - only called for clocked obligations
+    found = stop_conditions_at(ob, anchor)
+    if found is None:
+        d.check(f"{STOP_CONDITIONS} in force", False, f"none on {anchor}")
+        d.stop(DecisionResult.NOT_APPLICABLE)
+        return False, None
+    conditions, use = found
+    d.parameters.append(use)
+    best: tuple[date, EventType] | None = None
+    for ev_type, fact_name in zip(spec.stop, stop_fact_names(spec), strict=True):
+        cond = conditions.get(ev_type)
+        if cond is None:
+            fact = _date_fact(facts, fact_name)
+            candidates = [] if fact is None else [fact.value]
+        else:
+            candidates = []
+            for e in sorted(events, key=lambda e: (e.occurred_at, e.event_id)):
+                if e.type is not ev_type:
+                    continue
+                own = fold_events(e.complaint_id, [e])
+                outcome = evaluate_condition(cond, own)
+                d.check(
+                    f"{e.event_id} {ev_type} stops the clock: {cond}",
+                    outcome.result,
+                    "; ".join(t.detail for t in outcome.trace),
+                )
+                if outcome.result:
+                    candidates.append(ist_date(e.occurred_at))
+        for when in candidates:
+            if best is None or when < best[0]:
+                best = (when, ev_type)
+    if best is None:
+        return True, None
+    d.stop_event = best[1]
+    return True, best[0]
 
 
 def _resolve(drafts: dict[str, _Draft], day: date) -> None:
@@ -325,7 +386,9 @@ def _finish(
     if start_type is None:
         raise EvaluationError(f"{ob.obligation_id}: cannot find the event behind the clock start")
     stop_type: EventType | None = spec.stop[0] if spec.stop else None
-    if stop is not None:
+    if stop is not None and d.stop_event is not None:
+        stop_type = d.stop_event
+    elif stop is not None:
         for ev, name in zip(spec.stop, stop_fact_names(spec), strict=True):
             f = _date_fact(facts, name)
             if f is not None and f.value == stop:
