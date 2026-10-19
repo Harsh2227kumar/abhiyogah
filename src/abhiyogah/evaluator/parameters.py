@@ -29,6 +29,7 @@ from abhiyogah.registry.schema import Obligation, ParameterValue
 
 __all__ = [
     "DURATION_PARAMETERS",
+    "PER_DAY_PARAMETER",
     "Duration",
     "DurationUndecided",
     "int_parameter",
@@ -37,6 +38,9 @@ __all__ = [
 ]
 
 DURATION_PARAMETERS = ("max_days", "min_days", "tat_minus_days")
+
+PER_DAY_PARAMETER = "compensation_per_day_paise"
+"""Optional parameter: paise owed per calendar day late (e.g. B1 ₹100/day = 10000)."""
 
 
 def parameter_at(

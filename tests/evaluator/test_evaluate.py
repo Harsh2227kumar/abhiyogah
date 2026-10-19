@@ -248,3 +248,51 @@ def test_working_day_clock_uses_profile_state() -> None:
     assert one([RECEIVED, REJECTED], date(2026, 8, 25), [ob], profile=stateless).result is (
         DecisionResult.INSUFFICIENT_FACTS
     )
+
+
+def failed_txn_obligation() -> Obligation:
+    """A B1-shaped obligation: UPI P2P T+1, ₹100/day (report Table B row B1)."""
+    p = {"reference": "RBI/2019-20/67 Annex", "verification": "PRIMARY_TEXT_READ"}
+    return obligation(
+        obligation_id="TAT-2019-UPI-P2P",
+        clause="Annex",
+        applies_to={"entity_type": "COMMERCIAL_BANK"},
+        trigger={"event": "FACTS_RECORDED", "condition": "channel == UPI_P2P"},
+        clock={
+            "start": "transaction_date_t",
+            "stop": "REVERSAL_POSTED",
+            "basis": "CALENDAR",
+            "basis_status": "EXPLICIT",
+        },
+        anchor="transaction_date_t",
+        valid_from="2019-10-15",
+        parameters={
+            "max_days": {"2019-10-15": {"value": 1, **p}},
+            "compensation_per_day_paise": {"2019-10-15": {"value": 10000, **p}},
+        },
+    )
+
+
+def test_failed_txn_compensation_through_evaluator() -> None:
+    """T 3 Aug, due 4 Aug, R 7 Aug: 3 days late, ₹300 = 30000 paise."""
+    facts = ev(
+        1,
+        EventType.FACTS_RECORDED,
+        date(2026, 8, 3),
+        {"transaction_date_t": "2026-08-03", "channel": "UPI_P2P"},
+    )
+    reversed_ = ev(2, EventType.REVERSAL_POSTED, date(2026, 8, 7))
+    rec = one(
+        [facts, reversed_], date(2026, 8, 20), [failed_txn_obligation()], oid="TAT-2019-UPI-P2P"
+    )
+    assert rec.result is DecisionResult.STOPPED_LATE
+    assert rec.deadline is not None
+    assert rec.deadline.start_event is EventType.FACTS_RECORDED
+    assert rec.compensation is not None
+    assert rec.compensation.amount_paise == 30000
+    assert {p.name for p in rec.parameters} == {"max_days", "compensation_per_day_paise"}
+    running = one([facts], date(2026, 8, 4), [failed_txn_obligation()], oid="TAT-2019-UPI-P2P")
+    assert running.compensation is None
+    accruing = one([facts], date(2026, 8, 6), [failed_txn_obligation()], oid="TAT-2019-UPI-P2P")
+    assert accruing.compensation is not None
+    assert accruing.compensation.amount_paise == 20000

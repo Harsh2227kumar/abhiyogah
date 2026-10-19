@@ -22,7 +22,7 @@
       correct anchor date (bank receipt, RBI receipt or T, as the obligation says), build the clock and
       record a per-condition trace. Pure function; no I/O; `as_of` is required.
 - [x] Breach forecasting: `forecast(…, horizon_days)` lists deadlines falling due within the horizon.
-- [ ] `calculators/failed_txn.py`: `100 × max(0, R − (T + n))` rupees in paise, payee/originator rule (B1).
+- [x] `calculators/failed_txn.py`: `100 × max(0, R − (T + n))` rupees in paise, payee/originator rule (B1).
 - [ ] `calculators/limited_liability.py`: tier from `delay_working_days` (0 / min(txn, cap) / board
       policy), caps by account type (B5); shadow credit due date (B6); determination date (B7).
 - [ ] `calculators/service_events.py`: the C-table formulas listed in the report (property documents
@@ -47,7 +47,8 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
   duration with exactly one parameter, `max_days` (fixed), `min_days` (max with `external_tat_days`,
   A2) or `tat_minus_days` (`external_tat_days` − n, A13 cl. 14(1)(a)). Trigger conditions use the
   grammar in `src/abhiyogah/evaluator/conditions.py` (`in [...]`, `not in`, `==`, `!=`, integer
-  `<`/`>`, `is known`/`is unknown`, joined by `and`).
+  `<`/`>`, `is known`/`is unknown`, joined by `and`). Per-day compensation (B1, C-table) is the
+  optional parameter `compensation_per_day_paise`, owed per calendar day late.
 - To the foundation/domain owner: a `DecisionResult` for "triggered, no deadline" (e.g. `TRIGGERED`)
   would let clockless obligations (A14, A18) report honestly; today they report `NOT_APPLICABLE`
   with an "obligation has a clock: false" trace line.
@@ -58,3 +59,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · item 2 done · clocks/overrides.py: resolve_overrides picks one deadline (replacement, conflict is an error) and traces each override · next: item 3 evaluator
 - 2026-10-19 · item 3 done · evaluator/: evaluate() with applicability, trigger condition grammar, anchor/validity, dated parameters (max_days/min_days/tat_minus_days), clock, overrides, breach and required actions, per-step trace · next: item 4 forecast
 - 2026-10-19 · item 4 done · evaluator/forecast.py: forecast()/forecast_records() list RUNNING deadlines due within a calendar-day horizon, soonest first · next: item 5 failed_txn calculator
+- 2026-10-19 · item 5 done · calculators/failed_txn.py (per_day x max(0, R-(T+n)), recipient rule) + per_day.py; evaluator applies compensation_per_day_paise to late clocks · next: item 6 limited liability

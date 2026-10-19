@@ -18,6 +18,8 @@ For each obligation, in this order, every step leaving a ``ConditionTrace`` line
    overriding obligation reports the deadline; the overridden one reports
    ``NOT_APPLICABLE`` with the reason.
 6. **State.** The clock state at ``as_of`` gives the result, any breach, and the required actions.
+7. **Compensation.** If the obligation has a ``compensation_per_day_paise`` parameter, a breached or
+   late clock owes that amount per calendar day late (``calculators.per_day_compensation``).
 
 Obligations without a clock stop after step 2 with ``NOT_APPLICABLE`` and a trace line saying so;
 they are enforced by the workflow gates, not by deadlines.
@@ -31,6 +33,7 @@ from datetime import date, datetime
 
 from pydantic import JsonValue
 
+from abhiyogah.calculators import per_day_compensation
 from abhiyogah.clocks import (
     BankCalendar,
     Clock,
@@ -48,6 +51,7 @@ from abhiyogah.clocks import (
 from abhiyogah.domain.complaint import ComplaintFacts, Fact, fold_events
 from abhiyogah.domain.decision import (
     Breach,
+    Compensation,
     ConditionTrace,
     Deadline,
     DecisionRecord,
@@ -62,7 +66,12 @@ from abhiyogah.domain.tz import ist_date
 from abhiyogah.evaluator.actions import action_code
 from abhiyogah.evaluator.conditions import evaluate_condition, fact_spelling
 from abhiyogah.evaluator.errors import EvaluationError
-from abhiyogah.evaluator.parameters import DurationUndecided, resolve_duration
+from abhiyogah.evaluator.parameters import (
+    PER_DAY_PARAMETER,
+    DurationUndecided,
+    int_parameter,
+    resolve_duration,
+)
 from abhiyogah.evaluator.profile import EntityProfile
 from abhiyogah.registry.schema import Obligation
 
@@ -95,6 +104,7 @@ class _Draft:
     anchor_date: date | None = None
     result: DecisionResult | None = None
     candidate: DeadlineCandidate | None = None
+    per_day_paise: int | None = None
 
     def check(self, condition: str, result: bool, detail: str = "") -> bool:
         """Add a trace line and return ``result``."""
@@ -211,6 +221,14 @@ def _build_candidate(
         d.stop(duration.result)
         return
     d.check("duration resolved", True, duration.rule)
+    if PER_DAY_PARAMETER in ob.parameters:
+        per_day = int_parameter(ob, PER_DAY_PARAMETER, anchor.value)
+        if per_day is None:
+            d.check(f"{PER_DAY_PARAMETER} in force", False, f"none on {anchor.value}")
+            d.stop(DecisionResult.NOT_APPLICABLE)
+            return
+        d.per_day_paise, use = per_day
+        d.parameters.append(use)
     pauses = pauses_from_events(spec.pause, events) if spec.pause is not None else []
     d.read(start_name, *stop_fact_names(spec))
     if facts.home_branch_state is not None:
@@ -267,10 +285,10 @@ def _event_type_of(fact: Fact[date] | None, events: Sequence[ComplaintEvent]) ->
 
 def _finish(
     d: _Draft, facts: ComplaintFacts, events: Sequence[ComplaintEvent], day: date
-) -> tuple[Deadline | None, Breach | None, list[RequiredAction]]:
-    """Step 6: state, deadline, breach and required actions."""
+) -> tuple[Deadline | None, Breach | None, list[RequiredAction], Compensation | None]:
+    """Steps 6 and 7: state, deadline, breach, required actions and compensation."""
     if d.candidate is None:
-        return None, None, []
+        return None, None, [], None
     ob = d.obligation
     spec = ob.clock
     assert spec is not None  # noqa: S101 - a candidate exists only for clocked obligations
@@ -324,7 +342,15 @@ def _finish(
             )
             for ev in spec.stop
         ]
-    return deadline, breach, actions
+    compensation = None
+    if d.per_day_paise is not None and breach is not None:
+        compensation = per_day_compensation(
+            d.per_day_paise,
+            breach.days_late,
+            f"{PER_DAY_PARAMETER} x days late past {d.candidate.rule}",
+            {"due_date": due.isoformat(), "end_date": (stop or day).isoformat()},
+        )
+    return deadline, breach, actions, compensation
 
 
 def _input_facts(d: _Draft, facts: ComplaintFacts) -> list[InputFact]:
@@ -387,7 +413,7 @@ def evaluate(
     records = []
     for oid in sorted(by_id):
         d = by_id[oid]
-        deadline, breach, actions = _finish(d, facts, seen, day)
+        deadline, breach, actions, compensation = _finish(d, facts, seen, day)
         assert d.result is not None  # noqa: S101 - every path sets a result
         records.append(
             DecisionRecord(
@@ -404,6 +430,7 @@ def evaluate(
                 calendar_version=calendar.version,
                 result=d.result,
                 breach=breach,
+                compensation=compensation,
                 required_actions=actions,
             )
         )
