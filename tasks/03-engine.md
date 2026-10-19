@@ -25,7 +25,7 @@
 - [x] `calculators/failed_txn.py`: `100 × max(0, R − (T + n))` rupees in paise, payee/originator rule (B1).
 - [x] `calculators/limited_liability.py`: tier from `delay_working_days` (0 / min(txn, cap) / board
       policy), caps by account type (B5); shadow credit due date (B6); determination date (B7).
-- [ ] `calculators/service_events.py`: the C-table formulas listed in the report (property documents
+- [x] `calculators/service_events.py`: the C-table formulas listed in the report (property documents
       ₹5,000/day, deceased deposits Bank Rate + 4%, card closure ₹500/day, credit information ₹100/day).
       Parameters always come from the registry, never from constants in code.
 - [ ] Scenario runner `tests/scenarios/test_scenarios.py`: loads every `rules/scenarios/*.yaml`, runs the
@@ -61,3 +61,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · item 4 done · evaluator/forecast.py: forecast()/forecast_records() list RUNNING deadlines due within a calendar-day horizon, soonest first · next: item 5 failed_txn calculator
 - 2026-10-19 · item 5 done · calculators/failed_txn.py (per_day x max(0, R-(T+n)), recipient rule) + per_day.py; evaluator applies compensation_per_day_paise to late clocks · next: item 6 limited liability
 - 2026-10-19 · item 6 done · calculators/limited_liability.py: delay_wd (receipt day excluded), ZERO/LIMITED/BOARD_POLICY/UNDETERMINED tiers with caps passed from the rule pack, shadow-credit and determination due dates · next: item 7 service events
+- 2026-10-19 · item 7 done · calculators/service_events.py: property documents, deceased locker, deceased deposit interest (Decimal, explicit rounding), card closure (explicit late-day basis), credit information; all amounts/rates passed in · next: item 8 scenario runner
