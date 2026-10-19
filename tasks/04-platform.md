@@ -30,7 +30,7 @@
 
 ### API (FastAPI)
 - [x] Role-based auth from day one (API keys with roles for v0; OIDC later). No unauthenticated write route.
-- [ ] `POST /complaints/{id}/events`, `GET /complaints/{id}` (facts, deadlines, breaches, actions),
+- [x] `POST /complaints/{id}/events`, `GET /complaints/{id}` (facts, deadlines, breaches, actions),
       `GET /complaints/{id}/decisions`, `GET /decisions/{id}/explain` (rendered from the stored record),
       `GET /obligations`, `GET /board/deadlines?within_days=`.
 - [ ] `as_of` query parameter on reads, admin-only, for time-travel demos.
@@ -60,3 +60,4 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · item 7 done · store: Store protocol, MemoryStore, SqlStore (advisory lock + unique chain link), Alembic 0001 with triggers refusing UPDATE/DELETE/TRUNCATE on events and decision_records; alembic check clean on local PG 16 · next: @pytest.mark.db tests
 - 2026-10-19 · item 8 done · db tests: store contract on Postgres, migrations==models, triggers refuse UPDATE/DELETE/TRUNCATE, review task closes only via event, no forks, 16 concurrent appends verify; 30 passed against local PG 16, skipped without DATABASE_URL · next: API auth (API keys with roles)
 - 2026-10-19 · item 9 done · api.auth: X-API-Key → Principal with ordered roles READER<WRITER<ADMIN, keys from ABHIYOGAH_API_KEYS held as SHA-256, constant-time lookup, require(role) dependency (route-wide 'no unauthenticated write' test lands with the routes) · next: API endpoints
+- 2026-10-19 · item 10 done · api.app create_app/app: POST events (validated by folding, idempotent, 409 on reuse, re-evaluates), findings→review tasks, GET complaints/complaint/closure/decisions/decision/explain/obligations/board/review-tasks; worker.reevaluate appends only material changes; ledger.render_explanation; every route but /health needs a key (tested) · next: as_of admin-only on every read
