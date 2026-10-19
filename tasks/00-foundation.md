@@ -42,7 +42,7 @@
       ALL_DOCUMENTS_RECEIVED, CLAIM_SETTLED, FULL_REPAYMENT, DOCUMENTS_RELEASED). Also a `ComplaintEvent`
       model: event_id, complaint_id, type, occurred_at (business time), recorded_at (system time),
       payload, source (`FactSource`), and provenance (actor, or model + prompt_version + span).
-- [ ] `domain/complaint.py`: an RBI-native fact model `ComplaintFacts` (bank_receipt_date,
+- [x] `domain/complaint.py`: an RBI-native fact model `ComplaintFacts` (bank_receipt_date,
       rbi_receipt_date, outcome, transaction_date_t, reversal_date_r, channel, account_type,
       amount_paise, home_branch_state, entity_type, external_tat_days, ...). Every field is optional;
       each value carries its provenance. Derive it by folding a list of `ComplaintEvent`.
@@ -80,3 +80,4 @@ _(other streams add requests for changes to owned paths here)_
 - 2026-10-19 · item 6 done · domain/enums.py: StrEnums with value == UPPER_SNAKE name (YAML uses COMMERCIAL_BANK etc.); B5 cap amounts left to the rule pack · next: item 7 domain/money.py
 - 2026-10-19 · item 7 done · domain/money.py: Paise NewType, rupees() (int only), format_inr() with lakh/crore grouping, hypothesis round-trip · next: item 8 domain/events.py
 - 2026-10-19 · item 8 done · domain/events.py: EventType (task list + BANK_COMMUNICATION_SENT, CUSTOMER_DISSATISFIED, FACTS_RECORDED), frozen ComplaintEvent; `source` lives in Provenance (event.source is a shortcut), LLM provenance requires model + prompt_version · next: item 9 domain/complaint.py
+- 2026-10-19 · item 9 done · domain/complaint.py: Fact[T] (value + provenance + event_id + recorded_at), ComplaintFacts (all optional, IST dates), fold_events(complaint_id, events, known_at) with documented correction rules; domain/tz.py (IST, ist_date) and domain/errors.py · next: item 10 domain/decision.py
