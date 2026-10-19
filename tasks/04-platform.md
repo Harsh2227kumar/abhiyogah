@@ -29,7 +29,7 @@
 - [x] `@pytest.mark.db` tests, skipped without `DATABASE_URL`.
 
 ### API (FastAPI)
-- [ ] Role-based auth from day one (API keys with roles for v0; OIDC later). No unauthenticated write route.
+- [x] Role-based auth from day one (API keys with roles for v0; OIDC later). No unauthenticated write route.
 - [ ] `POST /complaints/{id}/events`, `GET /complaints/{id}` (facts, deadlines, breaches, actions),
       `GET /complaints/{id}/decisions`, `GET /decisions/{id}/explain` (rendered from the stored record),
       `GET /obligations`, `GET /board/deadlines?within_days=`.
@@ -59,3 +59,4 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · item 6 done · workflow.review: PerceptionFinding → ReviewTask for NOT_A_COMPLAINT/NO_DEFICIENCY (any source), plus routing review for cl. 14(5)(c)-(e) adverse outcomes · next: SQLAlchemy models + Alembic migrations
 - 2026-10-19 · item 7 done · store: Store protocol, MemoryStore, SqlStore (advisory lock + unique chain link), Alembic 0001 with triggers refusing UPDATE/DELETE/TRUNCATE on events and decision_records; alembic check clean on local PG 16 · next: @pytest.mark.db tests
 - 2026-10-19 · item 8 done · db tests: store contract on Postgres, migrations==models, triggers refuse UPDATE/DELETE/TRUNCATE, review task closes only via event, no forks, 16 concurrent appends verify; 30 passed against local PG 16, skipped without DATABASE_URL · next: API auth (API keys with roles)
+- 2026-10-19 · item 9 done · api.auth: X-API-Key → Principal with ordered roles READER<WRITER<ADMIN, keys from ABHIYOGAH_API_KEYS held as SHA-256, constant-time lookup, require(role) dependency (route-wide 'no unauthenticated write' test lands with the routes) · next: API endpoints
