@@ -23,7 +23,7 @@
 - [x] Synthetic gold sets in `data/gold/` (English, Hindi, Hinglish), clearly synthetic; an eval script
       reporting recall per language. A TF-IDF baseline for comparison.
 - [x] Rules-only fallback when no LLM is configured: everything goes to the manual queue.
-- [ ] Write `STREAM COMPLETE`.
+- [x] Write `STREAM COMPLETE`.
 
 ## Requests
 
@@ -47,3 +47,5 @@
 - 2026-10-19 · item 5 done · `perception.reply_qa`: required codes from IO-CB-2026-14-11-12 params (+ IO codes when upheld or unknown), trigger condition via evaluator (fails closed on unknown facts); model only reports grounded element spans and risks; missing element or model failure blocks; risks overlapping required spans dropped; test fixture copied from PR #16 · next: item 6 gold sets + eval
 - 2026-10-19 · item 6 done · `data/gold/triage.jsonl` (20 synthetic each EN/HI/Hinglish, no identifiers) + `perception.eval`: recall/precision per language for cue rules, TF-IDF char-n-gram baseline (leave-one-out) and the LLM pipeline when configured · next: item 7 rules-only fallback
 - 2026-10-19 · item 7 done · `perception.service.PerceptionService`: from_config builds the gateway; with no provider it is rules-only (no model calls, untriaged text stays a complaint, ManualTask per step); model failures fall back per step · next: item 8 STREAM COMPLETE
+- 2026-10-19 · item 8 done · merged origin/main; all items checked; final PR #36 (Closes #8) · next: none
+STREAM COMPLETE
