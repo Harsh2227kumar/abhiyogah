@@ -33,4 +33,8 @@ valid_from: 2026-01-14
 valid_to: null
 status: DRAFT
 verification: PRIMARY_TEXT_READ
-tests: []
+tests:
+  - reply_content_complete_io_upheld.yaml
+  - reply_content_missing_elements.yaml
+  - reply_content_io_not_upheld.yaml
+  - reply_content_fully_resolved.yaml

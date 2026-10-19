@@ -31,10 +31,10 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 - [x] A13 IO auto-escalation: 20 days (14(1)(b)) and TAT − 10 days (14(1)(a))
 - [x] A14 three-state outcome (14(2))
 - [x] A15 no same-unit closure and senior review (14(3)–(4)): obligation files
-- [ ] A15 scenarios (≥ 2 per limb), once the A15 facts requested below exist in `ComplaintFacts`
+- [x] A15 scenarios (≥ 2 per limb), written against the A15 facts requested below (#20)
 - [x] A17 final decision within 30 days (14(9))
 - [x] A18 mandatory reply content (14(11)–(12)): as a checklist obligation consumed by reply QA
-- [ ] A18 scenarios (complete reply, missing elements, IO-upheld statement), once `reply_elements` and `io_upheld` exist
+- [x] A18 scenarios (complete reply, missing elements, IO-upheld statement), written against `reply_elements` and `io_upheld` (#20)
 - [x] B1 failed-transaction TATs: one parameter table covering every verified channel row, plus ₹100/day
 - [x] B2 illegible rows: encoded but `verification: UNVERIFIED`
 - [x] B5 limited liability tiers and account-type caps (paras 67–71, Tables 1–2)
@@ -84,3 +84,4 @@ Tracked together in issue #20.
 - 2026-10-19 · B10 done · RBCCB-2026-AMEND3-FRAUD FUTURE_DATED, draft figures UNVERIFIED (Q7), combination rule/basis/stop flagged; FUTURE_DATED never evaluated (convention); 2 scenarios · next: A5–A8
 - 2026-10-19 · A5–A8 done · RBIOS-2026-14-2 (15d), -15-4 (30d, complainant PERMISSION, award_lapsed), -15-5 (30d, comply or appeal), -17 (30d complainant appeal, appeal_in_time); no extensions encoded (Q18/#22); appellant fact requested; 9 scenarios · next: open-questions sweep
 - 2026-10-19 · open-questions done · every Q row now lists the obligation IDs it affects; registry linter checks each parameter's open_question exists and names its obligation · next: A15 and A18 scenarios (written against the facts requested in #20, like the B-table scenarios)
+- 2026-10-19 · A15 + A18 scenarios done · 3 per A15 limb (senior review via HUMAN FACTS_RECORDED until SENIOR_REVIEWED exists), 4 for A18; like the B-table, they rely on facts requested in #20 · next: final PR update, STREAM COMPLETE

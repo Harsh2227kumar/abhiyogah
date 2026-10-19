@@ -1,0 +1,35 @@
+name: senior_review_pending
+description: >
+  A rejection has neither a senior review nor an IO referral yet; the check fails for now and the senior review is required.
+obligation_ids: [IO-CB-2026-14-3-4-review]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(3)-(4) (report Table A, row A15, verification P; limb mapping
+  and "fairly senior" Q16): a partially resolved or wholly rejected complaint is reviewed at a senior
+  level before it goes to the IO. Check obligation: senior_reviewed_before_io = senior_review_date set
+  and <= io_referred_date (if referred). senior_review_date is a fact requested in issue #20; until the
+  SENIOR_REVIEWED event exists it arrives on a HUMAN FACTS_RECORDED event.
+  No senior_review_date: senior_reviewed_before_io = false. Not yet referred to the IO, so the
+  review can still happen first: required action SENIOR_REVIEW.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-10T15:00:00+05:30
+    payload: {outcome: WHOLLY_REJECTED}
+    source: HUMAN
+as_of: 2026-08-12T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-3-4-review: DETERMINED
+  outputs:
+    IO-CB-2026-14-3-4-review: {senior_reviewed_before_io: false}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: 
+    - {obligation_id: IO-CB-2026-14-3-4-review, action: SENIOR_REVIEW}

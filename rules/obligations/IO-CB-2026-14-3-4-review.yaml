@@ -17,4 +17,7 @@ valid_from: 2026-01-14
 valid_to: null
 status: DRAFT
 verification: PRIMARY_TEXT_READ
-tests: []
+tests:
+  - senior_review_before_io.yaml
+  - senior_review_pending.yaml
+  - senior_review_skipped_before_io.yaml

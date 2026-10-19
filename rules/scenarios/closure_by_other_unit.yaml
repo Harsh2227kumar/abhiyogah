@@ -1,0 +1,36 @@
+name: closure_by_other_unit
+description: >
+  A complaint handled at a branch is closed by the central grievance cell; the no-same-unit check passes.
+obligation_ids: [IO-CB-2026-14-3-4-closure]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(3)-(4) (report Table A, row A15, verification P; limb mapping
+  Q16): a complaint is not closed by the branch/unit/touch point that handled it. Check obligation at
+  FINAL_REPLY_SENT: closed_by_other_unit = closing_unit != handling_unit. Unit codes are synthetic.
+  handling_unit and closing_unit are facts requested in issue #20.
+  handling_unit BR-0412, closing_unit GRC-CENTRAL: different, so closed_by_other_unit = true.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+    payload: {handling_unit: BR-0412}
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-10T15:00:00+05:30
+    payload: {outcome: FULLY_RESOLVED}
+    source: HUMAN
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-08-12T16:00:00+05:30
+    payload: {closing_unit: GRC-CENTRAL}
+as_of: 2026-08-13T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-3-4-closure: DETERMINED
+  outputs:
+    IO-CB-2026-14-3-4-closure: {closed_by_other_unit: true}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

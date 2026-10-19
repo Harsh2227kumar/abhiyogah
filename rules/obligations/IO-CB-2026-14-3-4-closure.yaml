@@ -19,4 +19,7 @@ valid_from: 2026-01-14
 valid_to: null
 status: DRAFT
 verification: PRIMARY_TEXT_READ
-tests: []
+tests:
+  - closure_by_other_unit.yaml
+  - closure_by_same_unit.yaml
+  - closure_units_unknown.yaml
