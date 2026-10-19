@@ -1,6 +1,7 @@
 """Indian bank working-day calendar (public holidays plus bank and state overlays)."""
 
 from abhiyogah.calendar.bank import STATES, HolidaysBankCalendar, is_bank_weekend
+from abhiyogah.calendar.delay import delay_working_days
 from abhiyogah.calendar.errors import (
     CalendarError,
     CalendarRangeError,
@@ -19,6 +20,7 @@ __all__ = [
     "OverlayDataError",
     "UnknownStateError",
     "calendar_version",
+    "delay_working_days",
     "is_bank_weekend",
     "load_bank_calendar",
     "load_overlay",

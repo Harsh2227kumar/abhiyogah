@@ -8,8 +8,8 @@ A day is a bank holiday in a state when any of these holds (research report, gap
 - the state overlay (``data/calendars/<year>/<state>.yaml``) lists it as a Negotiable Instruments
   Act holiday.
 
-Day counts exclude the starting day, which is how RBC-CB para 71 counts working days ("the number of
-working days ... excluding the date of receiving the communication"; report Table B, row B5).
+Day counts exclude the starting day. That is how RBC-CB para 71 counts working days, as summarised
+in the research report (Table B, row B5): on the home branch's schedule, excluding the receipt day.
 """
 
 import warnings
