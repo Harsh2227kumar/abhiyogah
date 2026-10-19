@@ -57,6 +57,8 @@ class DecisionResult(StrEnum):
     STOPPED_LATE = "STOPPED_LATE"
     BREACHED = "BREACHED"
     """The deadline passed at ``as_of`` without the stop event."""
+    DETERMINED = "DETERMINED"
+    """A clock-less obligation (router, classification, check, tier) produced its outputs."""
 
 
 class _Frozen(BaseModel):
