@@ -70,6 +70,7 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
   | A14 `IO-CB-2026-14-2` | `classified_at_closure` | `true` when `outcome` is set and `outcome_date` ≤ `final_reply_date` |
   | A15 `IO-CB-2026-14-3-4-closure` | `closed_by_other_unit` | `true` when `closing_unit` ≠ `handling_unit` (both needed, else `INSUFFICIENT_FACTS`) |
   | A15 `IO-CB-2026-14-3-4-review` | `senior_reviewed_before_io` | `true` when `senior_review_date` is set and, if `io_referred_date` is set, ≤ it |
+  | A18 `IO-CB-2026-14-11-12` | `reply_complete`, `missing_elements` | `missing_elements` = `required_elements` (+ `required_elements_if_io_upheld` when `io_upheld` is true) not in `reply_elements`, sorted; `reply_complete` = it is empty |
   | A2 `RBIOS-2026-10-1-f` | `escalation_open` | `true` when the clock is `BREACHED` or `STOPPED_LATE` (no reply by the due date) or `customer_dissatisfied_date` is set, else `false` |
 
   Clock obligations may also have outputs; `DETERMINED` ones must.
@@ -92,6 +93,7 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
 | `REFER_TO_IO` | A13 (both limbs) | Send the complaint to the Internal Ombudsman |
 | `SENIOR_REVIEW` | A15 review limb | Have the outcome reviewed at a senior level before the IO referral (while not yet referred) |
 | `SEND_FINAL_DECISION` | A17 | Communicate the bank's final decision to the complainant |
+| `SEND_CORRECTED_REPLY` | A18 | Send the complainant a reply carrying the missing cl. 14(11)–(12) elements |
 | `SET_OUTCOME` | A14 | Record one of the three cl. 14(2) outcomes for a complaint already replied to |
 
 ## Scenario inputs that are not regulatory values
