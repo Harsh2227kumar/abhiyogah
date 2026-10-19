@@ -62,7 +62,7 @@
       required_actions}`. Write one hand-checked example scenario for A13 (20-day IO escalation).
 - [x] `tests/domain/` covering event folding into `ComplaintFacts` and `DecisionRecord` round-tripping.
 - [x] `docker-compose.yml` (postgres:16, api, worker) and `.env.example` with placeholders only.
-- [ ] Update `PROGRESS.md` to mark Phase 0 done. Write `STREAM COMPLETE`.
+- [x] Update `PROGRESS.md` to mark Phase 0 done. Write `STREAM COMPLETE`.
 
 ## Definition of done
 `make check` is green on a fresh clone; CI is green; the domain and schema contracts are documented in
@@ -86,3 +86,5 @@ _(other streams add requests for changes to owned paths here)_
 - 2026-10-19 · item 12 done · rules/README.md (field table, report example as DRAFT), rules/scenarios/_schema.md (format + runner conventions, due = start + n), example rules/scenarios/io_20d_ordinary_breach.yaml (due 2026-08-23, 2 days late) with a domain test of its hand check · next: item 13 tests/domain
 - 2026-10-19 · item 13 done · tests/domain: folding unit tests + hypothesis properties (order independence, known_at == prefix fold), DecisionRecord JSON round-trip and hash-chain tamper tests · next: item 14 docker-compose + .env.example
 - 2026-10-19 · item 14 done · docker-compose.yml (postgres:16 + api + worker on the uv image, no Dockerfile; expects abhiyogah.api.app:app and abhiyogah.worker.app:app from platform), .env.example with placeholders; `docker compose config` validates · next: item 15 PROGRESS.md + STREAM COMPLETE
+- 2026-10-19 · item 15 done · PROGRESS.md marks Phase 0 done; make check and GitHub CI green · next: foundation PR into main (Closes #2)
+- 2026-10-19 · STREAM COMPLETE
