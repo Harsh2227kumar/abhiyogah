@@ -31,6 +31,8 @@ All properties pass with at least 500 hypothesis examples; `make check` green; n
 
 ## Requests
 
+- `docs/open-questions.md` (owner/integrator): add Q14 "Do `holidays` package public holidays match NI Act bank holidays; may a sourced overlay remove or replace them; primary citation for 2nd/4th Saturday closures" (issue #13). Until answered, the calendar closes the union of package holidays and overlay dates.
+
 ## Log
 - 2026-10-19 · item 1 done · `BankCalendar` protocol in `calendar/protocol.py` with runtime-checkable test · next: item 2 (holidays + bank overlay implementation)
 - 2026-10-19 · item 2 done · `HolidaysBankCalendar` (Sundays, 2nd/4th Saturdays, `holidays` India subdivisions, per-state overlay); years without package lunar data raise `CalendarRangeError` · next: item 3 (overlay data files)
