@@ -27,7 +27,7 @@
 - [x] Draft generator: proposes a changed obligation YAML (status DRAFT) plus a summary for human legal
       review. It never edits `rules/` on `main` directly.
 - [x] Offline tests using saved fixture files; no live network calls in CI.
-- [ ] Write `STREAM COMPLETE`.
+- [x] Write `STREAM COMPLETE`.
 
 ## Requests
 
@@ -56,3 +56,5 @@
 - 2026-10-19 · item 7 done · regwatch/impact.py: per-obligation ImpactLink with the strongest evidence (CIRCULAR via instrument_ref/source_url, CLAUSE via instrument name + clause ref incl. parent and ranges, INSTRUMENT only), relation SUPERSEDES/REPEALS/AMENDS/MENTIONS from the cited paragraphs, anchors for every link · next: item 8 draft generator
 - 2026-10-19 · item 8 done · regwatch/drafts.py: per linked obligation a DRAFT copy (signed_off_by cleared, verification UNVERIFIED, supersedes_note citing circular, relation and anchors; parameters, clock and validity unchanged) as YAML that re-validates, plus a Markdown summary with one review question per obligation and the cited text; write_proposals refuses any path under a rules directory and never overwrites · next: item 9 offline tests
 - 2026-10-19 · item 9 done · regwatch/pipeline.py watch_feed (feed -> polite fetch -> raw store -> extract -> classify -> link -> proposals; bot check stops the pass; second pass is UNCHANGED); tests/regwatch/test_pipeline.py end to end over saved synthetic fixtures; autouse no_network guard in tests/regwatch and tests/mcp fails any real socket connect; make check green with and without the mcp/pypdf SDKs · next: STREAM COMPLETE
+- 2026-10-19 · item 10 done · merged main (#31, #32, #33); make check green; final PR opened (Closes #9); Requests for mcp and pypdf dependencies and an API service layer remain open for the integrator/platform · next: none
+- 2026-10-19 · STREAM COMPLETE
