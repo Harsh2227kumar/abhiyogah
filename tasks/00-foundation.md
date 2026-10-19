@@ -23,7 +23,7 @@
 - [x] `.importlinter` contract: the core (domain, registry, calendar, clocks, evaluator, calculators,
       workflow, ledger) must not import store, api, worker, perception, mcp, regwatch, sqlalchemy,
       psycopg, httpx, fastapi or any LLM SDK. Also `domain` imports nothing else from `abhiyogah`.
-- [ ] `Makefile` with the targets listed in `CLAUDE.md` (`setup`, `check`, `test`, `rules`, `openapi`,
+- [x] `Makefile` with the targets listed in `CLAUDE.md` (`setup`, `check`, `test`, `rules`, `openapi`,
       `up`). `rules` and `openapi` may print "not implemented yet" for now. `make check` must pass.
 - [ ] GitHub Actions workflow `.github/workflows/ci.yml` running `make setup && make check` on push and PR.
 - [ ] `domain/enums.py`: `DayBasis` (CALENDAR, WORKING), `BasisStatus` (EXPLICIT, INFERRED),
@@ -75,3 +75,4 @@ _(other streams add requests for changes to owned paths here)_
 - 2026-10-19 · item 1 done · pyproject.toml (uv, py3.12, ruff + mypy strict), uv.lock, package root, tests/conftest.py with db skip · next: item 2 subpackages
 - 2026-10-19 · item 2 done · 15 subpackage stubs with docstrings + import smoke test · next: item 3 .importlinter
 - 2026-10-19 · item 3 done · .importlinter: core-is-pure (no store/api/worker/perception/mcp/regwatch, DB, HTTP, LLM SDKs) + domain-is-leaf; verified it catches a planted httpx import · next: item 4 Makefile
+- 2026-10-19 · item 4 done · Makefile (setup/check/test/rules/openapi/up); `rules` auto-runs registry.lint and tests/scenarios once they exist; make check green · next: item 5 CI workflow
