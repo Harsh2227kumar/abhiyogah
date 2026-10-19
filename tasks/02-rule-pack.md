@@ -36,7 +36,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 - [x] A18 mandatory reply content (14(11)–(12)): as a checklist obligation consumed by reply QA
 - [ ] A18 scenarios (complete reply, missing elements, IO-upheld statement), once `reply_elements` and `io_upheld` exist
 - [x] B1 failed-transaction TATs: one parameter table covering every verified channel row, plus ₹100/day
-- [ ] B2 illegible rows: encoded but `verification: UNVERIFIED`
+- [x] B2 illegible rows: encoded but `verification: UNVERIFIED`
 - [ ] B5 limited liability tiers and account-type caps (paras 67–71, Tables 1–2)
 - [ ] B6 shadow credit in 10 working days (para 72)
 - [ ] B7 liability determination within 90 days (para 73)
@@ -74,3 +74,4 @@ Tracked together in issue #20.
 - 2026-10-19 · A17 done · IO-CB-2026-14-9 (30 calendar days, inferred, no pause), action SEND_FINAL_DECISION, 4 scenarios incl. combined A13+A17 and INFO_REQUESTED-does-not-pause · next: A18
 - 2026-10-19 · A18 obligation file done · IO-CB-2026-14-11-12 checklist (`required_elements`, `required_elements_if_io_upheld`), outputs reply_complete/missing_elements, action SEND_CORRECTED_REPLY; Q17; facts requested; scenarios split into a new item · next: B1
 - 2026-10-19 · B1 done · TAT-2019-FAILED-TXN with `tat_days_by_channel` (verified rows), `follows_underlying_system`, ₹100/day as 10000 paise; 5 scenarios; requested `issue_type` fact and AEPS channel split (#20) · next: B2
+- 2026-10-19 · B2 done · TAT-2019-ILLEGIBLE-ROWS (CNP T+5, AePS beneficiary T+1, ₹100/day) all UNVERIFIED/Q5, 2 scenarios; Q5/Q6/Q9 now name obligation IDs · next: B5

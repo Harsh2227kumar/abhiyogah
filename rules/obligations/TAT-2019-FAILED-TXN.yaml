@@ -7,6 +7,8 @@
 # merchant T+5; AePS merchant T+5; APBS T+1; NACH credit/reversal and NACH debit despite revocation
 # T+1; PPI on-us T+1; PPI off-us follows the underlying system. The illegible rows (card-not-present,
 # AePS beneficiary, NACH-revoked compensation) are B2 (TAT-2019-ILLEGIBLE-ROWS), UNVERIFIED.
+# NACH is one Channel, so this table's compensation also covers NACH debit despite revocation, whose
+# compensation row (7b) is illegible (B2, UNVERIFIED, Q5); the TAT itself (T+1) is verified here.
 # AePS has two rows (merchant T+5 here, beneficiary T+1 in B2) and Channel has one AEPS member, so the
 # row key is AEPS_MERCHANT and a complaint with channel AEPS gets INSUFFICIENT_FACTS until the channel
 # is split (requested, issue #20). PPI off-us needs the underlying system: INSUFFICIENT_FACTS for now.
@@ -45,3 +47,5 @@ tests:
   - failed_txn_imps_not_reversed_accrues.yaml
   - failed_txn_pos_reversed_on_due_date.yaml
   - failed_txn_aeps_row_ambiguous.yaml
+  - failed_txn_card_not_present_unverified_late.yaml
+  - failed_txn_upi_outside_illegible_rows.yaml
