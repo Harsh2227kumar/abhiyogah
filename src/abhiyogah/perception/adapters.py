@@ -1,0 +1,299 @@
+"""LLM gateway adapters: a deterministic fake, Anthropic, AWS Bedrock and OpenAI-compatible.
+
+Provider SDKs are optional. Adapters take an already-built client that matches a small protocol,
+so tests inject fakes and the package never imports an SDK at module load. ``build_gateway`` builds
+the real client lazily from ``GatewayConfig`` after the India-region check.
+"""
+
+import importlib
+import json
+from collections.abc import Callable, Mapping
+from typing import Any, Protocol, cast
+
+import httpx
+from pydantic import JsonValue
+
+from abhiyogah.perception.errors import GatewayConfigError, LlmCallError, LlmOutputError
+from abhiyogah.perception.gateway import (
+    GatewayConfig,
+    LlmGateway,
+    LlmRequest,
+    LlmResponse,
+    Provider,
+    check_region,
+)
+
+__all__ = [
+    "AnthropicAdapter",
+    "AnthropicClient",
+    "BedrockAdapter",
+    "BedrockClient",
+    "FakeModel",
+    "OpenAICompatibleAdapter",
+    "Responder",
+    "build_gateway",
+    "parse_json_object",
+]
+
+Responder = Callable[[LlmRequest], Mapping[str, JsonValue]]
+"""Produces the fake model's answer for one request."""
+
+FAKE_MODEL_ID = "fake-deterministic"
+
+
+def parse_json_object(text: str) -> dict[str, JsonValue]:
+    """Parse a model's text answer as one JSON object, or raise ``LlmOutputError``."""
+    try:
+        value = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise LlmOutputError(f"model answer is not JSON: {exc.msg}") from exc
+    if not isinstance(value, dict):
+        raise LlmOutputError("model answer is not a JSON object")
+    return cast(dict[str, JsonValue], value)
+
+
+def _json_instructions(request: LlmRequest) -> str:
+    """System text plus the schema, for providers without native schema-constrained output."""
+    schema = json.dumps(request.output_schema, sort_keys=True)
+    return (
+        f"{request.system}\n\nAnswer with one JSON object and nothing else. "
+        f"It must match this JSON schema:\n{schema}"
+    )
+
+
+class FakeModel:
+    """Deterministic model for tests and demos: answers each prompt ID with a fixed function."""
+
+    def __init__(
+        self, responders: Mapping[str, Responder] | None = None, model: str = FAKE_MODEL_ID
+    ) -> None:
+        """Answer requests for each prompt ID with its responder; unknown prompt IDs fail."""
+        self._responders = dict(responders or {})
+        self._model = model
+        self.calls: list[LlmRequest] = []
+
+    @property
+    def model(self) -> str:
+        """The fake model's identifier."""
+        return self._model
+
+    def complete(self, request: LlmRequest) -> LlmResponse:
+        """Record the request and answer it with the prompt's responder."""
+        self.calls.append(request)
+        responder = self._responders.get(request.prompt_id)
+        if responder is None:
+            raise LlmCallError(f"fake model has no responder for prompt {request.prompt_id!r}")
+        return LlmResponse(
+            model=self._model,
+            prompt_id=request.prompt_id,
+            prompt_version=request.prompt_version,
+            output=dict(responder(request)),
+        )
+
+
+class _AnthropicMessages(Protocol):
+    def create(self, **kwargs: Any) -> Any:
+        """Create a message (``anthropic.Anthropic().messages.create``)."""
+        ...
+
+
+class AnthropicClient(Protocol):
+    """The part of the Anthropic SDK client the adapter uses."""
+
+    @property
+    def messages(self) -> _AnthropicMessages:
+        """The Messages resource."""
+        ...
+
+
+class AnthropicAdapter:
+    """Calls the Anthropic Messages API with structured (JSON-schema) output."""
+
+    def __init__(self, client: AnthropicClient, model: str, max_output_tokens: int = 2048) -> None:
+        """Use ``client`` (an ``anthropic.Anthropic`` instance) with the configured model."""
+        self._client = client
+        self._model = model
+        self._max_tokens = max_output_tokens
+
+    @property
+    def model(self) -> str:
+        """The configured model identifier."""
+        return self._model
+
+    def complete(self, request: LlmRequest) -> LlmResponse:
+        """Send one message whose answer is constrained to ``request.output_schema``."""
+        try:
+            response = self._client.messages.create(
+                model=self._model,
+                max_tokens=self._max_tokens,
+                system=request.system,
+                messages=[{"role": "user", "content": request.text}],
+                output_config={"format": {"type": "json_schema", "schema": request.output_schema}},
+            )
+        except Exception as exc:  # SDK error classes are not importable here
+            raise LlmCallError(f"Anthropic call failed: {type(exc).__name__}") from exc
+        if getattr(response, "stop_reason", None) == "refusal":
+            raise LlmCallError("model declined the request")
+        texts = [b.text for b in getattr(response, "content", []) if b.type == "text"]
+        if not texts:
+            raise LlmOutputError("model answer has no text block")
+        return LlmResponse(
+            model=str(getattr(response, "model", None) or self._model),
+            prompt_id=request.prompt_id,
+            prompt_version=request.prompt_version,
+            output=parse_json_object("".join(texts)),
+        )
+
+
+class BedrockClient(Protocol):
+    """The part of a boto3 ``bedrock-runtime`` client the adapter uses."""
+
+    def converse(self, **kwargs: Any) -> Mapping[str, Any]:
+        """Call the Bedrock Converse API."""
+        ...
+
+
+class BedrockAdapter:
+    """Calls a model on AWS Bedrock through the Converse API."""
+
+    def __init__(self, client: BedrockClient, model: str, max_output_tokens: int = 2048) -> None:
+        """Use ``client`` (a boto3 ``bedrock-runtime`` client) with the configured model ID."""
+        self._client = client
+        self._model = model
+        self._max_tokens = max_output_tokens
+
+    @property
+    def model(self) -> str:
+        """The configured Bedrock model ID."""
+        return self._model
+
+    def complete(self, request: LlmRequest) -> LlmResponse:
+        """Send one Converse request and parse the JSON answer."""
+        try:
+            response = self._client.converse(
+                modelId=self._model,
+                system=[{"text": _json_instructions(request)}],
+                messages=[{"role": "user", "content": [{"text": request.text}]}],
+                inferenceConfig={"maxTokens": self._max_tokens},
+            )
+        except Exception as exc:  # botocore error classes are not importable here
+            raise LlmCallError(f"Bedrock call failed: {type(exc).__name__}") from exc
+        try:
+            blocks = response["output"]["message"]["content"]
+            text = "".join(b["text"] for b in blocks if "text" in b)
+        except (KeyError, TypeError) as exc:
+            raise LlmOutputError("unexpected Bedrock response shape") from exc
+        return LlmResponse(
+            model=self._model,
+            prompt_id=request.prompt_id,
+            prompt_version=request.prompt_version,
+            output=parse_json_object(text),
+        )
+
+
+class OpenAICompatibleAdapter:
+    """Calls an OpenAI-compatible ``/chat/completions`` endpoint, e.g. a self-hosted vLLM."""
+
+    def __init__(
+        self,
+        client: httpx.Client,
+        endpoint: str,
+        model: str,
+        api_key: str | None = None,
+        max_output_tokens: int = 2048,
+    ) -> None:
+        """POST to ``<endpoint>/chat/completions`` with ``client``."""
+        self._client = client
+        self._url = endpoint.rstrip("/") + "/chat/completions"
+        self._model = model
+        self._api_key = api_key
+        self._max_tokens = max_output_tokens
+
+    @property
+    def model(self) -> str:
+        """The configured model identifier."""
+        return self._model
+
+    def complete(self, request: LlmRequest) -> LlmResponse:
+        """Send one chat completion with a JSON-schema response format."""
+        headers = {"Authorization": f"Bearer {self._api_key}"} if self._api_key else {}
+        body = {
+            "model": self._model,
+            "max_tokens": self._max_tokens,
+            "messages": [
+                {"role": "system", "content": _json_instructions(request)},
+                {"role": "user", "content": request.text},
+            ],
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": request.prompt_id,
+                    "schema": request.output_schema,
+                    "strict": True,
+                },
+            },
+        }
+        try:
+            reply = self._client.post(self._url, json=body, headers=headers)
+            reply.raise_for_status()
+            data = reply.json()
+        except (httpx.HTTPError, ValueError) as exc:
+            raise LlmCallError(f"OpenAI-compatible call failed: {type(exc).__name__}") from exc
+        try:
+            text = data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise LlmOutputError("unexpected chat-completions response shape") from exc
+        if not isinstance(text, str):
+            raise LlmOutputError("chat-completions content is not text")
+        return LlmResponse(
+            model=str(data.get("model") or self._model),
+            prompt_id=request.prompt_id,
+            prompt_version=request.prompt_version,
+            output=parse_json_object(text),
+        )
+
+
+def _model(config: GatewayConfig) -> str:
+    """The configured model identifier; ``check_region`` already refused a missing one."""
+    if not config.model:
+        raise GatewayConfigError(f"{config.provider} needs LLM_MODEL")
+    return config.model
+
+
+def build_gateway(
+    config: GatewayConfig,
+    *,
+    fake_responders: Mapping[str, Responder] | None = None,
+    anthropic_client: AnthropicClient | None = None,
+    bedrock_client: BedrockClient | None = None,
+    http_client: httpx.Client | None = None,
+) -> LlmGateway | None:
+    """Build the configured gateway, or ``None`` for rules-only. Checks the region first."""
+    check_region(config)
+    match config.provider:
+        case Provider.NONE:
+            return None
+        case Provider.FAKE:
+            return FakeModel(fake_responders, model=config.model or FAKE_MODEL_ID)
+        case Provider.ANTHROPIC:
+            if anthropic_client is None:
+                sdk = importlib.import_module("anthropic")
+                anthropic_client = cast(
+                    AnthropicClient,
+                    sdk.Anthropic(api_key=config.api_key, timeout=config.timeout_seconds),
+                )
+            return AnthropicAdapter(anthropic_client, _model(config), config.max_output_tokens)
+        case Provider.BEDROCK:
+            if bedrock_client is None:
+                boto3 = importlib.import_module("boto3")
+                bedrock_client = cast(
+                    BedrockClient, boto3.client("bedrock-runtime", region_name=config.region)
+                )
+            return BedrockAdapter(bedrock_client, _model(config), config.max_output_tokens)
+        case Provider.OPENAI_COMPATIBLE:
+            if not config.endpoint:
+                raise GatewayConfigError("OPENAI_COMPATIBLE needs LLM_ENDPOINT")
+            client = http_client or httpx.Client(timeout=config.timeout_seconds)
+            return OpenAICompatibleAdapter(
+                client, config.endpoint, _model(config), config.api_key, config.max_output_tokens
+            )

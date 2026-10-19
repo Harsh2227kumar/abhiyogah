@@ -9,7 +9,7 @@
 
 ## Checklist
 
-- [ ] LLM gateway interface with adapters: a deterministic fake (default in tests), Anthropic, AWS Bedrock
+- [x] LLM gateway interface with adapters: a deterministic fake (default in tests), Anthropic, AWS Bedrock
       (ap-south-1) and an OpenAI-compatible endpoint (for self-hosted vLLM). Region and model come
       from config; refuse non-India regions unless explicitly allowed.
 - [ ] PII masking before any model call: Presidio + custom recognisers for Aadhaar, PAN, account number,
@@ -27,4 +27,10 @@
 
 ## Requests
 
+- `pyproject.toml` (foundation): add an optional extra, e.g. `llm = ["anthropic", "boto3", "presidio-analyzer"]`.
+  Perception loads these lazily (`importlib`) and tests inject fakes, so nothing breaks without them.
+- `.env.example` (foundation/platform): add `LLM_MODEL=`, `LLM_REGION=` (India region, e.g. `ap-south-1`)
+  and `LLM_ALLOW_NON_INDIA_REGION=false` next to the existing `LLM_*` placeholders.
+
 ## Log
+- 2026-10-19 · item 1 done · `perception.gateway` (config, India-region check, LlmRequest/Response) + `perception.adapters` (FakeModel, Anthropic, Bedrock Converse, OpenAI-compatible; SDKs injected/lazy) · next: item 2 PII masking
