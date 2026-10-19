@@ -24,7 +24,7 @@
 - [x] Relevance classifier (keywords first, LLM optional) for complaints, customer service, fraud, KYC,
       payment TATs and IO.
 - [x] Change-impact linking: which obligation IDs a new circular amends or supersedes.
-- [ ] Draft generator: proposes a changed obligation YAML (status DRAFT) plus a summary for human legal
+- [x] Draft generator: proposes a changed obligation YAML (status DRAFT) plus a summary for human legal
       review. It never edits `rules/` on `main` directly.
 - [ ] Offline tests using saved fixture files; no live network calls in CI.
 - [ ] Write `STREAM COMPLETE`.
@@ -54,3 +54,4 @@
 - 2026-10-19 · item 5 done · regwatch/extract.py: HTML (stdlib parser, block elements, script/style/head dropped) and PDF (pypdf, loaded lazily; Request filed) to ordered Paragraphs with stable positional anchors (p7, page2-p3), printed numbers (3, 14.2, (a)) and page; synthetic 2-page PDF fixture · next: item 6 relevance classifier
 - 2026-10-19 · item 6 done · regwatch/relevance.py: keyword topics (COMPLAINTS, CUSTOMER_SERVICE, FRAUD, KYC, PAYMENT_TAT, INTERNAL_OMBUDSMAN) with paragraph-anchored hits, case-sensitive acronyms; optional TopicSuggester (LLM via perception later) can only add topics, with provenance, and disagreement or bad citations set needs_review · next: item 7 change-impact linking
 - 2026-10-19 · item 7 done · regwatch/impact.py: per-obligation ImpactLink with the strongest evidence (CIRCULAR via instrument_ref/source_url, CLAUSE via instrument name + clause ref incl. parent and ranges, INSTRUMENT only), relation SUPERSEDES/REPEALS/AMENDS/MENTIONS from the cited paragraphs, anchors for every link · next: item 8 draft generator
+- 2026-10-19 · item 8 done · regwatch/drafts.py: per linked obligation a DRAFT copy (signed_off_by cleared, verification UNVERIFIED, supersedes_note citing circular, relation and anchors; parameters, clock and validity unchanged) as YAML that re-validates, plus a Markdown summary with one review question per obligation and the cited text; write_proposals refuses any path under a rules directory and never overwrites · next: item 9 offline tests
