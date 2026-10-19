@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ProvenanceBadge } from "@/components/ProvenanceBadge";
 import { ResultTag } from "@/components/ResultTag";
 import { VerificationTag } from "@/components/VerificationTag";
-import { ApiError, getApi, type DecisionReplay, type Obligation } from "@/lib/api";
+import { ApiError, getApi, type DecisionRecord, type DecisionReplay, type Obligation } from "@/lib/api";
 import { parseAsOf, withAsOf } from "@/lib/asof";
 import { displayFact } from "@/lib/complaint";
 import { formatParam } from "@/lib/rules";
@@ -14,11 +14,21 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-async function load(id: string, obligationId: string, asOf: string | undefined): Promise<[DecisionReplay, Obligation | undefined]> {
+type Loaded = [DecisionReplay, Obligation | undefined, DecisionRecord | undefined];
+
+async function load(id: string, obligationId: string, asOf: string | undefined): Promise<Loaded> {
   try {
     const api = getApi();
-    const [replay, obligations] = await Promise.all([api.getDecision(id, obligationId, asOf), api.listObligations()]);
-    return [replay, obligations.find((o) => o.obligation_id === obligationId)];
+    const [replay, obligations, detail] = await Promise.all([
+      api.getDecision(id, obligationId, asOf),
+      api.listObligations(),
+      api.getComplaint(id, asOf),
+    ]);
+    return [
+      replay,
+      obligations.find((o) => o.obligation_id === obligationId),
+      detail.decisions.find((d) => d.obligation_id === obligationId),
+    ];
   } catch (e) {
     if (e instanceof ApiError && e.status === 404) notFound();
     throw e;
@@ -27,11 +37,11 @@ async function load(id: string, obligationId: string, asOf: string | undefined):
 
 const json = (v: unknown) => (typeof v === "string" ? v : JSON.stringify(v));
 
-/** One decision record rendered as a clause-cited trace, with its hash and chain status. */
+/** The latest stored decision record rendered as a clause-cited trace, with its hash and chain status. */
 export default async function DecisionPage({ params, searchParams }: Props) {
   const { id, obligationId } = await params;
   const asOf = parseAsOf((await searchParams).as_of);
-  const [{ record: r, position, chain }, ob] = await load(decodeURIComponent(id), decodeURIComponent(obligationId), asOf);
+  const [{ record: r, position, chain }, ob, live] = await load(decodeURIComponent(id), decodeURIComponent(obligationId), asOf);
   const dl = r.deadline;
   const brokenHere = !chain.verified && chain.broken_at !== null && chain.broken_at !== undefined && chain.broken_at <= position;
 
@@ -43,6 +53,13 @@ export default async function DecisionPage({ params, searchParams }: Props) {
       <h1>
         {r.obligation_id} <ResultTag result={r.result} />
       </h1>
+      {live && live.result !== r.result && (
+        <p className="notice" role="note">
+          Evaluated live at {formatDateTime(live.as_of)} this obligation is <ResultTag result={live.result} />. The record
+          below is the latest one in the ledger, from {formatDateTime(r.as_of)}; a new record is written when an event
+          arrives or the scheduler re-evaluates.
+        </p>
+      )}
 
       <section aria-labelledby="source">
         <h2 id="source">Obligation</h2>

@@ -15,8 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
-    "openapi": "openapi-typescript ${OPENAPI_SPEC:-mock/provisional.openapi.json} -o lib/api/generated/schema.ts",
-    "mock": "cd .. && uv run python console/mock/provisional_api.py && uv run python console/mock/build_fixtures.py && cd console && pnpm openapi"
+    "openapi": "openapi-typescript ${OPENAPI_SPEC:-../openapi.json} -o lib/api/generated/schema.ts"
   },
   "dependencies": {
     "next": "16.4.2",

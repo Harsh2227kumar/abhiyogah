@@ -1,3 +1,5 @@
+# DEMO FIXTURE: copied from origin/agent/rules @ 5baaca9 (PR #16, in owner review), with the
+# scenario 'tests:' list removed. Replaced by rules/obligations/ once #16 merges (tasks/08-integrator.md).
 # A13, ordinary limb (report Table A row A13; example YAML in the report's architecture section).
 # A partially resolved or wholly rejected complaint must reach the IO within 20 days of receipt.
 # When an RBI/NPCI/card-network TAT applies, limb (a) replaces this deadline (overridden_by), so this
@@ -23,13 +25,3 @@ valid_to: null
 status: DRAFT
 verification: PRIMARY_TEXT_READ
 supersedes_note: "MD-IO 2023 (29 Dec 2023); clause mapping not verified"
-tests:
-  - io_20d_ordinary_breach.yaml
-  - io_20d_referred_on_time.yaml
-  - io_20d_referred_late.yaml
-  - io_20d_running.yaml
-  - io_fully_resolved_no_escalation.yaml
-  - io_tat_minus_10_upi.yaml
-  - io_tat_minus_10_breach.yaml
-  - io_not_applicable_below_outlet_threshold.yaml
-  - final_decision_on_time_with_io.yaml

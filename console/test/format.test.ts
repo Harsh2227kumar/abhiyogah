@@ -57,3 +57,11 @@ describe("money", () => {
     expect(localizeDates("as_of = 2026-10-21; due 2026-10-19")).toBe("as_of = 21-10-2026; due 19-10-2026");
   });
 });
+
+describe("ISO dates inside identifiers", () => {
+  it("leaves obligation IDs alone", () => {
+    expect(localizeDates("IO-CB-2026-14-11-12 and RBIOS-2026-10-1-f on 2026-10-01")).toBe(
+      "IO-CB-2026-14-11-12 and RBIOS-2026-10-1-f on 01-10-2026",
+    );
+  });
+});

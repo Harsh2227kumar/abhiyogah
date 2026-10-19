@@ -1,17 +1,16 @@
-// The one place the console chooses its backend. Pages import `getApi` and the types from here.
-import type { EngineApi } from "./client";
+// The one place the console reaches the engine. Pages import `getApi` and the types from here.
+import { ApiError, type EngineApi } from "./client";
 import { createHttpApi } from "./http";
-import { createMockApi } from "./mock";
 
 export { ApiError, type EngineApi } from "./client";
 export type * from "./types";
 
-let api: EngineApi | undefined;
-
-/** The live engine API when `ABHIYOGAH_API_URL` is set, else the synthetic mock. */
-export function getApi(): EngineApi {
-  api ??= process.env.ABHIYOGAH_API_URL
-    ? createHttpApi(process.env.ABHIYOGAH_API_URL)
-    : createMockApi();
-  return api;
+/** The engine API at `ABHIYOGAH_API_URL`, called with the key in `ABHIYOGAH_API_KEY` (server side only). */
+export function getApi(env: Record<string, string | undefined> = process.env): EngineApi {
+  const url = env.ABHIYOGAH_API_URL;
+  const key = env.ABHIYOGAH_API_KEY;
+  if (!url || !key) {
+    throw new ApiError(503, "Set ABHIYOGAH_API_URL and ABHIYOGAH_API_KEY to reach the engine API");
+  }
+  return createHttpApi(url, key);
 }
