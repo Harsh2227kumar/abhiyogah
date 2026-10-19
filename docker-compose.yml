@@ -1,0 +1,52 @@
+# Local demo stack: PostgreSQL 16, the engine API and the background worker.
+# Copy .env.example to .env first. Run with `make up` (only where Docker is available).
+#
+# api and worker run from the source tree with uv, so no Dockerfile is needed yet. They expect the
+# platform stream to provide `abhiyogah.api.app:app` (FastAPI) and `abhiyogah.worker.app:app`
+# (procrastinate App).
+
+x-python: &python
+  image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+  working_dir: /app
+  env_file: .env
+  environment:
+    UV_PROJECT_ENVIRONMENT: /venv
+    UV_LINK_MODE: copy
+  volumes:
+    - .:/app
+    - venv:/venv
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    <<: *python
+    command: >
+      sh -c "uv sync --frozen --no-dev &&
+             uv run --no-sync uvicorn abhiyogah.api.app:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+
+  worker:
+    <<: *python
+    command: >
+      sh -c "uv sync --frozen --no-dev &&
+             uv run --no-sync procrastinate --app=abhiyogah.worker.app.app worker"
+
+volumes:
+  pgdata:
+  venv:
