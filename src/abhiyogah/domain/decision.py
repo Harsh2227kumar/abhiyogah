@@ -4,8 +4,8 @@ One ``DecisionRecord`` is written per obligation evaluated on a complaint (repor
 decision leaves a record that can be replayed"). It holds everything needed to reproduce and explain
 the result: the obligation version and clause, the anchor date that selected the parameter version,
 each input fact with its provenance, the per-condition trace, the computed deadline, the calendar
-version, the result and any compensation with its formula. Explanations are rendered from these
-records, never regenerated.
+version, the result, any outputs the obligation determined (``outputs``) and any compensation with
+its formula. Explanations are rendered from these records, never regenerated.
 
 Records are chained: ``hash`` is the SHA-256 of ``prev_hash`` plus the record's canonical JSON
 (``canonical_json``), so any edit to a past record breaks every later hash. Use ``seal`` to compute
@@ -148,6 +148,10 @@ class DecisionRecord(_Frozen):
     breach: Breach | None = None
     compensation: Compensation | None = None
     required_actions: list[RequiredAction] = Field(default_factory=list)
+    outputs: dict[str, JsonValue] = Field(
+        default_factory=dict,
+        description="Values the obligation determined, by output name (e.g. 'scheme').",
+    )
     prev_hash: str = Field(default=GENESIS_HASH, pattern=r"^[0-9a-f]{64}$")
     hash: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
