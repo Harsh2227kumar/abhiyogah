@@ -34,7 +34,7 @@
       `GET /complaints/{id}/decisions`, `GET /decisions/{id}/explain` (rendered from the stored record),
       `GET /obligations`, `GET /board/deadlines?within_days=`.
 - [x] `as_of` query parameter on reads, admin-only, for time-travel demos.
-- [ ] `make openapi` exports `openapi.json`.
+- [x] `make openapi` exports `openapi.json`.
 
 ### Worker
 - [ ] procrastinate periodic task: re-evaluate open complaints every N minutes and on each new event;
@@ -48,6 +48,8 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 ## Requests
 
 - docs/open-questions.md owner: add the cl. 14(5)(c)-(e) IO-routing question (#26) as the next Q; the workflow routes those limbs to human review until it is answered.
+- console: `openapi.json` is published at the repo root; regenerate the client with `OPENAPI_SPEC=../openapi.json pnpm openapi` (or `make openapi`). The console typechecks against it as is. New: `ComplaintDetail` adds `deadlines`, `breaches`, `required_actions`, `review_tasks`; `ChainStatus` adds `reason` and `head`; every route needs `X-API-Key`.
+- foundation (`.env.example`, `docker-compose.yml`): add `ABHIYOGAH_API_KEYS`, `ABHIYOGAH_PROFILE`, `ABHIYOGAH_RULES_DIR`, `ABHIYOGAH_REEVALUATE_MINUTES` placeholders (documented in `src/abhiyogah/api/settings.py`), and run `alembic upgrade head` before the api starts. The `openapi` target in the Makefile was filled in by this stream (it was a stub).
 
 ## Log
 
@@ -62,3 +64,4 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · item 9 done · api.auth: X-API-Key → Principal with ordered roles READER<WRITER<ADMIN, keys from ABHIYOGAH_API_KEYS held as SHA-256, constant-time lookup, require(role) dependency (route-wide 'no unauthenticated write' test lands with the routes) · next: API endpoints
 - 2026-10-19 · item 10 done · api.app create_app/app: POST events (validated by folding, idempotent, 409 on reuse, re-evaluates), findings→review tasks, GET complaints/complaint/closure/decisions/decision/explain/obligations/board/review-tasks; worker.reevaluate appends only material changes; ledger.render_explanation; every route but /health needs a key (tested) · next: as_of admin-only on every read
 - 2026-10-19 · item 11 done · as_of: ADMIN-only on all 6 read routes that take it (403 for reader/writer, discovered from the route table), offset required, echoed in the detail · next: make openapi
+- 2026-10-19 · item 12 done · make openapi → python -m abhiyogah.api.openapi writes openapi.json (env-independent) and regenerates the console client where pnpm exists; staleness test; console typechecks against it (regeneration left to console, see Requests) · next: worker periodic re-evaluation
