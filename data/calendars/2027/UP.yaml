@@ -1,0 +1,8 @@
+# TODO: source. No primary list of NI Act holidays for UP in 2027 has been read yet.
+# Add dates only from a primary source (RBI holiday matrix or the state's NI Act notification)
+# and set source_url to it. Never invent holiday dates.
+state: UP
+year: 2027
+source_url: null
+todo: "source the NI Act bank holiday list for UP, 2027"
+holidays: []
