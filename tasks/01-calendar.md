@@ -22,7 +22,7 @@
 - [x] Hypothesis property tests: adding n working days lands on a working day; `working_days_between`
       inverts `add_working_days`; receipt day is excluded; Sundays and 2nd/4th Saturdays are never
       working days; results don't depend on time of day (IST dates only).
-- [ ] Example tests with hand-checked dates (for example a report on a Friday before a 2nd Saturday).
+- [x] Example tests with hand-checked dates (for example a report on a Friday before a 2nd Saturday).
 - [ ] Docstring for each public function citing para 71 / the day-basis rule it implements.
 - [ ] Write `STREAM COMPLETE`.
 
@@ -40,3 +40,4 @@ All properties pass with at least 500 hypothesis examples; `make check` green; n
 - 2026-10-19 · item 4 done · `calendar_version()` = `sha256:` over overlay bytes digest + `holidays` version; `load_bank_calendar()` stamps it · next: item 5 (`delay_working_days`)
 - 2026-10-19 · item 5 done · `delay_working_days(alert_received, reported, state, *, calendar)` on IST dates, receipt day excluded · next: item 6 (hypothesis properties)
 - 2026-10-19 · item 6 done · `tests/calendar/test_properties.py`: 7 properties at 500 examples each over all 36 states, 2002-2033 · next: item 7 (hand-checked example tests)
+- 2026-10-19 · item 7 done · `tests/calendar/test_examples.py`: Friday before 2nd Saturday, 1st Saturday open, Republic Day + 4th Saturday, Christmas, state-only holiday · next: item 8 (docstring pass)
