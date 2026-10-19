@@ -38,7 +38,7 @@
       owner (issue #20).
 - [ ] Scenario runner `tests/scenarios/test_scenarios.py`: loads every `rules/scenarios/*.yaml`, runs the
       evaluator, compares deadlines, breaches and paise exactly. Wired into `make rules`.
-- [ ] Replay test: evaluating the same events at the same `as_of` twice yields byte-identical records.
+- [x] Replay test: evaluating the same events at the same `as_of` twice yields byte-identical records.
 - [ ] Time-travel test: one complaint evaluated at day 5, 19, 20 and 21 shows the IO clock RUNNING then BREACHED.
 - [ ] Write `STREAM COMPLETE`.
 
@@ -69,3 +69,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · item 6 done · calculators/limited_liability.py: delay_wd (receipt day excluded), ZERO/LIMITED/BOARD_POLICY/UNDETERMINED tiers with caps passed from the rule pack, shadow-credit and determination due dates · next: item 7 service events
 - 2026-10-19 · item 7 done · calculators/service_events.py: property documents, deceased locker, deceased deposit interest (Decimal, explicit rounding), card closure (explicit late-day basis), credit information; all amounts/rates passed in · next: item 8 scenario runner
 - 2026-10-19 · alignment item done · evaluator follows rules/_conventions.md: is set/is not set, unknown fact → clause false, validity at as_of, base_days/io_review_days/filing_window (as_of stands in for an unknown stop-fact anchor), PERMISSION never breaches or acts · next: DETERMINED/outputs blocked on #20; doing replay + time-travel tests while rules PR #16 is open
+- 2026-10-19 · replay item done · tests/evaluator/test_replay.py: identical canonical JSON and sealed hashes across runs and shuffled inputs; later-recorded events don't change a past replay. Also fixed days_remaining on a non-working day after a working-day due date (found by hypothesis) · next: time-travel test
