@@ -8,7 +8,9 @@ The schema checks structure; this module checks the policies in CLAUDE.md and ``
 - every dated parameter value has a reference;
 - the file is named ``<obligation_id>.yaml`` and no two files share an ID or overlap in validity;
 - ``overridden_by`` names known obligations and ``tests`` names existing scenario files;
-- every scenario names only obligations that exist.
+- every scenario names only obligations that exist;
+- every parameter's ``open_question`` is a row of ``docs/open-questions.md`` naming the obligation
+  (checked when that file sits next to the rules directory).
 
 Run as ``python -m abhiyogah.registry.lint <rules-dir>``; exits 1 when any issue is found.
 """
@@ -106,6 +108,41 @@ def _scenario_issues(scenarios_dir: Path, known: set[str]) -> list[LintIssue]:
     return issues
 
 
+def _open_question_rows(path: Path) -> dict[str, str]:
+    """Map ``Q<n>`` to its table row in ``docs/open-questions.md``."""
+    rows: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        cells = [c.strip() for c in line.split("|")]
+        if len(cells) > 2 and cells[1].startswith("Q") and cells[1][1:].isdigit():
+            rows[cells[1]] = line
+    return rows
+
+
+def _open_question_issues(
+    questions: Path, loaded: dict[str, list[tuple[Path, Obligation]]]
+) -> list[LintIssue]:
+    """Every flagged parameter names an existing question whose row lists the obligation ID."""
+    issues: list[LintIssue] = []
+    rows = _open_question_rows(questions)
+    for oid, versions in sorted(loaded.items()):
+        for path, ob in versions:
+            for name, history in ob.parameters.items():
+                for effective, value in history.items():
+                    q = value.open_question
+                    if q is None:
+                        continue
+                    where = f"parameter {name} @ {effective.isoformat()}"
+                    if q not in rows:
+                        issues.append(
+                            LintIssue(path, f"{where}: open question {q} not in {questions}")
+                        )
+                    elif oid not in rows[q]:
+                        issues.append(
+                            LintIssue(path, f"{where}: {questions} row {q} does not list {oid}")
+                        )
+    return issues
+
+
 def lint_rules(rules_dir: Path) -> list[LintIssue]:
     """Lint ``<rules_dir>/obligations`` and ``<rules_dir>/scenarios``; return every issue found."""
     obligations_dir = rules_dir / "obligations"
@@ -153,6 +190,9 @@ def lint_rules(rules_dir: Path) -> list[LintIssue]:
                     )
 
     issues.extend(_scenario_issues(scenarios_dir, known))
+    questions = rules_dir.parent / "docs" / "open-questions.md"
+    if questions.is_file():
+        issues.extend(_open_question_issues(questions, loaded))
     return issues
 
 

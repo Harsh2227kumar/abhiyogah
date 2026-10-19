@@ -44,7 +44,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 - [x] A5, A6, A7, A8 RBI Ombudsman-stage clocks
 
 ### Open questions
-- [ ] Keep `docs/open-questions.md` current: every flagged parameter links to its obligation ID.
+- [x] Keep `docs/open-questions.md` current: every flagged parameter links to its obligation ID.
 - [ ] Write `STREAM COMPLETE`.
 
 ## Definition of done
@@ -83,3 +83,4 @@ Tracked together in issue #20.
 - 2026-10-19 · B7 done · RBCCB-2025-73 (90 calendar days inferred, outer limit only), action COMPENSATE_PER_PARAS_67_72, 3 scenarios · next: B10
 - 2026-10-19 · B10 done · RBCCB-2026-AMEND3-FRAUD FUTURE_DATED, draft figures UNVERIFIED (Q7), combination rule/basis/stop flagged; FUTURE_DATED never evaluated (convention); 2 scenarios · next: A5–A8
 - 2026-10-19 · A5–A8 done · RBIOS-2026-14-2 (15d), -15-4 (30d, complainant PERMISSION, award_lapsed), -15-5 (30d, comply or appeal), -17 (30d complainant appeal, appeal_in_time); no extensions encoded (Q18/#22); appellant fact requested; 9 scenarios · next: open-questions sweep
+- 2026-10-19 · open-questions done · every Q row now lists the obligation IDs it affects; registry linter checks each parameter's open_question exists and names its obligation · next: A15 and A18 scenarios (written against the facts requested in #20, like the B-table scenarios)

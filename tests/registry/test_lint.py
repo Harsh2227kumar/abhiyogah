@@ -141,3 +141,49 @@ def test_main_exit_codes(tmp_path: Path) -> None:
 def test_rule_pack_is_clean() -> None:
     """The real rule pack lints clean."""
     assert [str(i) for i in lint_rules(RULES)] == []
+
+
+def write_questions(root: Path, row: str) -> None:
+    """Write a docs/open-questions.md with one table row next to ``root/rules``."""
+    (root / "docs").mkdir()
+    table = "| # | Question | Why | Affects | Status |\n|---|---|---|---|---|\n" + row + "\n"
+    (root / "docs" / "open-questions.md").write_text(table, encoding="utf-8")
+
+
+def flagged(question: str) -> dict[str, Any]:
+    """MINIMAL's parameter flagged with ``question``."""
+    value = {
+        "value": 30,
+        "reference": "cl. 1",
+        "verification": "UNVERIFIED",
+        "open_question": question,
+    }
+    return {"parameters": {"max_days": {"2026-01-01": value}}}
+
+
+def test_open_question_must_exist(tmp_path: Path) -> None:
+    """A flagged parameter must name a question in docs/open-questions.md."""
+    write_questions(tmp_path, "| Q1 | q | w | TEST-2026-1 | Open |")
+    rules = tmp_path / "rules"
+    rules.mkdir()
+    found = messages(write_pack(rules, flagged("Q9")))
+    assert len(found) == 1
+    assert "open question Q9 not in" in found[0]
+
+
+def test_open_question_row_must_list_obligation(tmp_path: Path) -> None:
+    """The question's row must name the obligation that it flags."""
+    write_questions(tmp_path, "| Q1 | q | w | OTHER-2026-1 | Open |")
+    rules = tmp_path / "rules"
+    rules.mkdir()
+    found = messages(write_pack(rules, flagged("Q1")))
+    assert len(found) == 1
+    assert "row Q1 does not list TEST-2026-1" in found[0]
+
+
+def test_open_question_listed_is_clean(tmp_path: Path) -> None:
+    """A question row that names the obligation passes."""
+    write_questions(tmp_path, "| Q1 | q | w | A2: TEST-2026-1 | Open |")
+    rules = tmp_path / "rules"
+    rules.mkdir()
+    assert messages(write_pack(rules, flagged("Q1"))) == []
