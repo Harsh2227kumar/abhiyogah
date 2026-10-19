@@ -22,8 +22,8 @@
       UNVERIFIED clearly marked.
 - [x] Time-travel control (admin) that sets `as_of` for demos.
 - [x] Indian formats throughout: ₹ with lakh/crore grouping, DD-MM-YYYY, IST.
-- [ ] Switch to the platform API: generate the client from `openapi.json` (`OPENAPI_SPEC=../openapi.json pnpm openapi`), point the drift test at it, adapt `lib/api` to the real endpoints, delete `console/mock/`, and click through the plan's end-to-end demo against a local API. Needs 04-platform.
-- [ ] Write `STREAM COMPLETE`.
+- [x] Switch to the platform API: generate the client from `openapi.json` (`OPENAPI_SPEC=../openapi.json pnpm openapi`), point the drift test at it, adapt `lib/api` to the real endpoints, delete `console/mock/`, and click through the plan's end-to-end demo against a local API. Needs 04-platform.
+- [x] Write `STREAM COMPLETE`.
 
 ## Definition of done
 The plan's end-to-end demo can be clicked through in the console against a local API.
@@ -40,3 +40,7 @@ The plan's end-to-end demo can be clicked through in the console against a local
 - 2026-10-19 · item 7 done · admin time-travel control in the header (IST datetime, Go, +1 day, Now) sets `?as_of=` on the current page; highlighted banner while active; off with `ABHIYOGAH_TIME_TRAVEL=off`; checked end to end in Chromium (IO clock due today → 2 days overdue) · next: item 8 (Indian formats)
 - 2026-10-19 · item 8 done · ₹ with lakh/crore grouping (matches `format_inr`), DD-MM-YYYY and IST everywhere; payload amounts, compensation inputs, parameter values and engine prose (trace detail, rule, reasons) localized; a test renders every page and fails on any ISO date or raw paise outside `<code>` · next: item 9
 - 2026-10-19 · added item 9 (switch to the real API and click through the demo) so the definition of done is tracked · BLOCKED: 04-platform has not published `openapi.json` or a local API yet; everything else is done and runs on the mock
+- 2026-10-19 · resumed after PR #24 merged; merged `main` (#23 domain additions) and regenerated the provisional OpenAPI doc, client types and mock fixtures to match (`pnpm mock`) · BLOCKED: item 9 still needs 04-platform's `openapi.json` and a local API
+- 2026-10-19 · item 9 done · client generated from `openapi.json`, drift test points at it; `lib/api` calls the real endpoints with `X-API-Key` (ABHIYOGAH_API_URL/KEY), complaint view uses the API's deadlines/breaches/actions (incl. workflow gates) and review tasks, decision trace flags when the live result differs from the stored record; `console/mock/` deleted; tests replay responses recorded from a live API seeded with synthetic complaints (`scripts/seed-demo.mjs`, `scripts/record-fixtures.mjs`); demo clicked through in Chromium against uvicorn (in-memory store, DRAFT rule pack): IO 20-day clock Running → +3 days → Breached, REFER_TO_IO, trace with verified chain · next: item 10
+- 2026-10-19 · item 10 done · every item checked; final PR into `main` closes #7
+STREAM COMPLETE

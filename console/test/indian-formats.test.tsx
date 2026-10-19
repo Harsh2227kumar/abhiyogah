@@ -4,8 +4,11 @@ import DecisionPage from "@/app/complaints/[id]/decisions/[obligationId]/page";
 import ComplaintPage from "@/app/complaints/[id]/page";
 import BoardPage from "@/app/page";
 import RulesPage from "@/app/rules/page";
+import { ISO_DATE } from "@/lib/format";
 
-const AS_OF = "2026-10-21T18:00:00+05:30";
+import { AS_OF as RECORDED } from "./recorded";
+
+const AS_OF = RECORDED.later;
 const search = Promise.resolve({ as_of: AS_OF });
 
 /** Visible text outside <code> (identifiers, hashes and rule syntax are shown verbatim). */
@@ -20,10 +23,10 @@ function prose(container: HTMLElement): string {
 
 const pages = {
   board: () => BoardPage({ searchParams: search }),
-  complaint: () => ComplaintPage({ params: Promise.resolve({ id: "CMP-2026-000101" }), searchParams: search }),
+  complaint: () => ComplaintPage({ params: Promise.resolve({ id: "CMP-DEMO-0101" }), searchParams: search }),
   decision: () =>
     DecisionPage({
-      params: Promise.resolve({ id: "CMP-2026-000101", obligationId: "IO-CB-2026-14-1-b" }),
+      params: Promise.resolve({ id: "CMP-DEMO-0101", obligationId: "IO-CB-2026-14-1-b" }),
       searchParams: search,
     }),
   rules: () => RulesPage({ searchParams: Promise.resolve({}) }),
@@ -34,7 +37,7 @@ describe("Indian formats on every page", () => {
     it(`${name}: no ISO dates or raw paise in prose`, async () => {
       const { container } = render(await load());
       const text = prose(container);
-      expect(text).not.toMatch(/\b\d{4}-\d{2}-\d{2}\b/);
+      expect(text.match(ISO_DATE)).toBeNull();
       expect(text).not.toMatch(/amount_paise: \d/);
       expect(text).toMatch(/\b\d{2}-\d{2}-\d{4}\b/);
     });

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import BoardPage from "@/app/page";
 import type { ComplaintSummary } from "@/lib/api";
 import { boardRows, filterOptions, urgencyOf } from "@/lib/board";
+import { AS_OF } from "./recorded";
 
 const row = (id: string, due: string | null, extra: Partial<ComplaintSummary> = {}): ComplaintSummary => ({
   complaint_id: id,
@@ -41,21 +42,22 @@ describe("board rows", () => {
   });
 });
 
-describe("board page", () => {
-  it("shows the IO deadline due today on the mock data", async () => {
-    render(await BoardPage({ searchParams: Promise.resolve({ as_of: "2026-10-19T18:00:00+05:30" }) }));
-    const first = screen.getAllByRole("row")[1]!;
-    expect(within(first).getByText("CMP-2026-000101")).toBeDefined();
-    expect(within(first).getByText("Due today")).toBeDefined();
-    expect(within(first).getByText("19-10-2026")).toBeDefined();
-    expect(first.dataset.urgency).toBe("today");
+describe("board page on the recorded API", () => {
+  it("puts the breached failed-transaction complaint first", async () => {
+    render(await BoardPage({ searchParams: Promise.resolve({ as_of: AS_OF.now }) }));
+    const rows = screen.getAllByRole("row");
+    expect(rows).toHaveLength(6);
+    const first = rows[1]!;
+    expect(within(first).getByText("CMP-DEMO-0101")).toBeDefined();
+    expect(within(first).getByText("TAT-2019-FAILED-TXN")).toBeDefined();
+    expect(first.dataset.urgency).toBe("breached");
   });
 
-  it("shows the breach after time travel", async () => {
-    render(await BoardPage({ searchParams: Promise.resolve({ as_of: "2026-10-21T18:00:00+05:30", channel: "UPI_P2P" }) }));
-    const rows = screen.getAllByRole("row");
-    expect(rows).toHaveLength(2);
-    expect(within(rows[1]!).getByText("2 days overdue")).toBeDefined();
-    expect(rows[1]!.dataset.urgency).toBe("breached");
+  it("filters to the IO 20-day obligation", async () => {
+    render(
+      await BoardPage({ searchParams: Promise.resolve({ as_of: AS_OF.now, obligation: "IO-CB-2026-14-1-b" }) }),
+    );
+    const ids = screen.getAllByRole("row").slice(1).map((r) => within(r).getAllByRole("cell")[0]!.textContent);
+    expect(ids).toEqual(["CMP-DEMO-0101", "CMP-DEMO-0103", "CMP-DEMO-0105"]);
   });
 });
