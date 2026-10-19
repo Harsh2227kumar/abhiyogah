@@ -28,13 +28,15 @@ obligation, in this order, every step leaving a ``ConditionTrace`` line:
 7. **Compensation.** If the obligation has a ``compensation_per_day_paise`` parameter, a breached or
    late clock owes that amount per calendar day late (``calculators.per_day_compensation``).
 
-Obligations without a clock stop after step 2 with ``NOT_APPLICABLE`` and a trace line saying so;
-they are enforced by the workflow gates, not by deadlines.
+Obligations with a determination (``evaluator.determinations``: routers, checks, B5) replace steps
+4 to 6 with it and end ``DETERMINED`` with ``outputs`` and any required actions. Clocked
+obligations may also carry outputs read off their clock state (A2, A3, A6, A8). A clockless
+obligation without a determination ends ``NOT_APPLICABLE`` with a trace line saying so.
 """
 
 import hashlib
 import json
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import date, datetime
 
@@ -72,6 +74,12 @@ from abhiyogah.domain.events import ComplaintEvent, EventType, Provenance
 from abhiyogah.domain.tz import ist_date
 from abhiyogah.evaluator.actions import action_code
 from abhiyogah.evaluator.conditions import evaluate_condition, fact_spelling
+from abhiyogah.evaluator.determinations import (
+    CLOCK_OUTPUTS,
+    DETERMINATIONS,
+    Determination,
+    DeterminationInput,
+)
 from abhiyogah.evaluator.errors import EvaluationError
 from abhiyogah.evaluator.parameters import (
     PER_DAY_PARAMETER,
@@ -116,6 +124,8 @@ class _Draft:
     per_day_paise: int | None = None
     stop_event: EventType | None = None
     """The event that stopped the clock, when a filtered stop chose it."""
+    outputs: dict[str, JsonValue] = field(default_factory=dict)
+    determined_actions: list[str] = field(default_factory=list)
 
     def check(self, condition: str, result: bool, detail: str = "") -> bool:
         """Add a trace line and return ``result``."""
@@ -210,11 +220,15 @@ def _build_candidate(
     profile: EntityProfile,
     day: date,
 ) -> None:
-    """Steps 3 and 4: anchor, duration and clock."""
+    """Steps 3 and 4: anchor, duration and clock (or a determination instead)."""
     ob = d.obligation
     spec = ob.clock
+    determine = DETERMINATIONS.get(ob.obligation_id)
+    if determine is not None:
+        _determine(d, determine, facts, calendar, profile, day)
+        return
     if spec is None:
-        d.check("obligation has a clock", False, "no deadline; enforced by workflow gates")
+        d.check("obligation has a building block", False, "no clock and no determination")
         d.stop(DecisionResult.NOT_APPLICABLE)
         return
     start_name = start_fact_name(spec)
@@ -282,6 +296,46 @@ def _build_candidate(
             d.stop(DecisionResult.INSUFFICIENT_FACTS)
             return
     d.candidate = DeadlineCandidate(ob.obligation_id, clock, duration.rule)
+
+
+def _determine(
+    d: _Draft,
+    determine: Callable[[DeterminationInput], Determination],
+    facts: ComplaintFacts,
+    calendar: BankCalendar,
+    profile: EntityProfile,
+    day: date,
+) -> None:
+    """Step 3 for determinations: anchor date, then the determination's own logic."""
+    ob = d.obligation
+    anchor_name = ob.anchor or (start_fact_name(ob.clock) if ob.clock is not None else None)
+    anchor = day
+    if anchor_name is not None:
+        d.read(anchor_name)
+        anchor_fact = _date_fact(facts, anchor_name)
+        if anchor_fact is None:
+            d.check(f"{anchor_name} is known", False, "anchor date unknown")
+            d.stop(DecisionResult.INSUFFICIENT_FACTS)
+            return
+        anchor = anchor_fact.value
+    d.anchor_date = anchor
+    home_state = (
+        facts.home_branch_state.value
+        if facts.home_branch_state is not None
+        else profile.home_branch_state
+    )
+    det = determine(DeterminationInput(ob, facts, anchor, calendar, home_state))
+    d.trace.extend(det.trace)
+    d.read(*(n for n in det.facts_read if n != "home_branch_state"))
+    if "home_branch_state" in det.facts_read:
+        if facts.home_branch_state is not None:
+            d.read("home_branch_state")
+        elif profile.home_branch_state is not None:
+            d.profile_inputs["home_branch_state"] = profile.home_branch_state
+    d.parameters.extend(det.parameters)
+    d.outputs = det.outputs
+    d.determined_actions = det.actions if ob.deontic is not Deontic.PERMISSION else []
+    d.stop(det.result)
 
 
 def _filtered_stop(
@@ -367,9 +421,13 @@ def _event_type_of(fact: Fact[date] | None, events: Sequence[ComplaintEvent]) ->
 def _finish(
     d: _Draft, facts: ComplaintFacts, events: Sequence[ComplaintEvent], day: date
 ) -> tuple[Deadline | None, Breach | None, list[RequiredAction], Compensation | None]:
-    """Steps 6 and 7: state, deadline, breach, required actions and compensation."""
+    """Steps 6 and 7: state, deadline, breach, required actions, compensation and outputs."""
     if d.candidate is None:
-        return None, None, [], None
+        determined = [
+            RequiredAction(action=code, reason=f"{d.obligation.clause}: check failed")
+            for code in d.determined_actions
+        ]
+        return None, None, determined, None
     ob = d.obligation
     spec = ob.clock
     assert spec is not None  # noqa: S101 - a candidate exists only for clocked obligations
@@ -427,6 +485,9 @@ def _finish(
                 reason=f"{ob.clause}: clock {state}",
             )
         ]
+    clock_outputs = CLOCK_OUTPUTS.get(ob.obligation_id)
+    if clock_outputs is not None:
+        d.outputs = clock_outputs(state, facts)
     compensation = None
     if d.per_day_paise is not None and breach is not None:
         compensation = per_day_compensation(
@@ -521,6 +582,7 @@ def evaluate(
                 breach=breach,
                 compensation=compensation,
                 required_actions=actions,
+                outputs=d.outputs,
             )
         )
     return records

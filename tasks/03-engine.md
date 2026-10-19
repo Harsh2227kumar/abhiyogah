@@ -41,12 +41,12 @@
 - [x] Filtered clock stops: a `stop_conditions` parameter maps a stop event to a condition checked
       against that event's own payload, so A8 stops only on `APPEAL_FILED` by the complainant and A7
       only on one by the bank (rules request; `ClockSpec.stop` itself stays a list of events).
-- [ ] Clockless obligations end `DETERMINED` with `outputs` and required actions (A1 `scheme`; A14
+- [x] Clockless obligations end `DETERMINED` with `outputs` and required actions (A1 `scheme`; A14
       `classified_at_closure` + `SET_OUTCOME`; A15 `closed_by_other_unit`, `senior_reviewed_before_io`
       + `SENIOR_REVIEW`; A18 `reply_complete`/`missing_elements` + `SEND_CORRECTED_REPLY`), and clock
       obligations carry their outputs (A2 `escalation_open`, A3 `filed_in_time`, A6 `award_lapsed`,
       A8 `appeal_in_time`). Needs `DecisionRecord.outputs` (#25 → PR #28).
-- [ ] B5 `RBCCB-2025-67-71` is a determination: its clock only counts `delay_working_days`; it ends
+- [x] B5 `RBCCB-2025-67-71` is a determination: its clock only counts `delay_working_days`; it ends
       `DETERMINED` with `delay_working_days`, `liability_tier`, `customer_liability_paise` (uses
       `calculators.limited_liability`).
 - [ ] The scenario runner compares `outputs` exactly and runs on the real bank calendar
@@ -92,3 +92,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · conventions item done · FUTURE_DATED never evaluated, tat_days_by_channel + follows_underlying_system, one action per obligation with convention codes. Local trial against rules branch: 40/72 scenarios pass; all 32 failures are DETERMINED/outputs (A1, A14, A15, A18, B5) · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16
 - 2026-10-19 · or-conditions item done · evaluator/conditions.py: recursive-descent grammar with `or`, `and` (tighter) and parentheses; every clause still traced · next: filtered clock stops
 - 2026-10-19 · filtered-stops item done · `stop_conditions` parameter: a stop event counts only if its own payload passes the condition; each candidate is traced · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16
+- 2026-10-19 · determinations + B5 items done · merged main (#27, #28 outputs); evaluator/determinations.py: A1 router, A14, A15 ×2, A18 checks and the B5 determination end DETERMINED with outputs/actions; A2/A3/A6/A8 clock outputs; runner compares outputs exactly. Local trial against rules PR #16 @5baaca9 on the real bank calendar: 75/75 scenarios pass · next: test_scenarios.py on the real calendar once #16 is on main
