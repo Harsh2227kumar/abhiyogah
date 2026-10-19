@@ -43,8 +43,8 @@
       a RBCCB-2025-72-like shadow-credit clock): post → deadlines → reject → time travel past day 20 →
       breach and IO referral → chain verifies (`tests/api/test_end_to_end.py`).
 - [ ] Definition-of-done end-to-end against the merged rule pack: the UPI fraud demo returns the IO
-      deadline, the shadow-credit deadline and the liability tier. Needs rule pack #16, engine #27
-      (main's evaluator raises ParameterError on RBCCB-2025-67-71) and DecisionRecord outputs #28 in main.
+      deadline, the shadow-credit deadline and the liability tier. Needs rule pack #16 in main
+      (#27 and #28 merged).
 - [ ] Write `STREAM COMPLETE`.
 
 ## Definition of done
@@ -74,3 +74,4 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · item 13 done · worker.app: procrastinate App (Psycopg or in-memory connector), periodic reevaluate_open every ABHIYOGAH_REEVALUATE_MINUTES + reevaluate_complaint task; worker.schedule sweeps only complaints time can change (RUNNING/BREACHED/INSUFFICIENT_FACTS, new rule version, validity edge crossed); append only on material change (trace excluded: it names as_of); API re-evaluates inline on each new event · next: end-to-end definition-of-done test, then STREAM COMPLETE
 - 2026-10-19 · item 14 done · synthetic E2E (IO + shadow-credit-like clock) over the API passes; fix: events are kept and engine errors reported (201 + evaluation_error, 500 with message on reads, sweep continues) · next: rule-pack E2E
 - 2026-10-19 · BLOCKED: DoD E2E needs #16 (rule pack), #27 (engine: tier/limits on RBCCB-2025-67-71) and #28 (outputs) merged into main. Resume: merge origin/main, run the UPI fraud demo through the API with rules/obligations, then STREAM COMPLETE.
+- 2026-10-19 · resume · merged main (#27, #28, #30), regenerated openapi.json for outputs; preview with agent/rules' 20 obligations over the API: IO due 23 Aug (breached +2 on 25 Aug), shadow credit breached, RBCCB-2025-67-71 DETERMINED tier ZERO, REFER_TO_IO required · BLOCKED: only rule pack #16 left to merge into main
