@@ -60,7 +60,7 @@
       and `rules/scenarios/_schema.md` defining the scenario format: `obligation_ids`, `entity_profile`,
       `events: [{type, occurred_at, payload}]`, `as_of`, `expect: {deadlines, breaches, compensation_paise,
       required_actions}`. Write one hand-checked example scenario for A13 (20-day IO escalation).
-- [ ] `tests/domain/` covering event folding into `ComplaintFacts` and `DecisionRecord` round-tripping.
+- [x] `tests/domain/` covering event folding into `ComplaintFacts` and `DecisionRecord` round-tripping.
 - [ ] `docker-compose.yml` (postgres:16, api, worker) and `.env.example` with placeholders only.
 - [ ] Update `PROGRESS.md` to mark Phase 0 done. Write `STREAM COMPLETE`.
 
@@ -84,3 +84,4 @@ _(other streams add requests for changes to owned paths here)_
 - 2026-10-19 · item 10 done · domain/decision.py: DecisionRecord (+ parameters used, required_actions), DecisionResult, Deadline, Breach, Compensation, InputFact, ConditionTrace; canonical_json/seal/verify_chain for the SHA-256 chain · next: item 11 registry/schema.py
 - 2026-10-19 · item 11 done · registry/schema.py: Obligation (+ AppliesTo, Trigger, ClockSpec, ClockPause, ParameterValue); clock.start may be an event or a ComplaintFacts date (e.g. transaction_date_t); stop is a list; optional `anchor`; parameter values need verification; IN_FORCE without PRIMARY_TEXT_READ + signed_off_by is refused at parse time · next: item 12 rules/README.md + scenario schema
 - 2026-10-19 · item 12 done · rules/README.md (field table, report example as DRAFT), rules/scenarios/_schema.md (format + runner conventions, due = start + n), example rules/scenarios/io_20d_ordinary_breach.yaml (due 2026-08-23, 2 days late) with a domain test of its hand check · next: item 13 tests/domain
+- 2026-10-19 · item 13 done · tests/domain: folding unit tests + hypothesis properties (order independence, known_at == prefix fold), DecisionRecord JSON round-trip and hash-chain tamper tests · next: item 14 docker-compose + .env.example
