@@ -1,5 +1,6 @@
 # 04 — Ledger, workflow, storage and API
 
+- **Issue:** #6 (sub-issue of #1)
 - **Branch:** `agent/platform`
 - **Phase:** 2
 - **Depends on:** 03-engine merged (evaluator API stable)

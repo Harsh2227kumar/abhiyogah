@@ -1,5 +1,6 @@
 # 01 — Bank calendar
 
+- **Issue:** #3 (sub-issue of #1)
 - **Branch:** `agent/calendar`
 - **Phase:** 1 (parallel with 02, 03)
 - **Depends on:** 00-foundation merged

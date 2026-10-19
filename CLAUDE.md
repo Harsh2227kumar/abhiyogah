@@ -34,6 +34,27 @@ usage limits run out and resume later from a fresh clone, so **Git is the only m
 Log line format (newest at the bottom, one line per item):
 `- 2026-10-19 · item 3 done · <what changed> · next: <next item or blocker>`
 
+## GitHub workflow: issues, commits, pull requests
+
+- **Issues.** Tracking issue #1 has one sub-issue per stream (the number is in your task file's header).
+  Anything found outside your current item goes in a **new issue** using a template from
+  `.github/ISSUE_TEMPLATE/` (bug, rule change, task), never as a silent fix in an unrelated commit.
+  Regulatory questions go in `docs/open-questions.md` **and** a "rule change" issue.
+- **Commits.** Conventional style with scope = stream, and the stream issue in the body:
+  `feat(calendar): add 2nd/4th Saturday overlay` + `Part of #3`. Use `fix:`, `test:`, `docs:`,
+  `refactor:`, `chore:` as fits. One checklist item per commit where possible.
+- **Pull requests.** Open a PR from `agent/<stream>` into `main` when a coherent batch of items is done
+  (roughly every 2–4 items, or anything another stream is waiting for), and when the stream is complete.
+  - Title: `feat(<stream>): <what the batch delivers>`.
+  - Body: fill in `.github/PULL_REQUEST_TEMPLATE.md`. Write `Part of #N` for a batch and `Closes #N`
+    only in the PR that completes the stream.
+  - Keep pushing to the same branch while the PR is open. After it is merged, merge `origin/main` back
+    into your branch and keep going; the next batch gets a new PR.
+  - Never merge your own PR. The integrator (or the owner) merges when CI is green. PRs that touch
+    `rules/obligations/` also need the owner's review.
+- **Never** push to `main` directly (except the integrator, see `tasks/08-integrator.md`), force-push a
+  shared branch, or rewrite history that has been pushed.
+
 ## Hard rules (never break these)
 
 1. **Agents never decide the law.** Every obligation you write in `rules/` has `status: DRAFT` and no
@@ -80,9 +101,6 @@ Log line format (newest at the bottom, one line per item):
 
 **TypeScript (console).** Next.js App Router, `strict: true`, `pnpm`. The API client is generated
 from `openapi.json` (`make openapi`); never hand-write API types.
-
-**Commits.** Conventional style: `feat(calendar): add 2nd/4th Saturday overlay`. One checklist item
-per commit where possible.
 
 ## Commands
 

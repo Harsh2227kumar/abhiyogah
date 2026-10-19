@@ -1,9 +1,10 @@
 # 00 — Foundation (architect)
 
+- **Issue:** #2 (sub-issue of #1)
 - **Branch:** `agent/foundation`
 - **Phase:** 0. Runs alone; every other stream waits for it to be merged into `main`.
 - **Depends on:** nothing
-- **Owns:** `pyproject.toml`, `uv.lock`, `Makefile`, `.importlinter`, `.github/`, `docker-compose.yml`,
+- **Owns:** `pyproject.toml`, `uv.lock`, `Makefile`, `.importlinter`, `.github/workflows/`, `docker-compose.yml`,
   `.env.example`, `src/abhiyogah/__init__.py`, `src/abhiyogah/domain/`, `src/abhiyogah/registry/schema.py`,
   every other package's `__init__.py` stub, `tests/conftest.py`, `tests/domain/`, `rules/README.md`,
   `rules/scenarios/_schema.md`

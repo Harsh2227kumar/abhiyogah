@@ -1,5 +1,6 @@
 # 02 — Rule pack v0.1 and scenarios
 
+- **Issue:** #4 (sub-issue of #1)
 - **Branch:** `agent/rules`
 - **Phase:** 1 (parallel with 01, 03)
 - **Depends on:** 00-foundation merged (schema and scenario format)

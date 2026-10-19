@@ -1,5 +1,6 @@
 # 07 — MCP server and Regulatory Watch
 
+- **Issue:** #9 (sub-issue of #1)
 - **Branch:** `agent/mcp-regwatch`
 - **Phase:** 3
 - **Depends on:** 04-platform merged

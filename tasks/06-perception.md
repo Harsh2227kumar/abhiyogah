@@ -1,5 +1,6 @@
 # 06 — Perception: triage, PII masking, reply QA
 
+- **Issue:** #8 (sub-issue of #1)
 - **Branch:** `agent/perception`
 - **Phase:** 3
 - **Depends on:** 04-platform merged

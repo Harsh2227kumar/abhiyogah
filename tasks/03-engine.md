@@ -1,5 +1,6 @@
 # 03 — Clock engine, evaluator and calculators
 
+- **Issue:** #5 (sub-issue of #1)
 - **Branch:** `agent/engine`
 - **Phase:** 1 (parallel with 01, 02)
 - **Depends on:** 00-foundation merged. Uses 01's calendar and 02's rules once they are merged; until

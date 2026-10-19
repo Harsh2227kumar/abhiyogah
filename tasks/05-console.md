@@ -1,5 +1,6 @@
 # 05 — Web console
 
+- **Issue:** #7 (sub-issue of #1)
 - **Branch:** `agent/console`
 - **Phase:** 2 (can start scaffolding once 00 is merged; real data needs 04's `openapi.json`)
 - **Depends on:** 00-foundation; 04-platform for the live API

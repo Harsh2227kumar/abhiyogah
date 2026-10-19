@@ -50,15 +50,22 @@ Notes:
 - When a stream logs `STREAM COMPLETE`, delete its scheduled task. Then start the streams it unblocks.
 - Test the resume loop on the foundation stream on day one before relying on it overnight.
 
-## Merging
+## Issues, PRs and merging
 
-Only the integrator (stream 08) pushes to `main`. It merges an `agent/*` branch only when
-`make check` passes after merging `main` into it. Stream agents merge `main` into their own branch at the
-start of each session, so they always build on the latest contracts.
+- Issue #1 tracks the whole MVP; issues #2–#10 are the streams (one per task file).
+- Each stream opens a PR from `agent/<stream>` into `main` every few checklist items, linking its issue
+  (`Part of #N`, and `Closes #N` in the final PR). The PR template asks for the items covered, the checks
+  run and any rule changes.
+- The integrator (stream 08) merges a PR only when CI is green and there's no conflict, using a merge
+  commit. Stream agents never merge their own PRs.
+- PRs touching `rules/obligations/` wait for your review.
+- Bugs, rule changes and new work go in new issues using the templates in `.github/ISSUE_TEMPLATE/`.
+- Recommended GitHub setting: protect `main` (require a PR and a green CI check before merging) once the
+  foundation stream has added the CI workflow.
 
 ## What the owner (you) does
 
-1. **Review rules.** Agents only write `DRAFT` obligations. Reading each obligation against its clause,
+1. **Review rules PRs.** Agents only write `DRAFT` obligations. Reading each obligation against its clause,
    then setting `status: IN_FORCE` and `signed_off_by`, is your job and can't be delegated.
 2. **Answer open questions** in [`docs/open-questions.md`](open-questions.md).
 3. **Glance at [`PROGRESS.md`](../PROGRESS.md) daily** and at blocked streams.
