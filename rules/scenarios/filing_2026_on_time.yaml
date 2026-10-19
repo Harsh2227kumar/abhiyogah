@@ -1,0 +1,39 @@
+name: filing_2026_on_time
+description: >
+  The complainant files with RBI within 90 days of the end of the bank's 30-day window; the complaint
+  is in time.
+obligation_ids: [RBIOS-2026-10-1-g]
+hand_check: |
+  Source: RB-IOS 2026 cl. 10(1)(g) (report Table A, row A3, verification P). Report formula:
+  filing_deadline = max(bank_deadline, last_bank_communication) + 90d, bank_deadline from A2
+  (cl. 10(1)(f)): bank_receipt + max(30, external TAT). Day basis: calendar, inferred (Q4).
+  A3 is a PERMISSION of the complainant: no breach entry, no required action.
+  bank_receipt_date = 2026-08-03; no external TAT; bank_deadline = 2026-08-03 + 30 = 2026-09-02
+  last_bank_communication_date = 2026-08-20 (FINAL_REPLY_SENT)
+  start = max(2026-09-02, 2026-08-20) = 2026-09-02
+  due_date = 2026-09-02 + 90 days = 2026-12-01
+  RBI_RECEIVED 2026-11-20: anchor 2026-11-20 >= 2026-07-01 selects the 2026 values (30, 90 days).
+  2026-11-20 <= 2026-12-01, so STOPPED_ON_TIME and filed_in_time = true.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-08-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-11-20T10:00:00+05:30
+as_of: 2026-11-25T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-10-1-g: STOPPED_ON_TIME
+  outputs:
+    RBIOS-2026-10-1-g: {filed_in_time: true}
+  deadlines:
+    - {obligation_id: RBIOS-2026-10-1-g, due_date: 2026-12-01, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

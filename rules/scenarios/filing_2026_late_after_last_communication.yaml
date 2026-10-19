@@ -1,0 +1,42 @@
+name: filing_2026_late_after_last_communication
+description: >
+  A later bank communication moves the start of the 90-day window past the 30-day expiry, but the
+  complainant still files three days too late.
+obligation_ids: [RBIOS-2026-10-1-g]
+hand_check: |
+  Source: RB-IOS 2026 cl. 10(1)(g) (report Table A, row A3, verification P). Report formula:
+  filing_deadline = max(bank_deadline, last_bank_communication) + 90d, bank_deadline from A2
+  (cl. 10(1)(f)): bank_receipt + max(30, external TAT). Day basis: calendar, inferred (Q4).
+  A3 is a PERMISSION of the complainant: no breach entry, no required action.
+  bank_receipt_date = 2026-07-06; bank_deadline = 2026-07-06 + 30 = 2026-08-05
+  FINAL_REPLY_SENT 2026-07-15, then BANK_COMMUNICATION_SENT 2026-09-01:
+  last_bank_communication_date = 2026-09-01
+  start = max(2026-08-05, 2026-09-01) = 2026-09-01
+  due_date = 2026-09-01 + 90 days = 2026-11-30
+  RBI_RECEIVED 2026-12-03 > 2026-11-30 (3 days after), so STOPPED_LATE; filed_in_time = false.
+  No breach entry: the lapse is the complainant's, it makes the complaint non-maintainable.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-07-06T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-07-15T16:00:00+05:30
+  - type: BANK_COMMUNICATION_SENT
+    occurred_at: 2026-09-01T12:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-12-03T10:00:00+05:30
+as_of: 2026-12-04T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-10-1-g: STOPPED_LATE
+  outputs:
+    RBIOS-2026-10-1-g: {filed_in_time: false}
+  deadlines:
+    - {obligation_id: RBIOS-2026-10-1-g, due_date: 2026-11-30, result: STOPPED_LATE}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

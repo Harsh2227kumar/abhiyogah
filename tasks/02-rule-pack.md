@@ -27,7 +27,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 ### Obligations (one file each, with ≥ 2 scenarios: one compliant, one breach, plus edge cases)
 - [x] A1 scheme router (RB-IOS 2021 vs 2026 by RBI receipt date, cl. 20(2))
 - [x] A2 30-day bank reply / max(30, external TAT) (RB-IOS cl. 10(1)(f))
-- [ ] A3 90-day RBI filing window (cl. 10(1)(g)), including the 2021 comparator
+- [x] A3 90-day RBI filing window (cl. 10(1)(g)), including the 2021 comparator
 - [x] A13 IO auto-escalation: 20 days (14(1)(b)) and TAT − 10 days (14(1)(a))
 - [ ] A14 three-state outcome (14(2))
 - [ ] A15 no same-unit closure and senior review (14(3)–(4))
@@ -60,3 +60,4 @@ hand calculation; the owner can review each obligation against its clause in und
 - 2026-10-19 · item 3 done · registry/lint.py (citations, IN_FORCE gate, pause, references, file name, duplicates/overlap, overridden_by, test files, scenario obligation IDs); `make rules` runs it · next: A1 scheme router
 - 2026-10-19 · A1 done · RBIOS-2026-20-2 router (`scheme` anchored at rbi_receipt_date; 2021 start UNVERIFIED, Q15/#17), 3 scenarios, `expect.outputs` + DETERMINED (requested from domain), validity/anchor conventions · next: A2
 - 2026-10-19 · A2 done · RBIOS-2026-10-1-f as complainant PERMISSION (`base_days` 30, max with external TAT, output `escalation_open`), 5 scenarios; PERMISSION never breaches (convention + test) · next: A3
+- 2026-10-19 · A3 done · RBIOS-2026-10-1-g PERMISSION with `base_days` + `filing_window` dated by rbi_receipt_date (2026: 90 days P; 2021: 1 year S, Q15), output `filed_in_time`, 5 scenarios incl. the 2025-receipt time-bar case · next: A14

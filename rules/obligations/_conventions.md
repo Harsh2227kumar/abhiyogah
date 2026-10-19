@@ -43,6 +43,11 @@ the obligation select how the due date is computed from the start date `s` (an I
 | `max_days` | `s + max_days` (in the clock's basis) | most clocks |
 | `base_days` | `s + max(base_days, external_tat_days)`, or `s + base_days` when no external TAT is known | A2 |
 | `io_review_days` | `s + external_tat_days − io_review_days` | A13 limb (a) |
+| `base_days` + `filing_window` | `max(s + max(base_days, external_tat_days), last_bank_communication_date) + filing_window` | A3 |
+
+`filing_window` is `{days: n}` or `{years: n}`; adding years keeps the month and day (29 Feb is not
+reached by any scenario and has no rule yet). A3's anchor is `rbi_receipt_date`; until RBI has
+received the complaint, the `as_of` date stands in for it ("if it were filed now").
 
 `external_tat_days` is the `ComplaintFacts` input supplied by the bank. It is counted from the bank's
 receipt of the complaint; that anchor is an inference recorded as open question Q14.
@@ -60,6 +65,7 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
   | Obligation | Output | Values |
   |---|---|---|
   | A1 `RBIOS-2026-20-2` | `scheme` | the `scheme` parameter in force at `rbi_receipt_date`: `RB-IOS-2021` or `RB-IOS-2026` |
+  | A3 `RBIOS-2026-10-1-g` | `filed_in_time` | once `rbi_receipt_date` is known: `true` for `STOPPED_ON_TIME`, `false` for `STOPPED_LATE`; absent before filing |
   | A2 `RBIOS-2026-10-1-f` | `escalation_open` | `true` when the clock is `BREACHED` or `STOPPED_LATE` (no reply by the due date) or `customer_dissatisfied_date` is set, else `false` |
 
   Clock obligations may also have outputs; `DETERMINED` ones must.

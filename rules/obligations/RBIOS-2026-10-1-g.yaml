@@ -1,0 +1,41 @@
+# A3 (report Table A row A3): the complainant must file with RBI within 90 days of the later of the
+# A2 expiry and the bank's last communication; a late filing is non-maintainable. A PERMISSION of the
+# complainant: a lapsed window is never a bank breach. Report formula:
+#   filing_deadline = max(bank_deadline, last_bank_communication) + 90d
+# with bank_deadline from A2 (max(30, external TAT) days after bank receipt).
+# The 2021 comparator (report row A3, grade S): one year, or one year + 30 days if no reply, i.e. the
+# same shape with a one-year window. Which version applies follows RBI's receipt date (cl. 20(2),
+# A1), so the anchor is rbi_receipt_date; before RBI has received the complaint the as_of date stands
+# in ("if filed now"). The 2021 scheme's commencement date is UNVERIFIED (Q15).
+obligation_id: RBIOS-2026-10-1-g
+deontic: PERMISSION
+subject: complainant
+instrument: "Reserve Bank – Integrated Ombudsman Scheme, 2026"
+# instrument_ref omitted: final circular number not found (Q1)
+clause: "10(1)(g)"
+source_url: "https://av.sc.com/in/content/docs/in-integrated-ombudsman-scheme.pdf"
+applies_to: {entity_type: COMMERCIAL_BANK}
+trigger: {event: BANK_RECEIVED}
+clock: {start: BANK_RECEIVED, stop: RBI_RECEIVED, basis: CALENDAR, basis_status: INFERRED, tz: Asia/Kolkata}
+anchor: rbi_receipt_date
+parameters:
+  base_days:
+    "2021-11-12": {value: 30, reference: "RB-IOS 2021, report row A3 comparator (1 year + 30 days if no reply)",
+                   verification: SECONDARY_ONLY, open_question: Q15}
+    "2026-07-01": {value: 30, reference: "RB-IOS 2026 cl. 10(1)(f)", verification: PRIMARY_TEXT_READ, open_question: Q4}
+  filing_window:
+    "2021-11-12": {value: {years: 1}, reference: "RB-IOS 2021, report row A3 comparator",
+                   verification: SECONDARY_ONLY, open_question: Q15}
+    "2026-07-01": {value: {days: 90}, reference: "RB-IOS 2026 cl. 10(1)(g)", verification: PRIMARY_TEXT_READ,
+                   open_question: Q4}
+valid_from: 2026-07-01
+valid_to: null
+status: DRAFT
+verification: PRIMARY_TEXT_READ
+supersedes_note: "RB-IOS 2021 one-year window (1 year + 30 days if no reply), saved for RBI receipts before 1 Jul 2026"
+tests:
+  - filing_2026_on_time.yaml
+  - filing_2026_late_after_last_communication.yaml
+  - filing_2026_running_not_filed.yaml
+  - filing_2021_comparator_saved.yaml
+  - filing_2025_complaint_time_barred_under_2026.yaml
