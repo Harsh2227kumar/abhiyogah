@@ -30,8 +30,12 @@
    the owner. When a stream's final PR merges, check that its issue was closed.
 
 ## Checklist (one-off items)
-- [ ] `tests/e2e/test_demo.py`: the plan's end-to-end demo script (UPI fraud complaint → deadlines →
-      time-travel past day 20 → auto-escalation → clause-cited trace → MCP returns the same result).
+- [x] `tests/e2e/test_demo.py`: the plan's end-to-end demo script (UPI fraud complaint → deadlines →
+      time-travel past day 20 → auto-escalation → clause-cited trace), on the real start-up path
+      (YAML rule pack, real calendar) with DRAFT copies from PR #16 in `tests/e2e/rulepack/`.
+- [ ] e2e demo, MCP step: the MCP tool returns the same result to an agent (waits on stream 07).
+- [ ] e2e demo and `scripts/demo.sh` on the real rule pack: once #16 merges, point both at
+      `rules/obligations/`, keep the hand-checked assertions, and delete `tests/e2e/rulepack/`.
 - [ ] `scripts/demo.sh` that runs the demo against `docker compose up`.
 - [x] Release checklist in `docs/release.md` (rule-pack version, calendar version, migration notes).
 
@@ -40,3 +44,4 @@
 - 2026-10-19 · #20 domain additions (DETERMINED, cl. 14(5)/A15/A18/B-table facts, SENIOR_REVIEWED, appellant, AEPS split) · PR #23 opened; rules stream must update `failed_txn_aeps_row_ambiguous.yaml` (uses removed `AEPS`) after merge · next: release checklist
 - 2026-10-19 · release checklist done · `docs/release.md` (rule-pack, calendar, migration, replay steps) · next: e2e demo and `scripts/demo.sh` wait on the platform stream (API, store, docker compose)
 - 2026-10-19 · #25 `DecisionRecord.outputs` (hashed, empty by default) · PR opened · next: e2e demo and `scripts/demo.sh` still wait on the platform stream
+- 2026-10-19 · e2e demo test done · `tests/e2e/test_demo.py` (B6, B5 tier, A13 breach after time travel, sweep, REFER_TO_IO, cited explain, replay) on DRAFT copies of #16 · next: `scripts/demo.sh`
