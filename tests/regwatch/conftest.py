@@ -1,18 +1,29 @@
-"""Offline helpers: saved fixtures, a scripted transport and a fake clock."""
+"""Offline helpers: a no-network guard, saved fixtures, a scripted transport and a fake clock."""
 
-from collections.abc import Callable
+import socket
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
+import pytest
 
 from abhiyogah.regwatch.fetcher import Fetcher
 
 FIXTURES = Path(__file__).resolve().parents[2] / "data" / "regwatch" / "fixtures"
 FETCHED_AT = datetime(2099, 1, 7, 4, 30, tzinfo=UTC)
 
-Handler = Callable[[httpx.Request], httpx.Response]
+
+@pytest.fixture(autouse=True)
+def no_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Regulatory Watch tests are offline: any real socket connection fails the test."""
+
+    def refuse(*args: object, **kwargs: object) -> None:
+        raise AssertionError("Regulatory Watch tests must not open network connections")
+
+    monkeypatch.setattr(socket.socket, "connect", refuse)
+    monkeypatch.setattr(socket.socket, "connect_ex", refuse)
+    monkeypatch.setattr(socket, "create_connection", refuse)
 
 
 def fixture(name: str) -> bytes:
