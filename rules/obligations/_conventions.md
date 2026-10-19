@@ -45,7 +45,7 @@ the obligation select how the due date is computed from the start date `s` (an I
 
 | Parameters | Due date | Used by |
 |---|---|---|
-| `max_days` | `s + max_days` (in the clock's basis) | most clocks |
+| `max_days` | `s + max_days` (in the clock's basis; for `WORKING`, the `max_days`-th working day after `s` on the home-branch calendar, `s` itself excluded) | most clocks |
 | `base_days` | `s + max(base_days, external_tat_days)`, or `s + base_days` when no external TAT is known | A2 |
 | `io_review_days` | `s + external_tat_days − io_review_days` | A13 limb (a) |
 | `tat_days_by_channel` | `T + table[channel]`, T = `transaction_date_t`; a channel not in the table (or listed in `follows_underlying_system`) gives `INSUFFICIENT_FACTS` | B1, B2 |
@@ -57,6 +57,9 @@ received the complaint, the `as_of` date stands in for it ("if it were filed now
 
 `external_tat_days` is the `ComplaintFacts` input supplied by the bank. It is counted from the bank's
 receipt of the complaint; that anchor is an inference recorded as open question Q14.
+
+`days_late` is always counted in calendar days (`rules/scenarios/_schema.md`), also for working-day
+clocks.
 
 Compensation per day of delay (`compensation_per_day_paise`, B1/B2): owed =
 `per_day × days_late`, where days_late runs to the stop date, or to the `as_of` date while the clock
@@ -107,6 +110,7 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
 | `SEND_FINAL_DECISION` | A17 | Communicate the bank's final decision to the complainant |
 | `SEND_CORRECTED_REPLY` | A18 | Send the complainant a reply carrying the missing cl. 14(11)–(12) elements |
 | `REVERSE_TRANSACTION` | B1, B2 | Complete the failed-transaction reversal (compensation keeps accruing) |
+| `SHADOW_CREDIT` | B6 | Credit the disputed amount to the customer, value-dated to the transaction date |
 | `SET_OUTCOME` | A14 | Record one of the three cl. 14(2) outcomes for a complaint already replied to |
 
 ## Scenario inputs that are not regulatory values

@@ -38,7 +38,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 - [x] B1 failed-transaction TATs: one parameter table covering every verified channel row, plus ₹100/day
 - [x] B2 illegible rows: encoded but `verification: UNVERIFIED`
 - [x] B5 limited liability tiers and account-type caps (paras 67–71, Tables 1–2)
-- [ ] B6 shadow credit in 10 working days (para 72)
+- [x] B6 shadow credit in 10 working days (para 72)
 - [ ] B7 liability determination within 90 days (para 73)
 - [ ] B10 1 Jan 2027 fraud regime: `FUTURE_DATED`, every draft figure `UNVERIFIED`
 - [ ] A5, A6, A7, A8 RBI Ombudsman-stage clocks
@@ -77,3 +77,4 @@ Tracked together in issue #20.
 - 2026-10-19 · B1 done · TAT-2019-FAILED-TXN with `tat_days_by_channel` (verified rows), `follows_underlying_system`, ₹100/day as 10000 paise; 5 scenarios; requested `issue_type` fact and AEPS channel split (#20) · next: B2
 - 2026-10-19 · B2 done · TAT-2019-ILLEGIBLE-ROWS (CNP T+5, AePS beneficiary T+1, ₹100/day) all UNVERIFIED/Q5, 2 scenarios; Q5/Q6/Q9 now name obligation IDs · next: B5
 - 2026-10-19 · B5 done · RBCCB-2025-67-71 determination (3/7 working-day tiers, Table 2 caps in paise, outputs delay_working_days/liability_tier/customer_liability_paise), 6 scenarios on MH June 2026 dates (holiday-free assumption stated, Q13); requested `liability_fault` fact (#20) · next: B6
+- 2026-10-19 · B6 done · RBCCB-2025-72 (10 working days from CUSTOMER_REPORTED, report day excluded), action SHADOW_CREDIT, 4 scenarios incl. 3rd-Saturday due date and report on a 2nd Saturday · next: B7
