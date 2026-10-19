@@ -39,6 +39,12 @@
 ### Worker
 - [x] procrastinate periodic task: re-evaluate open complaints every N minutes and on each new event;
       append new decision records only when the result changed.
+- [x] End-to-end test over the API with test obligations shaped like the rule pack (A13 limbs,
+      a RBCCB-2025-72-like shadow-credit clock): post → deadlines → reject → time travel past day 20 →
+      breach and IO referral → chain verifies (`tests/api/test_end_to_end.py`).
+- [ ] Definition-of-done end-to-end against the merged rule pack: the UPI fraud demo returns the IO
+      deadline, the shadow-credit deadline and the liability tier. Needs rule pack #16, engine #27
+      (main's evaluator raises ParameterError on RBCCB-2025-67-71) and DecisionRecord outputs #28 in main.
 - [ ] Write `STREAM COMPLETE`.
 
 ## Definition of done
@@ -66,3 +72,5 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · item 11 done · as_of: ADMIN-only on all 6 read routes that take it (403 for reader/writer, discovered from the route table), offset required, echoed in the detail · next: make openapi
 - 2026-10-19 · item 12 done · make openapi → python -m abhiyogah.api.openapi writes openapi.json (env-independent) and regenerates the console client where pnpm exists; staleness test; console typechecks against it (regeneration left to console, see Requests) · next: worker periodic re-evaluation
 - 2026-10-19 · item 13 done · worker.app: procrastinate App (Psycopg or in-memory connector), periodic reevaluate_open every ABHIYOGAH_REEVALUATE_MINUTES + reevaluate_complaint task; worker.schedule sweeps only complaints time can change (RUNNING/BREACHED/INSUFFICIENT_FACTS, new rule version, validity edge crossed); append only on material change (trace excluded: it names as_of); API re-evaluates inline on each new event · next: end-to-end definition-of-done test, then STREAM COMPLETE
+- 2026-10-19 · item 14 done · synthetic E2E (IO + shadow-credit-like clock) over the API passes; fix: events are kept and engine errors reported (201 + evaluation_error, 500 with message on reads, sweep continues) · next: rule-pack E2E
+- 2026-10-19 · BLOCKED: DoD E2E needs #16 (rule pack), #27 (engine: tier/limits on RBCCB-2025-67-71) and #28 (outputs) merged into main. Resume: merge origin/main, run the UPI fraud demo through the API with rules/obligations, then STREAM COMPLETE.
