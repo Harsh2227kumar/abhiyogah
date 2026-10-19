@@ -23,7 +23,7 @@
 - [x] Text extraction that keeps paragraph anchors.
 - [x] Relevance classifier (keywords first, LLM optional) for complaints, customer service, fraud, KYC,
       payment TATs and IO.
-- [ ] Change-impact linking: which obligation IDs a new circular amends or supersedes.
+- [x] Change-impact linking: which obligation IDs a new circular amends or supersedes.
 - [ ] Draft generator: proposes a changed obligation YAML (status DRAFT) plus a summary for human legal
       review. It never edits `rules/` on `main` directly.
 - [ ] Offline tests using saved fixture files; no live network calls in CI.
@@ -53,3 +53,4 @@
 - 2026-10-19 · item 4 done · regwatch/raw_store.py: content-addressed blobs (exclusive create, 0444, hash-checked reads), append-only index.jsonl of RawDocument (sha256, url, fetched_at, circular numbers via RBI/\d{4}-\d{2,4}/\d+, feed date, title); changed bytes add a version, nothing deletes; verify() finds tampering; synthetic HTML circular fixture · next: item 5 text extraction with paragraph anchors
 - 2026-10-19 · item 5 done · regwatch/extract.py: HTML (stdlib parser, block elements, script/style/head dropped) and PDF (pypdf, loaded lazily; Request filed) to ordered Paragraphs with stable positional anchors (p7, page2-p3), printed numbers (3, 14.2, (a)) and page; synthetic 2-page PDF fixture · next: item 6 relevance classifier
 - 2026-10-19 · item 6 done · regwatch/relevance.py: keyword topics (COMPLAINTS, CUSTOMER_SERVICE, FRAUD, KYC, PAYMENT_TAT, INTERNAL_OMBUDSMAN) with paragraph-anchored hits, case-sensitive acronyms; optional TopicSuggester (LLM via perception later) can only add topics, with provenance, and disagreement or bad citations set needs_review · next: item 7 change-impact linking
+- 2026-10-19 · item 7 done · regwatch/impact.py: per-obligation ImpactLink with the strongest evidence (CIRCULAR via instrument_ref/source_url, CLAUSE via instrument name + clause ref incl. parent and ranges, INSTRUMENT only), relation SUPERSEDES/REPEALS/AMENDS/MENTIONS from the cited paragraphs, anchors for every link · next: item 8 draft generator
