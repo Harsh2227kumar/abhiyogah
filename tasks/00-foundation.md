@@ -26,7 +26,7 @@
 - [x] `Makefile` with the targets listed in `CLAUDE.md` (`setup`, `check`, `test`, `rules`, `openapi`,
       `up`). `rules` and `openapi` may print "not implemented yet" for now. `make check` must pass.
 - [x] GitHub Actions workflow `.github/workflows/ci.yml` running `make setup && make check` on push and PR.
-- [ ] `domain/enums.py`: `DayBasis` (CALENDAR, WORKING), `BasisStatus` (EXPLICIT, INFERRED),
+- [x] `domain/enums.py`: `DayBasis` (CALENDAR, WORKING), `BasisStatus` (EXPLICIT, INFERRED),
       `Verification` (PRIMARY_TEXT_READ, SECONDARY_ONLY, UNVERIFIED, CONFLICTING), `RuleStatus`
       (DRAFT, FUTURE_DATED, IN_FORCE, SUPERSEDED, REPEALED_BUT_SAVED), `Deontic` (OBLIGATION,
       PROHIBITION, PERMISSION), `Outcome` (FULLY_RESOLVED, PARTIALLY_RESOLVED, WHOLLY_REJECTED),
@@ -77,3 +77,4 @@ _(other streams add requests for changes to owned paths here)_
 - 2026-10-19 · item 3 done · .importlinter: core-is-pure (no store/api/worker/perception/mcp/regwatch, DB, HTTP, LLM SDKs) + domain-is-leaf; verified it catches a planted httpx import · next: item 4 Makefile
 - 2026-10-19 · item 4 done · Makefile (setup/check/test/rules/openapi/up); `rules` auto-runs registry.lint and tests/scenarios once they exist; make check green · next: item 5 CI workflow
 - 2026-10-19 · item 5 done · .github/workflows/ci.yml runs make setup && make check on push and PR (uv, py3.12) · next: item 6 domain/enums.py
+- 2026-10-19 · item 6 done · domain/enums.py: StrEnums with value == UPPER_SNAKE name (YAML uses COMMERCIAL_BANK etc.); B5 cap amounts left to the rule pack · next: item 7 domain/money.py
