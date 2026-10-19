@@ -18,7 +18,7 @@
       category, language, schema-constrained output with confidence.
 - [x] Fact extraction: amount, UTR, transaction date T, channel, account type. Output becomes
       `ComplaintEvent`s with source LLM, model, prompt version and text span.
-- [ ] Reply QA gate (A18): checks a draft reply for every required element; blocks sending if any are
+- [x] Reply QA gate (A18): checks a draft reply for every required element; blocks sending if any are
       missing; never flags the required Ombudsman wording as a risk.
 - [ ] Synthetic gold sets in `data/gold/` (English, Hindi, Hinglish), clearly synthetic; an eval script
       reporting recall per language. A TF-IDF baseline for comparison.
@@ -39,3 +39,4 @@
 - 2026-10-19 · item 2 done · `perception.pii`: Aadhaar (Verhoeff), PAN, account (keyword), IFSC, VPA, card (Luhn), mobile, email, catch-all 9+ digits; UTR/RRN kept; `PiiVault` re-identifies in-process only; optional Presidio NER hook · next: item 3 triage
 - 2026-10-19 · item 3 done · `perception.triage`: schema-constrained answer (label, confidence, issue type, category, language, evidence span); gate keeps anything unsure or with a deficiency cue as a complaint; every NOT_A_COMPLAINT opens a review task; model failure → manual queue; categories configurable (#35) · next: item 4 fact extraction
 - 2026-10-19 · item 4 done · `perception.extraction`: amount/UTR/T/channel/account type with spans; grounding checks (value in span, no placeholders, no future dates, enum members), conflicts dropped; one FACTS_RECORDED event per fact with LLM provenance; folds into ComplaintFacts · next: item 5 reply QA gate
+- 2026-10-19 · item 5 done · `perception.reply_qa`: required codes from IO-CB-2026-14-11-12 params (+ IO codes when upheld or unknown), trigger condition via evaluator (fails closed on unknown facts); model only reports grounded element spans and risks; missing element or model failure blocks; risks overlapping required spans dropped; test fixture copied from PR #16 · next: item 6 gold sets + eval
