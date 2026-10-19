@@ -9,7 +9,7 @@
 
 ## Checklist
 
-- [ ] Next.js App Router + TypeScript strict + pnpm in `console/`; lint, typecheck and test scripts; add
+- [x] Next.js App Router + TypeScript strict + pnpm in `console/`; lint, typecheck and test scripts; add
       them to `make check` via a `console-check` target (skipped when pnpm isn't installed).
 - [ ] Generated API client from `openapi.json` (openapi-typescript). Until 04 lands, use a mock server
       built from the same types.
@@ -30,3 +30,4 @@ The plan's end-to-end demo can be clicked through in the console against a local
 ## Requests
 
 ## Log
+- 2026-10-19 · item 1 done · Next.js 16 + TS strict + pnpm scaffold in console/, eslint/tsc/vitest via `pnpm check`, `console-check` in `make check` (setup's pnpm line now also skips without pnpm) · next: item 2 (API client + mock)

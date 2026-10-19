@@ -1,0 +1,22 @@
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Abhiyogah console",
+  description: "RBI complaint-compliance deadlines, breaches and decision records.",
+};
+
+/** Root layout shared by every console page. */
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    <html lang="en-IN">
+      <body>
+        <header className="topbar">
+          <span className="brand">Abhiyogah</span>
+        </header>
+        <main>{children}</main>
+      </body>
+    </html>
+  );
+}
