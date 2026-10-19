@@ -20,7 +20,7 @@
 - [x] Polite fetcher for RBI notifications, Master Directions and press releases (and their RSS feeds):
       rate limit, user agent, retries, and handling of bot checks without circumventing them.
 - [x] Immutable raw store: PDF/HTML + SHA-256 + circular number (regex `RBI/\d{4}-\d{2,4}/\d+`) + date + URL.
-- [ ] Text extraction that keeps paragraph anchors.
+- [x] Text extraction that keeps paragraph anchors.
 - [ ] Relevance classifier (keywords first, LLM optional) for complaints, customer service, fraud, KYC,
       payment TATs and IO.
 - [ ] Change-impact linking: which obligation IDs a new circular amends or supersedes.
@@ -35,6 +35,9 @@
   dependency, `mcp>=2.2,<3`. Until then `abhiyogah.mcp.server` imports it at build time and raises
   `McpUnavailableError`; `tests/mcp/test_server.py` skips without it. The tools themselves
   (`abhiyogah.mcp.tools`) need only `httpx` and run in CI.
+- **foundation / integrator (`pyproject.toml`, `uv.lock`):** add `pypdf` (BSD-3) as a runtime
+  dependency for Regulatory Watch PDF text extraction (`abhiyogah.regwatch.extract`). Until then
+  PDFs raise `ExtractionError` and the PDF test skips; HTML and text extraction need nothing new.
 - **platform (`src/abhiyogah/api/`):** the route bodies in `api/app.py` (`detail`, `list_complaints`,
   `explain_decision`, ...) are closures inside `_routes`, so there is no service layer another
   front end can call. Please extract them into a service module (e.g. `api/service.py`: plain
@@ -48,3 +51,4 @@
 - 2026-10-19 · item 2 done · tests/mcp/test_api_parity.py: tool result and MCP protocol (SDK in-process Client) structured content both equal GET /complaints/{id} for the UPI demo complaint, now and time-travelled past both breaches; API refusals reach the agent as tool errors (server maps them to the SDK's ToolError) · next: item 3 polite RBI fetcher
 - 2026-10-19 · item 3 done · regwatch/fetcher.py: honest UA with contact, robots.txt obeyed (incl. Crawl-delay; unreadable robots stops), per-host rate limit, bounded retries with backoff + Retry-After, bot checks raise BotCheckError with no retry/bypass, 50 MB cap, RSS parsing refusing DOCTYPE/entities; SOURCES flagged unverified (sandbox proxy blocks rbi.org.in); synthetic fixtures in data/regwatch/fixtures · next: item 4 immutable raw store
 - 2026-10-19 · item 4 done · regwatch/raw_store.py: content-addressed blobs (exclusive create, 0444, hash-checked reads), append-only index.jsonl of RawDocument (sha256, url, fetched_at, circular numbers via RBI/\d{4}-\d{2,4}/\d+, feed date, title); changed bytes add a version, nothing deletes; verify() finds tampering; synthetic HTML circular fixture · next: item 5 text extraction with paragraph anchors
+- 2026-10-19 · item 5 done · regwatch/extract.py: HTML (stdlib parser, block elements, script/style/head dropped) and PDF (pypdf, loaded lazily; Request filed) to ordered Paragraphs with stable positional anchors (p7, page2-p3), printed numbers (3, 14.2, (a)) and page; synthetic 2-page PDF fixture · next: item 6 relevance classifier
