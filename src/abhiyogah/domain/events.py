@@ -31,6 +31,8 @@ class EventType(StrEnum):
     """Any bank communication to the complainant; the latest one feeds the A3 filing window."""
     CUSTOMER_DISSATISFIED = "CUSTOMER_DISSATISFIED"
     """Complainant states dissatisfaction with the bank's reply (A2)."""
+    SENIOR_REVIEWED = "SENIOR_REVIEWED"
+    """The outcome was reviewed at a senior level (IO Directions 2026 cl. 14(3)-(4), A15)."""
 
     # Unauthorised transactions and failed transactions (RBC-CB paras 66-73, TAT circular)
     CUSTOMER_REPORTED = "CUSTOMER_REPORTED"

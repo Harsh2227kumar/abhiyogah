@@ -33,6 +33,9 @@
 - [ ] `tests/e2e/test_demo.py`: the plan's end-to-end demo script (UPI fraud complaint → deadlines →
       time-travel past day 20 → auto-escalation → clause-cited trace → MCP returns the same result).
 - [ ] `scripts/demo.sh` that runs the demo against `docker compose up`.
-- [ ] Release checklist in `docs/release.md` (rule-pack version, calendar version, migration notes).
+- [x] Release checklist in `docs/release.md` (rule-pack version, calendar version, migration notes).
 
 ## Log
+
+- 2026-10-19 · #20 domain additions (DETERMINED, cl. 14(5)/A15/A18/B-table facts, SENIOR_REVIEWED, appellant, AEPS split) · PR #23 opened; rules stream must update `failed_txn_aeps_row_ambiguous.yaml` (uses removed `AEPS`) after merge · next: release checklist
+- 2026-10-19 · release checklist done · `docs/release.md` (rule-pack, calendar, migration, replay steps) · next: e2e demo and `scripts/demo.sh` wait on the platform stream (API, store, docker compose)

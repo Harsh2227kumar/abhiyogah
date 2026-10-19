@@ -102,3 +102,12 @@ def test_negative_compensation_is_rejected() -> None:
     """Compensation is never negative."""
     with pytest.raises(ValidationError):
         Compensation(amount_paise=Paise(-1), formula="x")
+
+
+def test_determined_result_has_no_deadline_or_breach() -> None:
+    """A clock-less obligation can end DETERMINED without a deadline (issue #20)."""
+    record = make_record(DecisionResult.DETERMINED).model_copy(
+        update={"deadline": None, "breach": None, "compensation": None}
+    )
+    assert DecisionRecord.model_validate_json(record.model_dump_json()) == record
+    assert record.result.value == "DETERMINED"

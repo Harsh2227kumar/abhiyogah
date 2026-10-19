@@ -1,0 +1,8 @@
+# TODO: source. No primary list of NI Act holidays for OD in 2026 has been read yet.
+# Add dates only from a primary source (RBI holiday matrix or the state's NI Act notification)
+# and set source_url to it. Never invent holiday dates.
+state: OD
+year: 2026
+source_url: null
+todo: "source the NI Act bank holiday list for OD, 2026"
+holidays: []

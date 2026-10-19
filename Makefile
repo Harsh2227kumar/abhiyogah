@@ -1,15 +1,15 @@
 # Abhiyogah developer commands. See CLAUDE.md "Commands".
-.PHONY: setup check format-check format lint typecheck imports test rules openapi up
+.PHONY: setup check format-check format lint typecheck imports test rules console-check openapi up
 
 UV ?= uv
 RUN := $(UV) run
 
 setup:
 	$(UV) sync
-	@if [ -f console/package.json ]; then cd console && pnpm install; fi
+	@if [ -f console/package.json ] && command -v pnpm >/dev/null 2>&1; then cd console && pnpm install; fi
 
 ## Full gate: format check, lint, mypy strict, import contracts, tests, rule pack.
-check: format-check lint typecheck imports test rules
+check: format-check lint typecheck imports test rules console-check
 
 format-check:
 	$(RUN) ruff format --check .
@@ -40,6 +40,14 @@ rules:
 		$(RUN) pytest tests/scenarios; \
 	else \
 		echo "rules: scenario runner not implemented yet"; \
+	fi
+
+## Console lint, typecheck and tests; skipped where pnpm is not installed.
+console-check:
+	@if ! command -v pnpm >/dev/null 2>&1; then \
+		echo "console-check: pnpm not installed, skipping"; \
+	elif [ -f console/package.json ]; then \
+		cd console && pnpm install --frozen-lockfile --silent && pnpm check; \
 	fi
 
 openapi:

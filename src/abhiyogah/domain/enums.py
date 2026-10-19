@@ -8,12 +8,15 @@ from enum import StrEnum
 
 __all__ = [
     "AccountType",
+    "Appellant",
     "BasisStatus",
     "Channel",
     "DayBasis",
     "Deontic",
     "EntityType",
     "FactSource",
+    "IssueType",
+    "LiabilityFault",
     "Outcome",
     "RuleStatus",
     "Verification",
@@ -95,7 +98,10 @@ class Channel(StrEnum):
     CARD_TO_CARD = "CARD_TO_CARD"
     POS_CARD_PRESENT = "POS_CARD_PRESENT"
     CARD_NOT_PRESENT = "CARD_NOT_PRESENT"
-    AEPS = "AEPS"
+    AEPS_MERCHANT = "AEPS_MERCHANT"
+    """AePS at a merchant (shop) location; its own annex row (report B1)."""
+    AEPS_BENEFICIARY = "AEPS_BENEFICIARY"
+    """AePS fund transfer to a beneficiary; its own annex row (report B2)."""
     APBS = "APBS"
     NACH = "NACH"
     PPI_ON_US = "PPI_ON_US"
@@ -135,3 +141,38 @@ class FactSource(StrEnum):
     HUMAN = "HUMAN"
     SYSTEM = "SYSTEM"
     LLM = "LLM"
+
+
+class IssueType(StrEnum):
+    """What kind of transaction problem a complaint raises; selects the B-table rules that apply.
+
+    Open to more members as the rule pack grows.
+    """
+
+    FAILED_TRANSACTION = "FAILED_TRANSACTION"
+    """Failed or partly failed transaction (TAT circular, report B1/B2)."""
+    UNAUTHORISED_TRANSACTION = "UNAUTHORISED_TRANSACTION"
+    """Unauthorised electronic transaction (RBC-CB paras 66-73, report B5-B7)."""
+    FRAUDULENT_TRANSACTION = "FRAUDULENT_TRANSACTION"
+    """Other fraudulent transactions, as covered by report row B10."""
+    OTHER = "OTHER"
+    """Any other complaint; no transaction rule is selected by it."""
+
+
+class LiabilityFault(StrEnum):
+    """Whose fault an unauthorised transaction was (RBC-CB paras 67-70, report B5).
+
+    Only a person sets this fact; an LLM never does (CLAUDE.md hard rule 4).
+    """
+
+    BANK = "BANK"
+    THIRD_PARTY = "THIRD_PARTY"
+    """Neither the bank nor the customer: the fault lies elsewhere in the system."""
+    CUSTOMER = "CUSTOMER"
+
+
+class Appellant(StrEnum):
+    """Who filed an appeal against an Ombudsman award or decision (RB-IOS 2026 cl. 17, A8)."""
+
+    BANK = "BANK"
+    COMPLAINANT = "COMPLAINANT"
