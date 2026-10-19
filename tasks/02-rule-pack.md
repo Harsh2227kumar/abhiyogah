@@ -25,7 +25,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
       exist; a non-null `pause` (pause semantics not researched); parameters with no reference.
 
 ### Obligations (one file each, with ≥ 2 scenarios: one compliant, one breach, plus edge cases)
-- [ ] A1 scheme router (RB-IOS 2021 vs 2026 by RBI receipt date, cl. 20(2))
+- [x] A1 scheme router (RB-IOS 2021 vs 2026 by RBI receipt date, cl. 20(2))
 - [ ] A2 30-day bank reply / max(30, external TAT) (RB-IOS cl. 10(1)(f))
 - [ ] A3 90-day RBI filing window (cl. 10(1)(g)), including the 2021 comparator
 - [x] A13 IO auto-escalation: 20 days (14(1)(b)) and TAT − 10 days (14(1)(a))
@@ -51,8 +51,11 @@ hand calculation; the owner can review each obligation against its clause in und
 
 ## Requests
 
+- `src/abhiyogah/domain/decision.py` (foundation/integrator): add `DecisionResult.DETERMINED` for obligations without a clock that produce an output (A1 scheme, A14/A15/A18 checks, B5 tier). Scenarios already use it; `tests/registry/test_scenario_files.py` accepts it until it exists. See `rules/obligations/_conventions.md`.
+
 ## Log
 - 2026-10-19 · item 1 done · registry/loader.py + errors.py: load rules/obligations/*.yaml, duplicate ID is an error; tests/registry/test_loader.py · next: registry/resolve.py
 - 2026-10-19 · item 2 done · registry/resolve.py parameter_at (latest effective ≤ anchor, else NoParameterInForce) with property test · next: registry/lint.py
 - 2026-10-19 · A13 done (ahead of lint, because the linter refuses the foundation scenario until IO-CB-2026-14-1-b exists) · IO-CB-2026-14-1-a/-b with mutually exclusive limbs, 8 scenarios, `expect.results` key, rules/obligations/_conventions.md, Q14, scenario consistency test · next: registry/lint.py
 - 2026-10-19 · item 3 done · registry/lint.py (citations, IN_FORCE gate, pause, references, file name, duplicates/overlap, overridden_by, test files, scenario obligation IDs); `make rules` runs it · next: A1 scheme router
+- 2026-10-19 · A1 done · RBIOS-2026-20-2 router (`scheme` anchored at rbi_receipt_date; 2021 start UNVERIFIED, Q15/#17), 3 scenarios, `expect.outputs` + DETERMINED (requested from domain), validity/anchor conventions · next: A2

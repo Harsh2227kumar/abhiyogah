@@ -24,6 +24,15 @@ Limbs of one clause that override each other (A13: 20 days vs TAT − 10 days) u
 conditions (`external_tat_days is set` / `is not set`) **and** list the override in `overridden_by`, so
 exactly one limb produces a deadline and the trace still names the override.
 
+## Validity and anchor dates
+
+- `valid_from` / `valid_to` are checked against the `as_of` date: is this rule in the pack at the
+  moment of evaluation? Outside them the result is `NOT_APPLICABLE`.
+- Parameter versions are chosen at the **anchor date**: the `anchor` fact when the obligation names
+  one (A1 uses `rbi_receipt_date`), else the clock start date. An obligation with neither resolves
+  at the `as_of` date. No version in force on the anchor date gives `INSUFFICIENT_FACTS`; nothing is
+  assumed.
+
 ## Deadline building blocks
 
 The clock spec gives the start, stop events, day basis and basis status. The parameters present on
@@ -41,7 +50,16 @@ receipt of the complaint; that anchor is an inference recorded as open question 
 Other parameters (amounts, caps, rates) are inputs to calculators and are named after what they
 hold, with units in the name: `_days`, `_paise`, `_percent`.
 
-## Results and required actions
+## Results, outputs and required actions
+
+- Obligations without a clock (the scheme router, classifications, checklists) end in
+  `DETERMINED` when they produce an output. `DETERMINED` is not yet a `DecisionResult` member; it is
+  requested under **Requests** in `tasks/02-rule-pack.md`.
+- A scenario's `expect.outputs` maps an obligation ID to the values it determined, by output name:
+
+  | Obligation | Output | Values |
+  |---|---|---|
+  | A1 `RBIOS-2026-20-2` | `scheme` | the `scheme` parameter in force at `rbi_receipt_date`: `RB-IOS-2021` or `RB-IOS-2026` |
 
 - A scenario's `expect.results` maps each obligation in `obligation_ids` to its `DecisionResult`,
   including results that have no deadline (`NOT_TRIGGERED`, `NOT_APPLICABLE`, `INSUFFICIENT_FACTS`).

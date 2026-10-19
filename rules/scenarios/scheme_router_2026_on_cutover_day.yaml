@@ -1,0 +1,35 @@
+name: scheme_router_2026_on_cutover_day
+description: >
+  RBI receives the complaint in the first minutes of 1 July 2026 IST (still 30 June in UTC); the
+  complaint falls under RB-IOS 2026, although the bank received it in 2025.
+obligation_ids: [RBIOS-2026-20-2]
+hand_check: |
+  Source: RB-IOS 2026 cl. 1(2), 20(1)-(2) (report Table A, row A1, verification P). Report formula:
+  scheme = 2026 if rbi_receipt >= 2026-07-01 else 2021. The scheme follows RBI's receipt date, not
+  the bank's (cl. 20(2)).
+  RBI_RECEIVED at 2026-07-01T00:20+05:30 = 2026-06-30T18:50Z; the IST date is 2026-07-01.
+  rbi_receipt_date 2026-07-01 >= 2026-07-01, so scheme = RB-IOS-2026.
+  bank_receipt_date 2025-12-15 does not matter.
+  Router has no clock: result DETERMINED, no deadline.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2025-12-15T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-01-05T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-01T00:20:00+05:30
+as_of: 2026-07-02T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-20-2: DETERMINED
+  outputs:
+    RBIOS-2026-20-2: {scheme: RB-IOS-2026}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

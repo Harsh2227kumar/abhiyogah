@@ -37,6 +37,7 @@ expect:
     - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-08-23, result: BREACHED}
   breaches:
     - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-08-23, days_late: 2}
+  outputs: {}                         # obligation_id -> {output name: value}, e.g. scheme
   compensation_paise: {}              # obligation_id -> integer paise owed at as_of
   required_actions:
     - {obligation_id: IO-CB-2026-14-1-b, action: REFER_TO_IO}
@@ -59,6 +60,8 @@ expect:
 - **`results`** maps every obligation in `obligation_ids` to its `DecisionResult`, including results
   that produce no deadline (`NOT_TRIGGERED`, `NOT_APPLICABLE`, `INSUFFICIENT_FACTS`). Added by the
   rules stream; see `rules/obligations/_conventions.md`.
+- **`outputs`** maps an obligation that ends `DETERMINED` (no clock: router, classification,
+  checklist) to the values it produced. Output names are listed in `rules/obligations/_conventions.md`.
 - **`breaches`** lists every breach. `days_late` = stop date − `due_date` when stopped late, else
   `as_of` date − `due_date`.
 - **`deadlines`, `breaches` and `required_actions`** are compared as sets: no missing and no extra
