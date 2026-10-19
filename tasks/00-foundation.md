@@ -17,7 +17,7 @@
       pyyaml, holidays, fastapi, uvicorn, sqlalchemy>=2, psycopg[binary]>=3, alembic, procrastinate,
       httpx, structlog. Dev deps: pytest, hypothesis, mypy, ruff, import-linter, types-PyYAML. Ruff and
       mypy (`strict = true`) configured in `pyproject.toml`.
-- [ ] Empty subpackages with `__init__.py` and a one-line docstring each: domain, registry, calendar,
+- [x] Empty subpackages with `__init__.py` and a one-line docstring each: domain, registry, calendar,
       clocks, evaluator, calculators, workflow, ledger, store, api, worker, perception, mcp, regwatch,
       reporting (layout in `docs/plan.md` §4).
 - [ ] `.importlinter` contract: the core (domain, registry, calendar, clocks, evaluator, calculators,
@@ -73,3 +73,4 @@ _(other streams add requests for changes to owned paths here)_
 
 ## Log
 - 2026-10-19 · item 1 done · pyproject.toml (uv, py3.12, ruff + mypy strict), uv.lock, package root, tests/conftest.py with db skip · next: item 2 subpackages
+- 2026-10-19 · item 2 done · 15 subpackage stubs with docstrings + import smoke test · next: item 3 .importlinter
