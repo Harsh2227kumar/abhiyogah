@@ -19,7 +19,7 @@
 - [x] `version` = SHA-256 of the overlay data plus the `holidays` package version, so decision records can
       say exactly which calendar they used.
 - [x] Day-of-receipt exclusion helper used by B5: `delay_working_days(alert_received, reported, state)`.
-- [ ] Hypothesis property tests: adding n working days lands on a working day; `working_days_between`
+- [x] Hypothesis property tests: adding n working days lands on a working day; `working_days_between`
       inverts `add_working_days`; receipt day is excluded; Sundays and 2nd/4th Saturdays are never
       working days; results don't depend on time of day (IST dates only).
 - [ ] Example tests with hand-checked dates (for example a report on a Friday before a 2nd Saturday).
@@ -39,3 +39,4 @@ All properties pass with at least 500 hypothesis examples; `make check` green; n
 - 2026-10-19 · item 3 done · overlay loader `calendar/overlay.py` + `data/calendars/{2026,2027}/<state>.yaml` for all 36 subdivisions, all `TODO: source` (RBI holiday matrix unreachable from container) · next: item 4 (version hash)
 - 2026-10-19 · item 4 done · `calendar_version()` = `sha256:` over overlay bytes digest + `holidays` version; `load_bank_calendar()` stamps it · next: item 5 (`delay_working_days`)
 - 2026-10-19 · item 5 done · `delay_working_days(alert_received, reported, state, *, calendar)` on IST dates, receipt day excluded · next: item 6 (hypothesis properties)
+- 2026-10-19 · item 6 done · `tests/calendar/test_properties.py`: 7 properties at 500 examples each over all 36 states, 2002-2033 · next: item 7 (hand-checked example tests)
