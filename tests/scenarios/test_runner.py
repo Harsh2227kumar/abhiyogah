@@ -86,9 +86,12 @@ def test_missing_obligation_fails_not_skips() -> None:
     assert outcome.mismatches == ["obligation not in the rule pack: IO-CB-2026-14-1-b"]
 
 
-def test_expected_outputs_fail_until_supported() -> None:
-    """Outputs are never silently ignored."""
+def test_outputs_compare_exactly() -> None:
+    """An expected output the engine did not produce is reported, as is a stray obligation ID."""
     spec = example()
-    spec["expect"]["outputs"] = {"IO-CB-2026-14-1-b": {"x": True}}
-    (line,) = run_scenario(spec, PACK, CAL).mismatches
-    assert "not supported yet" in line
+    spec["expect"]["outputs"] = {"IO-CB-2026-14-1-b": {"x": True}, "OTHER-1": {}}
+    mismatches = run_scenario(spec, PACK, CAL).mismatches
+    assert mismatches == [
+        "outputs: IO-CB-2026-14-1-b expected {'x': True}, got {}",
+        "outputs: OTHER-1 is not in obligation_ids",
+    ]

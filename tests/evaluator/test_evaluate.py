@@ -221,7 +221,7 @@ def test_no_clock_obligation_not_applicable() -> None:
     """Clockless obligations are left to the workflow gates."""
     rec = one([RECEIVED, REJECTED], date(2026, 8, 25), [obligation(clock=None, parameters={})])
     assert rec.result is DecisionResult.NOT_APPLICABLE
-    assert rec.condition_trace[-1].condition == "obligation has a clock"
+    assert rec.condition_trace[-1].condition == "obligation has a building block"
 
 
 def test_requires_aware_as_of_and_complaint_id() -> None:
