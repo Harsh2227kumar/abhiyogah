@@ -1,0 +1,38 @@
+name: io_20d_ordinary_breach
+description: >
+  A wholly rejected complaint with no external TAT is never referred to the Internal Ombudsman;
+  the 20-day auto-escalation deadline passes.
+obligation_ids: [IO-CB-2026-14-1-b]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(1)(b) (report Table A, row A13, verification P): a partially
+  resolved or wholly rejected complaint must be escalated to the IO within 20 days of receipt.
+  Day basis: calendar, inferred (open question Q4). Report formula: io_due = bank_receipt + 20d.
+  bank_receipt_date = 2026-08-03 (IST)
+  due_date = 2026-08-03 + 20 days = 2026-08-23
+  Outcome WHOLLY_REJECTED on 2026-08-10 triggers the obligation. No IO_REFERRED event.
+  as_of date = 2026-08-25 (IST) > 2026-08-23, so the clock is BREACHED.
+  days_late = 2026-08-25 - 2026-08-23 = 2
+  No compensation is attached to A13. The required action is still to refer the complaint to the IO.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T10:30:00+05:30
+  - type: ACKNOWLEDGED
+    occurred_at: 2026-08-03T10:35:00+05:30
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-10T16:00:00+05:30
+    payload: {outcome: WHOLLY_REJECTED}
+    source: HUMAN
+as_of: 2026-08-25T18:00:00+05:30
+expect:
+  deadlines:
+    - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-08-23, result: BREACHED}
+  breaches:
+    - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-08-23, days_late: 2}
+  compensation_paise: {}
+  required_actions:
+    - {obligation_id: IO-CB-2026-14-1-b, action: REFER_TO_IO}
