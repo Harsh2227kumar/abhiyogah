@@ -1,9 +1,9 @@
 # Abhiyogah — RBI Compliance Engine: Product Plan
 
-_Status: planning only (not started). Created 2026-10-17. Standalone product, unrelated to CustomerPulse._
+_Status: plan approved; build starting. Created 2026-10-17._
 
 ## Context
-The research report (`reports/RBI compliance engine gap analysis 2.md`, kept in the CustomerPulse repo as reference only) found a real market gap. RBI's complaint rules are now a set of dated, deadline-based obligations:
+The research report ([`docs/research/rbi-compliance-engine-gap-analysis.md`](research/rbi-compliance-engine-gap-analysis.md)) found a real market gap. RBI's complaint rules are now a set of dated, deadline-based obligations:
 - 30-day bank reply under RB-IOS 2026
 - automatic escalation to the Internal Ombudsman (IO) within 20 days, or by the network TAT minus 10 days
 - 90-day window for the customer to file with the RBI Ombudsman
@@ -12,7 +12,7 @@ The research report (`reports/RBI compliance engine gap analysis 2.md`, kept in 
 
 RBI's penalties fall on exactly these clocks (SBI ₹1.73 cr, Central Bank twice, Union Bank ₹95 lakh). No commercial product or open-source repo runs these as dated rules on individual complaints, each citing its clause. Of the 59 capabilities in the report, 25 had no counterpart anywhere.
 
-The user wants a **new, standalone product with no connection to CustomerPulse**. It is a real startup product, built solo in 1–3 months, by someone strong in Python and TypeScript, with deployment (SaaS or on-prem) still undecided. This plan answers: is it worth building, a website or agents, which language, microservices or not, how to stay current with RBI, and what to build first.
+Abhiyogah is a new, standalone startup product, built solo (with Claude Code agents) in 1–3 months, by someone strong in Python and TypeScript, with deployment (SaaS or on-prem) still undecided. This plan answers: is it worth building, a website or agents, which language, microservices or not, how to stay current with RBI, and what to build first.
 
 ## 1. Will it be useful, impactful and beneficial?
 
@@ -60,23 +60,29 @@ Build order: engine → console → agents/MCP. The engine is what's valuable; a
 **A modular monolith**: one deployable Python service with strict internal module boundaries, plus two separate worker processes. Microservices would add ops cost a solo founder can't carry, and banks deploying on-prem prefer few containers.
 
 ```
-apps/
-  engine-api/        FastAPI: REST + webhook intake + MCP server
-  worker/            scheduler ticks (deadline re-evaluation), LLM perception jobs
-  regwatch/          RBI crawler + change-detection pipeline
-  console/           Next.js (TypeScript)
-packages/ (Python modules inside one repo)
+pyproject.toml       one Python distribution "abhiyogah" (uv)
+src/abhiyogah/
+  domain/            shared contracts: event types, complaint facts, enums, decision record, money
   registry/          obligation YAML loader, dated parameter resolver, linter
   calendar/          Indian bank working-day calendar (holidays + bank overlay)
   clocks/            start/pause/stop clock engine, day basis, IST, rounding
   evaluator/         runs obligations on events -> decision records
   calculators/       ₹100/day failed-txn, limited liability, service-event compensation
   workflow/          three-state outcome gate, IO auto-escalation, senior review
-  perception/        LLM gateway, triage/extraction, PII masking
   ledger/            append-only, hash-chained decision records
+  store/             PostgreSQL persistence (events, decision records), migrations
+  api/               FastAPI app: REST + webhook intake           (process 1: engine-api)
+  worker/            scheduler ticks (deadline re-evaluation), LLM jobs (process 2: worker)
+  perception/        LLM gateway, triage/extraction, PII masking, reply QA
+  mcp/               MCP server exposing the engine as tools
+  regwatch/          RBI crawler + change-detection pipeline     (process 3: regwatch)
   reporting/         board committee / IO / disclosure reports, decision replay
-rules/               the RBI rule pack: obligation YAML files + scenario tests (versioned in Git)
+rules/               the RBI rule pack: obligations/*.yaml + scenarios/*.yaml (versioned in Git)
+console/             Next.js (TypeScript) web console
+tests/               pytest suites, mirroring src/abhiyogah/
 ```
+
+The deterministic core (`domain`, `registry`, `calendar`, `clocks`, `evaluator`, `calculators`, `workflow`, `ledger`) is pure Python with no database, network or LLM access, so it can be tested and replayed in isolation.
 
 - **Storage:** a single PostgreSQL:
   - append-only `events` table (records both when something happened and when it was recorded)
@@ -112,7 +118,7 @@ This is also a sellable "RBI rule pack subscription", which is the recurring rev
 
 | Weeks | Deliverable |
 |---|---|
-| 1–2 | New repo; RBI-native complaint data dictionary; event store; obligation YAML schema, loader and linter; bank calendar (`holidays` + 2nd/4th Saturday + state holiday overlay) |
+| 1–2 | Repo skeleton; RBI-native complaint data dictionary; event store; obligation YAML schema, loader and linter; bank calendar (`holidays` + 2nd/4th Saturday + state holiday overlay) |
 | 3–5 | Clock engine and evaluator. Rule pack v0.1: RB-IOS 2026 / IO Directions 2026 (30-day reply, 20-day / TAT−10 IO escalation, 90-day filing, scheme router 2021 vs 2026), failed-transaction TAT + ₹100/day, limited liability (3/4–7 working days, 10-working-day shadow credit, 90 days). All scenario tests pass. |
 | 6–8 | Workflow gates (three-state outcome, IO auto-escalation, no closing a complaint without senior review); hash-chained ledger; REST + webhook intake; Next.js console (deadline board, decision replay, rule browser) |
 | 9–10 | Triage agent (complaint vs query, category, Hinglish, fact extraction) with PII masking; Reply QA gate; MCP server |
@@ -132,7 +138,8 @@ This is also a sellable "RBI rule pack subscription", which is the recurring rev
 - **End-to-end demo script:** post a UPI fraud complaint event → engine returns IO deadline, shadow-credit deadline and liability tier → time-travel the clock past day 20 → auto-escalation fires → console shows the clause-cited decision trace → MCP tool returns the same result to an agent.
 
 ## Project facts
-- **Name:** Abhiyogah
-- **Location:** `F:\Projects\abhiyogah`
-- **Status:** plan only; no code yet. Next step when starting: the Weeks 1–2 foundation (section 7).
-- **Research basis:** `reports/RBI compliance engine gap analysis 2.md` and `research_notes/RBI compliance engine gap analysis/` in the CustomerPulse repo, branch `research/rbi-compliance-engine`. These are reference material only; there is no code dependency.
+- **Name:** Abhiyogah (अभियोग, "complaint")
+- **Repository:** `github.com/Harsh2227kumar/abhiyogah`. Built in Claude Code cloud sessions; every session starts from a fresh clone, so all state lives in Git.
+- **Research basis:** [`docs/research/rbi-compliance-engine-gap-analysis.md`](research/rbi-compliance-engine-gap-analysis.md). The rule catalogue (Tables A–D), formulas, clock table and example obligation YAML in that report are the source for `rules/`.
+- **How the build is organised:** [`CLAUDE.md`](../CLAUDE.md) (rules for every agent), [`docs/agents.md`](agents.md) (how the parallel agents run and resume), [`tasks/`](../tasks/) (one checklist per work stream), [`PROGRESS.md`](../PROGRESS.md) (shared log).
+- **Open regulatory questions:** tracked in [`docs/open-questions.md`](open-questions.md). They are never resolved by assumption in code.

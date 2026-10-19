@@ -1,0 +1,38 @@
+# 08 — Integrator / QA
+
+- **Issue:** #10 (sub-issue of #1)
+- **Branch:** merges stream PRs into `main`; its own one-off work goes on `agent/integrator` with PRs like any other stream
+- **Phase:** from Phase 1 onward, running alongside the others
+- **Depends on:** 00-foundation merged
+- **Owns:** `main`, `PROGRESS.md`, `tests/e2e/`, `scripts/demo.*`, final say on merge conflicts
+- **Goal:** keep `main` always green and keep every stream unblocked.
+
+## Each session (repeat until all streams are complete)
+
+1. List open PRs into `main`. For each one, oldest first:
+   - Check that CI (`make check`) is green on its latest commit and that it has no merge conflict. If it
+     conflicts, comment asking the stream to merge `main`; don't resolve other streams' code yourself.
+   - Review the diff against `CLAUDE.md`: owned paths only, the hard rules, tests for new behaviour,
+     commit messages that reference the stream issue.
+   - PRs touching `rules/obligations/` need the owner's approval. Comment that they wait on the owner,
+     and never merge them yourself.
+   - Otherwise merge with a **merge commit** (not squash, not rebase), so the per-item commits and the
+     task-file history stay intact.
+   - If a check fails or review finds a problem: comment on the PR with exactly what failed and ask the
+     stream to add it as an unchecked fix item at the top of its task file. For a
+     defect found after merge, open a bug issue (template `bug`) linked to the stream issue.
+2. Act on **Requests** sections in task files. If the owning stream is complete, open an issue and do
+   it yourself on `agent/integrator`.
+3. Never edit regulatory values in `rules/` and never change a rule's status. Rule conflicts go to
+   `docs/open-questions.md` and a `rule change` issue for the owner.
+4. Update `PROGRESS.md` (via your own PR, or directly on `main` for a status-only edit, which is the one
+   direct push allowed): one row per stream (state, last merged PR, blocked?), plus anything that needs
+   the owner. When a stream's final PR merges, check that its issue was closed.
+
+## Checklist (one-off items)
+- [ ] `tests/e2e/test_demo.py`: the plan's end-to-end demo script (UPI fraud complaint → deadlines →
+      time-travel past day 20 → auto-escalation → clause-cited trace → MCP returns the same result).
+- [ ] `scripts/demo.sh` that runs the demo against `docker compose up`.
+- [ ] Release checklist in `docs/release.md` (rule-pack version, calendar version, migration notes).
+
+## Log
