@@ -5,7 +5,8 @@ the future and reads facts bitemporally) accepts it at any time, then:
 
 1. shows the deadlines (shadow credit B6, IO referral A13) and the liability tier (B5);
 2. time-travels past day 20 after bank receipt: the IO referral is breached and still required;
-3. prints the clause-cited explanation of the stored A13 decision.
+3. prints the clause-cited explanation of the stored A13 decision, and how an agent reads the same
+   result over MCP (``python -m abhiyogah.mcp.server``).
 
 Settings come from the environment: ``ABHIYOGAH_DEMO_API_URL`` (default ``http://localhost:8000``),
 ``ABHIYOGAH_DEMO_WRITER_KEY`` and ``ABHIYOGAH_DEMO_ADMIN_KEY``.
@@ -167,7 +168,12 @@ def main() -> None:
     print(f"\n--- Stored decision {A13} (chain verified: {explain['chain']['verified']})")
     for line in explain["lines"]:
         print(f"  {line}")
-    print("\nThe MCP step (an agent gets the same result) follows once stream 07 lands.")
+    print(
+        "\nAn agent gets the same result over MCP (tests/e2e/test_demo.py checks the parity):"
+        f"\n  ABHIYOGAH_API_URL={api.base} ABHIYOGAH_MCP_API_KEY=<a reader key> "
+        "python -m abhiyogah.mcp.server"
+        f"\n  then call evaluate_complaint with complaint_id={cid}"
+    )
 
 
 if __name__ == "__main__":

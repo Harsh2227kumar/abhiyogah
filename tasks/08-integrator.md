@@ -33,7 +33,7 @@
 - [x] `tests/e2e/test_demo.py`: the plan's end-to-end demo script (UPI fraud complaint → deadlines →
       time-travel past day 20 → auto-escalation → clause-cited trace), on the real start-up path
       (YAML rule pack, real calendar) with DRAFT copies from PR #16 in `tests/e2e/rulepack/`.
-- [ ] e2e demo, MCP step: the MCP tool returns the same result to an agent (waits on stream 07).
+- [x] e2e demo, MCP step: the MCP tools return the same result to an agent as the API.
 - [ ] e2e demo and `scripts/demo.sh` on the real rule pack: once #16 merges, point both at
       `rules/obligations/`, keep the hand-checked assertions, and delete `tests/e2e/rulepack/`.
 - [x] `scripts/demo.sh` that runs the demo against `docker compose up`.
@@ -46,3 +46,4 @@
 - 2026-10-19 · #25 `DecisionRecord.outputs` (hashed, empty by default) · PR opened · next: e2e demo and `scripts/demo.sh` still wait on the platform stream
 - 2026-10-19 · e2e demo test done · `tests/e2e/test_demo.py` (B6, B5 tier, A13 breach after time travel, sweep, REFER_TO_IO, cited explain, replay) on DRAFT copies of #16 · next: `scripts/demo.sh`
 - 2026-10-19 · demo.sh done · `scripts/demo.sh` + `demo.compose.yml` (demo rule pack, profile, per-run API keys) + stdlib client `demo.py`; ran against Postgres 16 in Docker with migrations (the uv image pull from ghcr is blocked here, so API ran on the host) · next: MCP step (stream 07) and real rule pack (#16)
+- 2026-10-19 · e2e MCP step done · `test_demo.py` step 5: `evaluate_complaint` (now and time-travelled), `get_deadlines` and `explain_decision` equal the API's JSON; demo.py points to the MCP server · next: real rule pack (waits on #16)

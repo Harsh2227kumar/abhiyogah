@@ -8,11 +8,12 @@ pack is loaded from YAML files and the bank calendar is the real one (``load_ban
    the liability tier (B5) is determined once a person records whose fault it was;
 2. time travel past day 20 shows the IO breach, and the scheduler sweep records it;
 3. auto-escalation: the complaint carries a ``REFER_TO_IO`` action due on the A13 date;
-4. the stored decision is clause-cited, explains itself, and replays to the same record.
+4. the stored decision is clause-cited, explains itself, and replays to the same record;
+5. MCP: an agent calling the ``evaluate_complaint``, ``get_deadlines`` and ``explain_decision``
+   tools gets exactly what the API returns, now and time-travelled.
 
-The MCP step (an agent gets the same result) waits on stream 07; the real-rule-pack version waits on
-PR #16. Both are open items in tasks/08-integrator.md. Until then the rules come from
-``tests/e2e/rulepack/`` (unchanged DRAFT copies, see its ``_README.md``).
+The real-rule-pack version waits on PR #16 (open item in tasks/08-integrator.md). Until then the
+rules come from ``tests/e2e/rulepack/`` (unchanged DRAFT copies, see its ``_README.md``).
 
 Hand check (home branch MH; 2nd/4th Saturdays and Sundays closed; 15 Aug 2026 is Independence Day):
 
@@ -24,12 +25,15 @@ Hand check (home branch MH; 2nd/4th Saturdays and Sundays closed; 15 Aug 2026 is
 - A13(b): bank receipt 10 Aug + 20 calendar days = 30 Aug; not referred by 1 Sep, so 2 days late.
 """
 
+import asyncio
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from abhiyogah.api.app import create_app
@@ -38,6 +42,7 @@ from abhiyogah.api.settings import Settings
 from abhiyogah.calendar import load_bank_calendar
 from abhiyogah.domain.enums import EntityType
 from abhiyogah.evaluator import EntityProfile
+from abhiyogah.mcp.tools import EngineTools
 from abhiyogah.store import MemoryStore
 from abhiyogah.worker.reevaluate import EngineContext, evaluate_stored
 from abhiyogah.worker.schedule import sweep
@@ -116,8 +121,9 @@ class Clock:
 
 @dataclass
 class Demo:
-    """The API client plus the parts behind it."""
+    """The API app and client plus the parts behind it."""
 
+    app: FastAPI
     client: TestClient
     store: MemoryStore
     ctx: EngineContext
@@ -141,6 +147,11 @@ class Demo:
         assert res.status_code == 200, res.text
         body: dict[str, Any] = res.json()
         return body
+
+    def tools(self) -> EngineTools:
+        """The MCP tools an agent uses, over this API in-process, with the admin key."""
+        transport = httpx.ASGITransport(app=self.app)
+        return EngineTools.over(transport, ADMIN["X-API-Key"], "http://demo")
 
 
 def results(body: dict[str, Any]) -> dict[str, str]:
@@ -169,7 +180,7 @@ def demo() -> Demo:
     store = MemoryStore()
     clock = Clock(datetime(2026, 8, 1, tzinfo=UTC))
     app = create_app(settings=Settings(api_keys=KEYS), store=store, ctx=ctx, now=clock)
-    return Demo(TestClient(app), store, ctx, clock)
+    return Demo(app, TestClient(app), store, ctx, clock)
 
 
 def test_demo_upi_fraud_complaint(demo: Demo) -> None:
@@ -226,8 +237,8 @@ def test_demo_upi_fraud_complaint(demo: Demo) -> None:
         ("max_days", 20, "cl. 14(1)(b)")
     ]
     assert {f["name"] for f in record["input_facts"]} >= {"bank_receipt_date", "outcome"}
-    lines = demo.client.get(f"/decisions/{record['hash']}/explain", headers=ADMIN).json()["lines"]
-    text = "\n".join(lines)
+    explained = demo.client.get(f"/decisions/{record['hash']}/explain", headers=ADMIN).json()
+    text = "\n".join(explained["lines"])
     assert "14(1)(b)" in text
     assert "Breach" in text
 
@@ -241,3 +252,29 @@ def test_demo_upi_fraud_complaint(demo: Demo) -> None:
         replayed.canonical_json()
         == stored.model_copy(update={"prev_hash": replayed.prev_hash}).canonical_json()
     )
+
+    # 5. MCP: an agent gets the same result as the API, now and time-travelled.
+    travel_at = "2026-09-02T12:00:00+05:30"
+
+    async def ask_agent_tools() -> tuple[Any, Any, Any, Any]:
+        async with demo.tools() as tools:
+            now = await tools.evaluate_complaint(CID)
+            travel = await tools.evaluate_complaint(CID, datetime.fromisoformat(travel_at))
+            deadlines = await tools.get_deadlines(CID, datetime.fromisoformat(travel_at))
+            explanation = await tools.explain_decision(record["hash"])
+            return (
+                now.model_dump(mode="json"),
+                travel.model_dump(mode="json"),
+                [d.model_dump(mode="json") for d in deadlines],
+                explanation.model_dump(mode="json"),
+            )
+
+    now, travel, deadlines, explanation = asyncio.run(ask_agent_tools())
+    assert now == demo.complaint()
+    assert travel == demo.complaint(as_of=travel_at)
+    assert deadlines == travel["deadlines"]
+    assert {d["obligation_id"]: d["deadline"]["due_date"] for d in deadlines} == {
+        B6: "2026-08-24",
+        A13: "2026-08-30",
+    }
+    assert explanation == explained
