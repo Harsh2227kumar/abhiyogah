@@ -16,7 +16,7 @@
       IFSC, UPI VPA, card number, mobile. Re-identification only inside the engine.
 - [x] Triage: complaint vs query (high-recall gate; every "not a complaint" goes to human review), RBI
       category, language, schema-constrained output with confidence.
-- [ ] Fact extraction: amount, UTR, transaction date T, channel, account type. Output becomes
+- [x] Fact extraction: amount, UTR, transaction date T, channel, account type. Output becomes
       `ComplaintEvent`s with source LLM, model, prompt version and text span.
 - [ ] Reply QA gate (A18): checks a draft reply for every required element; blocks sending if any are
       missing; never flags the required Ombudsman wording as a risk.
@@ -38,3 +38,4 @@
 - 2026-10-19 · item 1 done · `perception.gateway` (config, India-region check, LlmRequest/Response) + `perception.adapters` (FakeModel, Anthropic, Bedrock Converse, OpenAI-compatible; SDKs injected/lazy) · next: item 2 PII masking
 - 2026-10-19 · item 2 done · `perception.pii`: Aadhaar (Verhoeff), PAN, account (keyword), IFSC, VPA, card (Luhn), mobile, email, catch-all 9+ digits; UTR/RRN kept; `PiiVault` re-identifies in-process only; optional Presidio NER hook · next: item 3 triage
 - 2026-10-19 · item 3 done · `perception.triage`: schema-constrained answer (label, confidence, issue type, category, language, evidence span); gate keeps anything unsure or with a deficiency cue as a complaint; every NOT_A_COMPLAINT opens a review task; model failure → manual queue; categories configurable (#35) · next: item 4 fact extraction
+- 2026-10-19 · item 4 done · `perception.extraction`: amount/UTR/T/channel/account type with spans; grounding checks (value in span, no placeholders, no future dates, enum members), conflicts dropped; one FACTS_RECORDED event per fact with LLM provenance; folds into ComplaintFacts · next: item 5 reply QA gate
