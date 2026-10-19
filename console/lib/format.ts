@@ -68,7 +68,10 @@ export function formatInr(paise: number): string {
   return `${sign}₹${groupIndian(String(rupees))}.${frac}`;
 }
 
+/** An ISO calendar date that is not part of a hyphenated identifier such as `IO-CB-2026-14-11-12`. */
+export const ISO_DATE = /(?<![\w-])(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])(?![\w-])/g;
+
 /** Prose from the engine with every ISO date (`2026-10-19`) shown as `19-10-2026`. */
 export function localizeDates(text: string): string {
-  return text.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, "$3-$2-$1");
+  return text.replace(ISO_DATE, "$3-$2-$1");
 }

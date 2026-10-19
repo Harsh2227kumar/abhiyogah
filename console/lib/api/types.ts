@@ -1,4 +1,4 @@
-// Names for the generated API schemas. Never declare API shapes by hand: regenerate with `pnpm openapi`.
+// Names for the generated API schemas. Never declare API shapes by hand: regenerate with `make openapi`.
 import type { components } from "./generated/schema";
 
 type Schemas = components["schemas"];
@@ -12,7 +12,11 @@ export type DecisionReplay = Schemas["DecisionReplay"];
 export type DecisionResult = Schemas["DecisionResult"];
 export type ChainStatus = Schemas["ChainStatus"];
 export type Deadline = Schemas["Deadline"];
+export type DeadlineItem = Schemas["DeadlineItem"];
 export type Breach = Schemas["Breach"];
+export type BreachItem = Schemas["BreachItem"];
+export type ActionItem = Schemas["ActionItem"];
+export type ReviewTask = Schemas["ReviewTask"];
 export type Provenance = Schemas["Provenance"];
 export type FactSource = Schemas["FactSource"];
 export type Channel = Schemas["Channel"];

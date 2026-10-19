@@ -1,3 +1,5 @@
+# DEMO FIXTURE: copied from origin/agent/rules @ 5baaca9 (PR #16, in owner review), with the
+# scenario 'tests:' list removed. Replaced by rules/obligations/ once #16 merges (tasks/08-integrator.md).
 # A13, external-TAT limb (report Table A row A13; formula "io_due = external_TAT_deadline − 10d").
 # Where an RBI/NPCI/card-network TAT applies, a partially resolved or wholly rejected complaint must
 # reach the IO early enough to leave the IO at least 10 days within that TAT. Overrides limb (b).
@@ -23,8 +25,3 @@ valid_to: null
 status: DRAFT
 verification: PRIMARY_TEXT_READ
 supersedes_note: "MD-IO 2023 (29 Dec 2023); clause mapping not verified"
-tests:
-  - io_20d_referred_on_time.yaml
-  - io_tat_minus_10_upi.yaml
-  - io_tat_minus_10_breach.yaml
-  - io_fully_resolved_no_escalation.yaml

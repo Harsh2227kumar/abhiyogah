@@ -1,3 +1,5 @@
+# DEMO FIXTURE: copied from origin/agent/rules @ 5baaca9 (PR #16, in owner review), with the
+# scenario 'tests:' list removed. Replaced by rules/obligations/ once #16 merges (tasks/08-integrator.md).
 # B6 (report Table B row B6; clock table "Shadow credit"; formula "shadow credit due at
 # notification + 10 WD"): after the customer reports an unauthorised electronic transaction, the bank
 # credits the amount (shadow credit) within 10 working days, value-dated to the transaction date,
@@ -22,8 +24,3 @@ valid_to: null
 status: DRAFT
 verification: PRIMARY_TEXT_READ
 supersedes_note: "Restates the 2017 limited-liability circular"
-tests:
-  - shadow_credit_on_time_third_saturday.yaml
-  - shadow_credit_late.yaml
-  - shadow_credit_breached.yaml
-  - shadow_credit_reported_on_second_saturday.yaml
