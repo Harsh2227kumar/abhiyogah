@@ -37,7 +37,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 - [ ] A18 scenarios (complete reply, missing elements, IO-upheld statement), once `reply_elements` and `io_upheld` exist
 - [x] B1 failed-transaction TATs: one parameter table covering every verified channel row, plus ₹100/day
 - [x] B2 illegible rows: encoded but `verification: UNVERIFIED`
-- [ ] B5 limited liability tiers and account-type caps (paras 67–71, Tables 1–2)
+- [x] B5 limited liability tiers and account-type caps (paras 67–71, Tables 1–2)
 - [ ] B6 shadow credit in 10 working days (para 72)
 - [ ] B7 liability determination within 90 days (para 73)
 - [ ] B10 1 Jan 2027 fraud regime: `FUTURE_DATED`, every draft figure `UNVERIFIED`
@@ -60,6 +60,7 @@ Tracked together in issue #20.
 - `src/abhiyogah/domain/` (foundation/integrator), for A15: facts `handling_unit: Fact[str]` and `closing_unit: Fact[str]` (set from payloads), and an event `SENIOR_REVIEWED` that sets `senior_review_date: Fact[date]`. The A15 scenarios wait on these.
 - `src/abhiyogah/domain/` (foundation/integrator), for A18: facts `reply_elements: Fact[list[str]]` (element codes found in the sent reply, from reply QA or a human) and `io_upheld: Fact[bool]` (from the `IO_DECIDED` payload). The A18 scenarios wait on these.
 - `src/abhiyogah/domain/` (foundation/integrator), for B1–B7: a fact `issue_type` (values `FAILED_TRANSACTION`, `UNAUTHORISED_TRANSACTION`, open to more) so failed-transaction and limited-liability rules do not both trigger on every transaction complaint; and split `Channel.AEPS` into `AEPS_MERCHANT` (T+5, B1) and `AEPS_BENEFICIARY` (T+1, B2), since the annex has two AePS rows.
+- `src/abhiyogah/domain/` (foundation/integrator), for B5: a fact `liability_fault` (values `BANK`, `THIRD_PARTY`, `CUSTOMER`), set by a human (never by an LLM) on the limited-liability case.
 
 ## Log
 - 2026-10-19 · item 1 done · registry/loader.py + errors.py: load rules/obligations/*.yaml, duplicate ID is an error; tests/registry/test_loader.py · next: registry/resolve.py
@@ -75,3 +76,4 @@ Tracked together in issue #20.
 - 2026-10-19 · A18 obligation file done · IO-CB-2026-14-11-12 checklist (`required_elements`, `required_elements_if_io_upheld`), outputs reply_complete/missing_elements, action SEND_CORRECTED_REPLY; Q17; facts requested; scenarios split into a new item · next: B1
 - 2026-10-19 · B1 done · TAT-2019-FAILED-TXN with `tat_days_by_channel` (verified rows), `follows_underlying_system`, ₹100/day as 10000 paise; 5 scenarios; requested `issue_type` fact and AEPS channel split (#20) · next: B2
 - 2026-10-19 · B2 done · TAT-2019-ILLEGIBLE-ROWS (CNP T+5, AePS beneficiary T+1, ₹100/day) all UNVERIFIED/Q5, 2 scenarios; Q5/Q6/Q9 now name obligation IDs · next: B5
+- 2026-10-19 · B5 done · RBCCB-2025-67-71 determination (3/7 working-day tiers, Table 2 caps in paise, outputs delay_working_days/liability_tier/customer_liability_paise), 6 scenarios on MH June 2026 dates (holiday-free assumption stated, Q13); requested `liability_fault` fact (#20) · next: B6

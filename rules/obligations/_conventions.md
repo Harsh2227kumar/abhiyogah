@@ -25,7 +25,7 @@ conditions (`external_tat_days is set` / `is not set`) **and** list the override
 exactly one limb produces a deadline and the trace still names the override.
 
 Facts the rule pack needs that `ComplaintFacts` does not have yet are requested in issue #20
-(`issue_type`, the A15 and A18 facts, the cl. 14(5) exclusion category). Scenarios already set
+(`issue_type`, `liability_fault`, the A15 and A18 facts, the cl. 14(5) exclusion category). Scenarios already set
 them in payloads; until they exist those payload keys are ignored by folding.
 
 ## Validity and anchor dates
@@ -80,9 +80,12 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
   | A15 `IO-CB-2026-14-3-4-closure` | `closed_by_other_unit` | `true` when `closing_unit` ≠ `handling_unit` (both needed, else `INSUFFICIENT_FACTS`) |
   | A15 `IO-CB-2026-14-3-4-review` | `senior_reviewed_before_io` | `true` when `senior_review_date` is set and, if `io_referred_date` is set, ≤ it |
   | A18 `IO-CB-2026-14-11-12` | `reply_complete`, `missing_elements` | `missing_elements` = `required_elements` (+ `required_elements_if_io_upheld` when `io_upheld` is true) not in `reply_elements`, sorted; `reply_complete` = it is empty |
+  | B5 `RBCCB-2025-67-71` | `delay_working_days`, `liability_tier`, `customer_liability_paise` | `delay_working_days` = working days after `alert_received_date` up to and including `customer_reported_date` (home-branch calendar, para 71); `liability_tier` = `ZERO` (bank fault, or ≤ `zero_liability_max_working_days`), `LIMITED` (≤ `limited_liability_max_working_days`) or `BOARD_POLICY`; `customer_liability_paise` = 0, `min(amount_paise, cap)` or `null` |
   | A2 `RBIOS-2026-10-1-f` | `escalation_open` | `true` when the clock is `BREACHED` or `STOPPED_LATE` (no reply by the due date) or `customer_dissatisfied_date` is set, else `false` |
 
   Clock obligations may also have outputs; `DETERMINED` ones must.
+- **Determinations** (B5) use their clock only to count days between two dates; they set no due
+  date, end `DETERMINED`, and list no deadline.
 - **Check obligations** have no clock: they test the complaint's state when the trigger fires (A14,
   A15, A18). They end `DETERMINED` with a boolean output naming what was checked. A failed check has
   no `Breach` entry (a breach needs a due date). It shows as the output `false` plus a required action

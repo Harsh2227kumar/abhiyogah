@@ -1,0 +1,41 @@
+name: liability_third_party_beyond_7wd_board_policy
+description: >
+  A third-party breach reported on the ninth working day: liability follows the bank's board-approved policy, which the engine does not know.
+obligation_ids: [RBCCB-2025-67-71]
+hand_check: |
+  Source: RBC-CB paras 67-71, Tables 1-2 (report Table B, row B5, verification P). Formula:
+  delay_wd = working days after alert_received (excluded, para 71) up to and including the report,
+  home-branch calendar (MH): Sundays and 2nd/4th Saturdays closed. Assumes no NI Act holiday in MH on
+  the dates counted; the calendar overlay decides that (Q13).
+  liability = 0 if bank fault or third-party with delay_wd <= 3; min(txn, cap) if 4-7; board policy
+  beyond 7. Result DETERMINED; no deadline, no breach.
+  alert Mon 2026-06-08 (excluded). Counted: 09, 10, 11, 12 (Tue-Fri); 13 2nd Saturday and 14 Sunday
+  closed; 15, 16, 17, 18, 19 (Mon-Fri) = 9 working days. 9 > 7: BOARD_POLICY.
+  The board policy is bank-specific, so customer_liability_paise = null (not assumed).
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: ALERT_RECEIVED
+    occurred_at: 2026-06-08T14:00:00+05:30
+  - type: FACTS_RECORDED
+    occurred_at: 2026-06-19T10:00:00+05:30
+    payload: {issue_type: UNAUTHORISED_TRANSACTION, account_type: CREDIT_CARD_LARGE_LIMIT, amount_paise: 9000000, home_branch_state: MH}
+  - type: CUSTOMER_REPORTED
+    occurred_at: 2026-06-19T10:05:00+05:30
+  - type: FACTS_RECORDED
+    occurred_at: 2026-06-19T16:00:00+05:30
+    payload: {liability_fault: THIRD_PARTY}
+    source: HUMAN
+as_of: 2026-06-19T18:00:00+05:30
+expect:
+  results:
+    RBCCB-2025-67-71: DETERMINED
+  outputs:
+    RBCCB-2025-67-71: {delay_working_days: 9, liability_tier: BOARD_POLICY, customer_liability_paise: null}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

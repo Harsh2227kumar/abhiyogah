@@ -1,0 +1,42 @@
+name: liability_third_party_5wd_capped
+description: >
+  A third-party breach reported on the fifth working day, across a 2nd Saturday: liability is capped at ₹10,000 for a savings account.
+obligation_ids: [RBCCB-2025-67-71]
+hand_check: |
+  Source: RBC-CB paras 67-71, Tables 1-2 (report Table B, row B5, verification P). Formula:
+  delay_wd = working days after alert_received (excluded, para 71) up to and including the report,
+  home-branch calendar (MH): Sundays and 2nd/4th Saturdays closed. Assumes no NI Act holiday in MH on
+  the dates counted; the calendar overlay decides that (Q13).
+  liability = 0 if bank fault or third-party with delay_wd <= 3; min(txn, cap) if 4-7; board policy
+  beyond 7. Result DETERMINED; no deadline, no breach.
+  alert Mon 2026-06-08 (excluded). Counted: Tue 09, Wed 10, Thu 11, Fri 12; Sat 13 is the 2nd
+  Saturday (closed), Sun 14 closed; Mon 15 = 5 working days. 4 <= 5 <= 7: LIMITED.
+  cap OTHER_SAVINGS = 1000000 paise (₹10,000, Table 2). txn = 4000000 paise (₹40,000).
+  customer_liability_paise = min(4000000, 1000000) = 1000000.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: ALERT_RECEIVED
+    occurred_at: 2026-06-08T14:00:00+05:30
+  - type: FACTS_RECORDED
+    occurred_at: 2026-06-15T10:00:00+05:30
+    payload: {issue_type: UNAUTHORISED_TRANSACTION, account_type: OTHER_SAVINGS, amount_paise: 4000000, home_branch_state: MH}
+  - type: CUSTOMER_REPORTED
+    occurred_at: 2026-06-15T10:05:00+05:30
+  - type: FACTS_RECORDED
+    occurred_at: 2026-06-15T16:00:00+05:30
+    payload: {liability_fault: THIRD_PARTY}
+    source: HUMAN
+as_of: 2026-06-15T18:00:00+05:30
+expect:
+  results:
+    RBCCB-2025-67-71: DETERMINED
+  outputs:
+    RBCCB-2025-67-71: {delay_working_days: 5, liability_tier: LIMITED, customer_liability_paise: 1000000}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []
