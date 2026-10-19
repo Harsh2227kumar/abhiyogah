@@ -125,3 +125,20 @@ h2 { margin-top: 28px; font-size: 1.15em; }
 .timeline { padding-left: 20px; }
 .timeline li { margin-bottom: 10px; }
 .payload { font-family: ui-monospace, monospace; font-size: 0.85em; }
+
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+.hash { word-break: break-all; font-size: 0.85em; }
+.trace { padding-left: 22px; }
+.trace .pass span:first-child { color: #057a55; }
+.trace .fail span:first-child { color: #c81e1e; }
+
+.grade { font-size: 0.85em; }
+.grade-weak { color: #9b1c1c; font-weight: 700; }
+.grade-primary { color: #057a55; }
+.status { font-size: 0.8em; font-weight: 700; padding: 1px 6px; border-radius: 4px; border: 1px solid currentColor; }
+.status-draft { color: #b45309; }
+.status-future_dated { color: #7e3af2; }
+.status-in_force { color: #057a55; }
+.status-superseded, .status-repealed_but_saved { color: var(--muted); }

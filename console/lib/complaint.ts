@@ -11,7 +11,7 @@ export interface FactRow {
 
 type AnyFact = { value: unknown; provenance: Provenance; event_id: string; recorded_at: string };
 
-const isDateFact = (name: string) => /_date(_t|_r)?$/.test(name);
+const isDateFact = (name: string) => /(_date(_t|_r)?|_as_on)$/.test(name);
 
 /** How one fact value is shown: dates DD-MM-YYYY, paise as ₹, enum codes humanized. */
 export function displayFact(name: string, value: unknown): string {
