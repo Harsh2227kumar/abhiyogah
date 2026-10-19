@@ -1,0 +1,61 @@
+# Enforces CLAUDE.md hard rule 5: the deterministic core stays pure.
+# "google" covers google-genai and other Google SDKs (external subpackages cannot be listed).
+[importlinter]
+root_package = abhiyogah
+include_external_packages = True
+
+[importlinter:contract:core-is-pure]
+name = Deterministic core has no I/O, database, HTTP or LLM imports
+type = forbidden
+source_modules =
+    abhiyogah.domain
+    abhiyogah.registry
+    abhiyogah.calendar
+    abhiyogah.clocks
+    abhiyogah.evaluator
+    abhiyogah.calculators
+    abhiyogah.workflow
+    abhiyogah.ledger
+forbidden_modules =
+    abhiyogah.store
+    abhiyogah.api
+    abhiyogah.worker
+    abhiyogah.perception
+    abhiyogah.mcp
+    abhiyogah.regwatch
+    sqlalchemy
+    psycopg
+    alembic
+    procrastinate
+    httpx
+    fastapi
+    uvicorn
+    anthropic
+    openai
+    boto3
+    botocore
+    google
+    vllm
+    langchain
+    litellm
+
+[importlinter:contract:domain-is-leaf]
+name = domain imports nothing else from abhiyogah
+type = forbidden
+source_modules =
+    abhiyogah.domain
+forbidden_modules =
+    abhiyogah.registry
+    abhiyogah.calendar
+    abhiyogah.clocks
+    abhiyogah.evaluator
+    abhiyogah.calculators
+    abhiyogah.workflow
+    abhiyogah.ledger
+    abhiyogah.store
+    abhiyogah.api
+    abhiyogah.worker
+    abhiyogah.perception
+    abhiyogah.mcp
+    abhiyogah.regwatch
+    abhiyogah.reporting

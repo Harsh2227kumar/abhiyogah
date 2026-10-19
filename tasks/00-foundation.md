@@ -20,7 +20,7 @@
 - [x] Empty subpackages with `__init__.py` and a one-line docstring each: domain, registry, calendar,
       clocks, evaluator, calculators, workflow, ledger, store, api, worker, perception, mcp, regwatch,
       reporting (layout in `docs/plan.md` §4).
-- [ ] `.importlinter` contract: the core (domain, registry, calendar, clocks, evaluator, calculators,
+- [x] `.importlinter` contract: the core (domain, registry, calendar, clocks, evaluator, calculators,
       workflow, ledger) must not import store, api, worker, perception, mcp, regwatch, sqlalchemy,
       psycopg, httpx, fastapi or any LLM SDK. Also `domain` imports nothing else from `abhiyogah`.
 - [ ] `Makefile` with the targets listed in `CLAUDE.md` (`setup`, `check`, `test`, `rules`, `openapi`,
@@ -74,3 +74,4 @@ _(other streams add requests for changes to owned paths here)_
 ## Log
 - 2026-10-19 · item 1 done · pyproject.toml (uv, py3.12, ruff + mypy strict), uv.lock, package root, tests/conftest.py with db skip · next: item 2 subpackages
 - 2026-10-19 · item 2 done · 15 subpackage stubs with docstrings + import smoke test · next: item 3 .importlinter
+- 2026-10-19 · item 3 done · .importlinter: core-is-pure (no store/api/worker/perception/mcp/regwatch, DB, HTTP, LLM SDKs) + domain-is-leaf; verified it catches a planted httpx import · next: item 4 Makefile
