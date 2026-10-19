@@ -91,6 +91,8 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
   | A15 `IO-CB-2026-14-3-4-review` | `senior_reviewed_before_io` | `true` when `senior_review_date` is set and, if `io_referred_date` is set, ≤ it |
   | A18 `IO-CB-2026-14-11-12` | `reply_complete`, `missing_elements` | `missing_elements` = `required_elements` (+ `required_elements_if_io_upheld` when `io_upheld` is true) not in `reply_elements`, sorted; `reply_complete` = it is empty |
   | B5 `RBCCB-2025-67-71` | `delay_working_days`, `liability_tier`, `customer_liability_paise` | `delay_working_days` = working days after `alert_received_date` up to and including `customer_reported_date` (home-branch calendar, para 71); `liability_tier` = `ZERO` (bank fault, or ≤ `zero_liability_max_working_days`), `LIMITED` (≤ `limited_liability_max_working_days`) or `BOARD_POLICY`; `customer_liability_paise` = 0, `min(amount_paise, cap)` or `null` |
+  | A6 `RBIOS-2026-15-4` | `award_lapsed` | `true` when `BREACHED` or `STOPPED_LATE`, else `false` |
+  | A8 `RBIOS-2026-17` | `appeal_in_time` | once `appeal_filed_date` is known: `true` for `STOPPED_ON_TIME`, `false` for `STOPPED_LATE`; absent before |
   | A2 `RBIOS-2026-10-1-f` | `escalation_open` | `true` when the clock is `BREACHED` or `STOPPED_LATE` (no reply by the due date) or `customer_dissatisfied_date` is set, else `false` |
 
   Clock obligations may also have outputs; `DETERMINED` ones must.
@@ -119,6 +121,8 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
 | `REVERSE_TRANSACTION` | B1, B2 | Complete the failed-transaction reversal (compensation keeps accruing) |
 | `SHADOW_CREDIT` | B6 | Credit the disputed amount to the customer, value-dated to the transaction date |
 | `COMPENSATE_PER_PARAS_67_72` | B7 | Liability not established within 90 days: pay the customer as paras 67–72 set out |
+| `FILE_WRITTEN_RESPONSE` | A5 | File the written response and relied-on documents with the Ombudsman |
+| `COMPLY_WITH_AWARD_OR_APPEAL` | A7 | Comply with the accepted award and intimate the Ombudsman, or file an appeal |
 | `SET_OUTCOME` | A14 | Record one of the three cl. 14(2) outcomes for a complaint already replied to |
 
 ## Scenario inputs that are not regulatory values

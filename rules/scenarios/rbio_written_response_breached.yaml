@@ -1,0 +1,37 @@
+name: rbio_written_response_breached
+description: >
+  No written response three days after the 15-day deadline; the bank risks an ex-parte award and must still file.
+obligation_ids: [RBIOS-2026-14-2]
+hand_check: |
+  Source: RB-IOS 2026 cl. 13(1)-(2), 14(2)-(3) (report Table A, row A5, verification P): written
+  response within 15 days of the Ombudsman's direction, extendable on written request (extension not
+  encoded, Q18). Day basis: calendar, inferred (Q4).
+  RBIO_DIRECTION_RECEIVED 2026-08-10; due_date = 2026-08-10 + 15 days = 2026-08-25
+  No WRITTEN_RESPONSE_FILED; as_of 2026-08-28 > 2026-08-25: BREACHED, days_late = 3.
+  Required action: FILE_WRITTEN_RESPONSE.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-07-06T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-07-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-25T10:00:00+05:30
+  - type: RBIO_DIRECTION_RECEIVED
+    occurred_at: 2026-08-10T12:00:00+05:30
+as_of: 2026-08-28T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-14-2: BREACHED
+  outputs: {}
+  deadlines:
+    - {obligation_id: RBIOS-2026-14-2, due_date: 2026-08-25, result: BREACHED}
+  breaches:
+    - {obligation_id: RBIOS-2026-14-2, due_date: 2026-08-25, days_late: 3}
+  compensation_paise: {}
+  required_actions:
+    - {obligation_id: RBIOS-2026-14-2, action: FILE_WRITTEN_RESPONSE}

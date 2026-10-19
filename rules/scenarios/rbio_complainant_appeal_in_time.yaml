@@ -1,0 +1,37 @@
+name: rbio_complainant_appeal_in_time
+description: >
+  The complainant appeals against the award within 30 days.
+obligation_ids: [RBIOS-2026-17]
+hand_check: |
+  Source: RB-IOS 2026 cl. 17 (report Table A, row A8, verification P): the complainant may appeal
+  within 30 days of receiving the award (plus up to 30 at the Appellate Authority's discretion, not
+  encoded, Q18). PERMISSION: no breach, no action. Day basis: calendar, inferred (Q4).
+  AWARD_RECEIVED 2026-09-01; due_date = 2026-09-01 + 30 days = 2026-10-01
+  APPEAL_FILED (by the complainant) 2026-09-25 <= 2026-10-01: STOPPED_ON_TIME; appeal_in_time = true.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-07-06T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-07-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-25T10:00:00+05:30
+  - type: AWARD_RECEIVED
+    occurred_at: 2026-09-01T12:00:00+05:30
+  - type: APPEAL_FILED
+    occurred_at: 2026-09-25T10:00:00+05:30
+as_of: 2026-09-26T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-17: STOPPED_ON_TIME
+  outputs:
+    RBIOS-2026-17: {appeal_in_time: true}
+  deadlines:
+    - {obligation_id: RBIOS-2026-17, due_date: 2026-10-01, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

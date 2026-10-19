@@ -1,0 +1,38 @@
+name: rbio_award_accepted_in_time
+description: >
+  The complainant's acceptance letter arrives within 30 days of the award; the award stands.
+obligation_ids: [RBIOS-2026-15-4]
+hand_check: |
+  Source: RB-IOS 2026 cl. 15(4) (report Table A, row A6, verification P): the complainant accepts
+  the award within 30 days of receiving it, else it lapses. PERMISSION of the complainant: no breach,
+  no action. AWARD_RECEIVED / ACCEPTANCE_LETTER_RECEIVED stand in for the complainant's receipt and
+  sending (Q18). Day basis: calendar, inferred (Q4).
+  AWARD_RECEIVED 2026-09-01; due_date = 2026-09-01 + 30 days = 2026-10-01
+  ACCEPTANCE_LETTER_RECEIVED 2026-09-20 <= 2026-10-01: STOPPED_ON_TIME; award_lapsed = false.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-07-06T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-07-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-25T10:00:00+05:30
+  - type: AWARD_RECEIVED
+    occurred_at: 2026-09-01T12:00:00+05:30
+  - type: ACCEPTANCE_LETTER_RECEIVED
+    occurred_at: 2026-09-20T11:00:00+05:30
+as_of: 2026-09-21T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-15-4: STOPPED_ON_TIME
+  outputs:
+    RBIOS-2026-15-4: {award_lapsed: false}
+  deadlines:
+    - {obligation_id: RBIOS-2026-15-4, due_date: 2026-10-01, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

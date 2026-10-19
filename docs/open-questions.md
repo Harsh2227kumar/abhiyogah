@@ -23,6 +23,7 @@ the date below it. Agents may add new questions and link obligation IDs.
 | Q15 | Commencement date of RB-IOS 2021 (12 Nov 2021 from background knowledge; the report gives none) | First effective date of the 2021 scheme in the A1 router and the A3 2021 comparator; earlier RBI receipts get no scheme | RBIOS-2026-20-2 (`scheme`), RBIOS-2026-10-1-g | Open (#17) |
 | Q16 | IO Directions cl. 14(3)–(4): which limb (SOP, no same-unit closure, senior review) sits in which sub-clause, and so which one applies only from 30 Jun 2026; and what rank "a fairly senior level" means | Effective date and evidence needed for the A15 checks | IO-CB-2026-14-3-4-closure, IO-CB-2026-14-3-4-review | Open (#19) |
 | Q17 | Exact CRPC postal and email address, and any prescribed wording, that a cl. 14(11)–(12) reply must carry; and which element sits in 14(11) vs 14(12) | Reply QA can only check that each element is present, not that it is correct | IO-CB-2026-14-11-12 (`required_elements`) | Open (#21) |
+| Q18 | RB-IOS Ombudsman-stage extensions and events: how long the A5 extension on written request is and how it is evidenced; the A7/A8 Appellate Authority extension (up to 30 days) as an event; whether AWARD_RECEIVED/ACCEPTANCE_LETTER_RECEIVED (bank-side receipt) may stand in for the complainant's receipt and sending; and who filed an APPEAL_FILED (bank or complainant) | Without these the clocks never extend and a bank appeal stops the complainant's appeal clock | RBIOS-2026-14-2, RBIOS-2026-15-4, RBIOS-2026-15-5, RBIOS-2026-17 | Open (#22) |
 
 ## Answers
 
