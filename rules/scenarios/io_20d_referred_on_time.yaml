@@ -1,0 +1,37 @@
+name: io_20d_referred_on_time
+description: >
+  A partially resolved complaint with no external TAT is referred to the Internal Ombudsman before
+  the 20-day deadline; the clock stops on time.
+obligation_ids: [IO-CB-2026-14-1-b, IO-CB-2026-14-1-a]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(1)(b) (report Table A, row A13, verification P): escalate to the
+  IO within 20 days of receipt. Day basis: calendar, inferred (Q4). io_due = bank_receipt + 20d.
+  bank_receipt_date = 2026-08-03 (IST)
+  due_date = 2026-08-03 + 20 days = 2026-08-23
+  OUTCOME_SET PARTIALLY_RESOLVED on 2026-08-12 triggers limb (b); no external_tat_days, so limb (a)
+  (cl. 14(1)(a)) is NOT_TRIGGERED.
+  IO_REFERRED on 2026-08-14 <= 2026-08-23, so STOPPED_ON_TIME. No breach, no action left.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-12T15:00:00+05:30
+    payload: {outcome: PARTIALLY_RESOLVED}
+    source: HUMAN
+  - type: IO_REFERRED
+    occurred_at: 2026-08-14T09:30:00+05:30
+as_of: 2026-08-30T18:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-1-b: STOPPED_ON_TIME
+    IO-CB-2026-14-1-a: NOT_TRIGGERED
+  deadlines:
+    - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-08-23, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

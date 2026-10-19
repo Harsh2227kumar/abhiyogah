@@ -1,0 +1,30 @@
+name: io_not_applicable_below_outlet_threshold
+description: >
+  A commercial bank with fewer than 10 outlets in India on 31 March 2025 is outside the IO
+  Directions, so a rejected complaint creates no IO deadline.
+obligation_ids: [IO-CB-2026-14-1-b]
+hand_check: |
+  Source: IO Directions 2026 cl. 3 (report Table A, row A12, verification P): the Directions apply to
+  commercial banks with >= 10 outlets in India on 31 Mar 2025.
+  outlets = 8 on 2025-03-31; 8 < 10, so applies_to fails and the result is NOT_APPLICABLE.
+  (A bank crossing the threshold later is covered 6 months after meeting it; not exercised here.)
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 8
+  outlets_as_on: 2025-03-31
+  home_branch_state: KA
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-10T15:00:00+05:30
+    payload: {outcome: WHOLLY_REJECTED}
+    source: HUMAN
+as_of: 2026-08-30T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-1-b: NOT_APPLICABLE
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

@@ -1,0 +1,38 @@
+name: io_20d_referred_late
+description: >
+  A wholly rejected complaint is referred to the Internal Ombudsman three days after the 20-day
+  deadline; the clock stops late and the late referral is a breach.
+obligation_ids: [IO-CB-2026-14-1-b]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(1)(b) (report Table A, row A13, verification P).
+  Day basis: calendar, inferred (Q4). io_due = bank_receipt + 20d.
+  bank_receipt_date = 2026-08-03 (IST)
+  due_date = 2026-08-03 + 20 days = 2026-08-23
+  OUTCOME_SET WHOLLY_REJECTED on 2026-08-20 triggers the obligation.
+  IO_REFERRED on 2026-08-26 > 2026-08-23, so STOPPED_LATE.
+  days_late = 2026-08-26 - 2026-08-23 = 3
+  The clock has stopped, so no REFER_TO_IO action remains.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-20T17:45:00+05:30
+    payload: {outcome: WHOLLY_REJECTED}
+    source: HUMAN
+  - type: IO_REFERRED
+    occurred_at: 2026-08-26T10:00:00+05:30
+as_of: 2026-09-01T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-1-b: STOPPED_LATE
+  deadlines:
+    - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-08-23, result: STOPPED_LATE}
+  breaches:
+    - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-08-23, days_late: 3}
+  compensation_paise: {}
+  required_actions: []

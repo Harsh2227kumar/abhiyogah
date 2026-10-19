@@ -1,0 +1,42 @@
+name: io_tat_minus_10_upi
+description: >
+  A rejected UPI complaint with an external TAT: the IO deadline is TAT − 10 days, which here is later
+  than the ordinary 20 days, and the referral on day 25 is on time.
+obligation_ids: [IO-CB-2026-14-1-a, IO-CB-2026-14-1-b]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(1)(a) (report Table A, row A13, verification P): with an
+  RBI/NPCI/card-network TAT, escalate early enough to leave the IO at least 10 days within that TAT.
+  Report formula: io_due = external_TAT_deadline - 10d. Day basis: calendar, inferred (Q4).
+  external_tat_days = 40 is a SYNTHETIC bank-supplied input, not a real NPCI TAT (stage TATs are
+  unverified, Q8). The TAT deadline is counted from bank receipt (inferred, Q14).
+  bank_receipt_date = 2026-08-03 (IST)
+  TAT deadline = 2026-08-03 + 40 days = 2026-09-12
+  due_date = 2026-09-12 - 10 days = 2026-09-02   (= 2026-08-03 + 30 days)
+  Limb (b) is NOT_TRIGGERED because external_tat_days is set; limb (a) overrides it.
+  (Under limb (b) alone the due date would have been 2026-08-23 and this referral late.)
+  IO_REFERRED on 2026-08-28 <= 2026-09-02, so STOPPED_ON_TIME.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+    payload: {channel: UPI_P2P, external_tat_days: 40}
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-25T15:00:00+05:30
+    payload: {outcome: WHOLLY_REJECTED}
+    source: HUMAN
+  - type: IO_REFERRED
+    occurred_at: 2026-08-28T10:00:00+05:30
+as_of: 2026-09-05T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-1-a: STOPPED_ON_TIME
+    IO-CB-2026-14-1-b: NOT_TRIGGERED
+  deadlines:
+    - {obligation_id: IO-CB-2026-14-1-a, due_date: 2026-09-02, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []
