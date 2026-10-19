@@ -34,7 +34,7 @@
       CARD_NOT_PRESENT, AEPS, APBS, NACH, PPI_ON_US, PPI_OFF_US, OTHER), `AccountType` (for the B5 caps),
       `FactSource` (HUMAN, SYSTEM, LLM).
 - [x] `domain/money.py`: `Paise` NewType plus helpers `rupees(n) -> Paise` and `format_inr(p)`.
-- [ ] `domain/events.py`: `EventType` enum with at least the events in the report's architecture diagram
+- [x] `domain/events.py`: `EventType` enum with at least the events in the report's architecture diagram
       and clock table (BANK_RECEIVED, ACKNOWLEDGED, INFO_REQUESTED, OUTCOME_SET, IO_REFERRED, IO_DECIDED,
       FINAL_REPLY_SENT, CUSTOMER_REPORTED, ALERT_RECEIVED, SHADOW_CREDITED, REVERSAL_POSTED,
       LIABILITY_DETERMINED, RBI_RECEIVED, RBIO_DIRECTION_RECEIVED, WRITTEN_RESPONSE_FILED,
@@ -79,3 +79,4 @@ _(other streams add requests for changes to owned paths here)_
 - 2026-10-19 · item 5 done · .github/workflows/ci.yml runs make setup && make check on push and PR (uv, py3.12) · next: item 6 domain/enums.py
 - 2026-10-19 · item 6 done · domain/enums.py: StrEnums with value == UPPER_SNAKE name (YAML uses COMMERCIAL_BANK etc.); B5 cap amounts left to the rule pack · next: item 7 domain/money.py
 - 2026-10-19 · item 7 done · domain/money.py: Paise NewType, rupees() (int only), format_inr() with lakh/crore grouping, hypothesis round-trip · next: item 8 domain/events.py
+- 2026-10-19 · item 8 done · domain/events.py: EventType (task list + BANK_COMMUNICATION_SENT, CUSTOMER_DISSATISFIED, FACTS_RECORDED), frozen ComplaintEvent; `source` lives in Provenance (event.source is a shortcut), LLM provenance requires model + prompt_version · next: item 9 domain/complaint.py
