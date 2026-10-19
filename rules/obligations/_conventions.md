@@ -24,6 +24,10 @@ Limbs of one clause that override each other (A13: 20 days vs TAT − 10 days) u
 conditions (`external_tat_days is set` / `is not set`) **and** list the override in `overridden_by`, so
 exactly one limb produces a deadline and the trace still names the override.
 
+Facts the rule pack needs that `ComplaintFacts` does not have yet are requested in issue #20
+(`issue_type`, the A15 and A18 facts, the cl. 14(5) exclusion category). Scenarios already set
+them in payloads; until they exist those payload keys are ignored by folding.
+
 ## Validity and anchor dates
 
 - `valid_from` / `valid_to` are checked against the `as_of` date: is this rule in the pack at the
@@ -44,6 +48,7 @@ the obligation select how the due date is computed from the start date `s` (an I
 | `max_days` | `s + max_days` (in the clock's basis) | most clocks |
 | `base_days` | `s + max(base_days, external_tat_days)`, or `s + base_days` when no external TAT is known | A2 |
 | `io_review_days` | `s + external_tat_days − io_review_days` | A13 limb (a) |
+| `tat_days_by_channel` | `T + table[channel]`, T = `transaction_date_t`; a channel not in the table (or listed in `follows_underlying_system`) gives `INSUFFICIENT_FACTS` | B1, B2 |
 | `base_days` + `filing_window` | `max(s + max(base_days, external_tat_days), last_bank_communication_date) + filing_window` | A3 |
 
 `filing_window` is `{days: n}` or `{years: n}`; adding years keeps the month and day (29 Feb is not
@@ -52,6 +57,10 @@ received the complaint, the `as_of` date stands in for it ("if it were filed now
 
 `external_tat_days` is the `ComplaintFacts` input supplied by the bank. It is counted from the bank's
 receipt of the complaint; that anchor is an inference recorded as open question Q14.
+
+Compensation per day of delay (`compensation_per_day_paise`, B1/B2): owed =
+`per_day × days_late`, where days_late runs to the stop date, or to the `as_of` date while the clock
+is `BREACHED` (accrued so far). Nothing is owed for `RUNNING` or `STOPPED_ON_TIME`.
 
 Other parameters (amounts, caps, rates) are inputs to calculators and are named after what they
 hold, with units in the name: `_days`, `_paise`, `_percent`.
@@ -94,6 +103,7 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
 | `SENIOR_REVIEW` | A15 review limb | Have the outcome reviewed at a senior level before the IO referral (while not yet referred) |
 | `SEND_FINAL_DECISION` | A17 | Communicate the bank's final decision to the complainant |
 | `SEND_CORRECTED_REPLY` | A18 | Send the complainant a reply carrying the missing cl. 14(11)–(12) elements |
+| `REVERSE_TRANSACTION` | B1, B2 | Complete the failed-transaction reversal (compensation keeps accruing) |
 | `SET_OUTCOME` | A14 | Record one of the three cl. 14(2) outcomes for a complaint already replied to |
 
 ## Scenario inputs that are not regulatory values

@@ -1,0 +1,31 @@
+name: failed_txn_atm_reversed_on_time
+description: >
+  A failed ATM withdrawal is reversed on T+4, inside the T+5 TAT; no compensation is due.
+obligation_ids: [TAT-2019-FAILED-TXN]
+hand_check: |
+  Source: RBI/2019-20/67 Annex (report Table B, row B1, verification P). Formula:
+  compensation = 100 x max(0, R - (T + n)) rupees, calendar days (T is a calendar date: EXPLICIT),
+  credited suo motu. 100 rupees = 10000 paise.
+  ATM row: n = 5. T = 2026-08-10. due_date = T + 5 = 2026-08-15
+  REVERSAL_POSTED R = 2026-08-14 <= 2026-08-15: STOPPED_ON_TIME.
+  compensation = 100 x max(0, 2026-08-14 - 2026-08-15) = 0, so nothing is listed.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-10T20:00:00+05:30
+    payload: {issue_type: FAILED_TRANSACTION, channel: ATM, transaction_date_t: "2026-08-10", amount_paise: 500000}
+  - type: REVERSAL_POSTED
+    occurred_at: 2026-08-14T13:00:00+05:30
+as_of: 2026-08-20T12:00:00+05:30
+expect:
+  results:
+    TAT-2019-FAILED-TXN: STOPPED_ON_TIME
+  deadlines:
+    - {obligation_id: TAT-2019-FAILED-TXN, due_date: 2026-08-15, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

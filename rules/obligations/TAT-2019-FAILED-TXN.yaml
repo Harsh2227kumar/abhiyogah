@@ -1,0 +1,47 @@
+# B1 (report Table B row B1, verified rows only): a failed transaction must be reversed (funds received,
+# R) within the channel's TAT counted from the transaction date T; for each day of delay beyond
+# T + n the bank pays ₹100 suo motu, without a claim. Report formula: 100 × max(0, R − (T + n)) rupees,
+# in calendar days (T is defined as a calendar date: basis EXPLICIT). The claimed switch to working
+# days from 1 Jan 2021 (B3) is unverified and treated as false (Q6).
+# Rows: ATM / micro-ATM T+5; card-to-card T+1; PoS card-present T+5; IMPS T+1; UPI P2P T+1; UPI
+# merchant T+5; AePS merchant T+5; APBS T+1; NACH credit/reversal and NACH debit despite revocation
+# T+1; PPI on-us T+1; PPI off-us follows the underlying system. The illegible rows (card-not-present,
+# AePS beneficiary, NACH-revoked compensation) are B2 (TAT-2019-ILLEGIBLE-ROWS), UNVERIFIED.
+# AePS has two rows (merchant T+5 here, beneficiary T+1 in B2) and Channel has one AEPS member, so the
+# row key is AEPS_MERCHANT and a complaint with channel AEPS gets INSUFFICIENT_FACTS until the channel
+# is split (requested, issue #20). PPI off-us needs the underlying system: INSUFFICIENT_FACTS for now.
+# Payee rule (beneficiary for delayed credit-push, originator for delayed initiation) is not yet an
+# output. Placement in the 2025 consolidated directions is unconfirmed (Q9).
+obligation_id: TAT-2019-FAILED-TXN
+deontic: OBLIGATION
+subject: bank
+instrument: "RBI circular on turnaround time and customer compensation for failed transactions"
+instrument_ref: "RBI/2019-20/67; DPSS.CO.PD No.629/02.01.014/2019-20"
+clause: "Annex"
+source_url: "https://www.rbi.org.in/commonman/English/scripts/Notification.aspx?Id=3074"
+applies_to: {entity_type: COMMERCIAL_BANK}  # other payment-system participants not encoded
+trigger: {event: BANK_RECEIVED, condition: "issue_type in [FAILED_TRANSACTION] and channel is set and transaction_date_t is set"}
+clock: {start: transaction_date_t, stop: REVERSAL_POSTED, basis: CALENDAR, basis_status: EXPLICIT, tz: Asia/Kolkata}
+parameters:
+  tat_days_by_channel:
+    "2019-10-15":
+      value: {ATM: 5, MICRO_ATM: 5, CARD_TO_CARD: 1, POS_CARD_PRESENT: 5, IMPS: 1, UPI_P2P: 1, UPI_MERCHANT: 5,
+              AEPS_MERCHANT: 5, APBS: 1, NACH: 1, PPI_ON_US: 1}
+      reference: "RBI/2019-20/67 Annex (report row B1)"
+      verification: PRIMARY_TEXT_READ
+      open_question: Q9
+  follows_underlying_system:
+    "2019-10-15": {value: [PPI_OFF_US], reference: "RBI/2019-20/67 Annex (report row B1)", verification: PRIMARY_TEXT_READ}
+  compensation_per_day_paise:
+    "2019-10-15": {value: 10000, reference: "RBI/2019-20/67 Annex: ₹100 per day of delay (report row B1)",
+                   verification: PRIMARY_TEXT_READ}
+valid_from: 2019-10-15
+valid_to: null
+status: DRAFT
+verification: PRIMARY_TEXT_READ
+tests:
+  - failed_txn_upi_p2p_reversed_late.yaml
+  - failed_txn_atm_reversed_on_time.yaml
+  - failed_txn_imps_not_reversed_accrues.yaml
+  - failed_txn_pos_reversed_on_due_date.yaml
+  - failed_txn_aeps_row_ambiguous.yaml

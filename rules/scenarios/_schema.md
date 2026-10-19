@@ -47,6 +47,8 @@ expect:
 
 - **Times.** `occurred_at`, `recorded_at` and `as_of` are ISO 8601 with an explicit UTC offset.
   Day arithmetic uses the Asia/Kolkata calendar date of each instant.
+- **Payloads** are JSON values, so a date inside a payload is quoted (`transaction_date_t: "2026-08-10"`);
+  unquoted YAML dates are refused.
 - **Events.** The runner assigns `event_id` = `<name>-<index>` (index from 1 in file order),
   `complaint_id` = `SCN-<name>`, and provenance `{source, actor: "scenario"}`; with `source: LLM` it
   uses `model: "scenario"` and `prompt_version: "scenario"`. Folding follows
