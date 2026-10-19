@@ -36,6 +36,11 @@
 - [x] Follow the updated conventions: `FUTURE_DATED` rules are never evaluated, `tat_days_by_channel`
       / `follows_underlying_system` durations (B1, B2), one action per obligation with the convention
       codes (`REVERSE_TRANSACTION`, `SHADOW_CREDIT`, `SEND_FINAL_DECISION`, ...).
+- [x] Conditions support `or` and parentheses (`and` binds tighter), for the A14 cl. 14(5) exemption
+      "exclusion_category is not set or exclusion_category not in [...]" (rules request).
+- [ ] Filtered clock stops: a `stop_conditions` parameter maps a stop event to a condition checked
+      against that event's own payload, so A8 stops only on `APPEAL_FILED` by the complainant and A7
+      only on one by the bank (rules request; `ClockSpec.stop` itself stays a list of events).
 - [ ] Clockless obligations end `DETERMINED` with `outputs` (A1 scheme, A2 `escalation_open`, A3
       `filed_in_time`, A14, A15, A18, B5 determination). `DETERMINED` landed in #23; the outputs field
       on `DecisionRecord` is requested in #25.
@@ -81,3 +86,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · BLOCKED: test_scenarios.py needs rule-pack PR #16 (loader, obligations) and calendar PR #14 merged into main; DETERMINED/outputs needs the domain change in #20. Resume by merging origin/main.
 - 2026-10-19 · resume · merged main (#18 engine, #14 calendar); clocks now re-export calendar.protocol.BankCalendar and a clock test runs on the real bank calendar · still BLOCKED: test_scenarios.py on rules PR #16, DETERMINED/outputs on #20
 - 2026-10-19 · conventions item done · FUTURE_DATED never evaluated, tat_days_by_channel + follows_underlying_system, one action per obligation with convention codes. Local trial against rules branch: 40/72 scenarios pass; all 32 failures are DETERMINED/outputs (A1, A14, A15, A18, B5) · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16
+- 2026-10-19 · or-conditions item done · evaluator/conditions.py: recursive-descent grammar with `or`, `and` (tighter) and parentheses; every clause still traced · next: filtered clock stops

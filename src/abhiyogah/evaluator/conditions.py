@@ -1,8 +1,10 @@
 """Trigger conditions over ``ComplaintFacts``: a deliberately tiny grammar, no ``eval``.
 
 The grammar and its semantics follow ``rules/obligations/_conventions.md`` (rule-pack stream). A
-condition is one or more clauses joined by `` and ``. Each clause names a ``ComplaintFacts`` field
-and one of these tests::
+condition is clauses joined by `` and `` and `` or `` (``and`` binds tighter), with parentheses for
+grouping, e.g. ``outcome is set and (exclusion_category is not set or exclusion_category not in
+[14_5_c])``. Every clause is evaluated and traced; none is skipped. Each clause names a
+``ComplaintFacts`` field and one of these tests::
 
     outcome in [PARTIALLY_RESOLVED, WHOLLY_REJECTED]
     channel not in [ATM, MICRO_ATM]
@@ -107,20 +109,110 @@ def _shown(fact: Fact[object] | None) -> str:
     return "unknown" if fact is None else f"known ({fact_spelling(fact.value)})"
 
 
+def _tokens(condition: str) -> list[str]:
+    """Split into ``(``, ``)``, ``and``, ``or`` and clause strings; ``[...]`` lists stay whole."""
+    tokens: list[str] = []
+    words: list[str] = []
+    word = ""
+    depth = 0
+
+    def flush_word() -> None:
+        nonlocal word
+        if word:
+            words.append(word)
+            word = ""
+
+    def flush_clause() -> None:
+        flush_word()
+        if words:
+            tokens.append(" ".join(words))
+            words.clear()
+
+    for ch in condition:
+        if ch == "[":
+            depth += 1
+        elif ch == "]":
+            depth -= 1
+        if depth == 0 and ch in "()":
+            flush_clause()
+            tokens.append(ch)
+        elif depth == 0 and ch.isspace():
+            flush_word()
+            if words and words[-1] in ("and", "or"):
+                op = words.pop()
+                flush_clause()
+                tokens.append(op)
+        else:
+            word += ch
+    flush_word()
+    if words and words[-1] in ("and", "or"):
+        raise ConditionSyntaxError(f"condition ends with an operator: {condition!r}")
+    flush_clause()
+    if depth != 0:
+        raise ConditionSyntaxError(f"unbalanced [ ] in condition: {condition!r}")
+    return tokens
+
+
+class _Parser:
+    """Recursive descent: ``expr := term (or term)*``, ``term := factor (and factor)*``."""
+
+    def __init__(self, tokens: list[str], facts: ComplaintFacts) -> None:
+        self.tokens = tokens
+        self.pos = 0
+        self.facts = facts
+        self.trace: list[ConditionTrace] = []
+        self.read: list[str] = []
+        self.missing: list[str] = []
+
+    def _peek(self) -> str | None:
+        return self.tokens[self.pos] if self.pos < len(self.tokens) else None
+
+    def parse(self) -> bool:
+        """Parse the whole condition; every clause is evaluated and traced, none short-circuited."""
+        result = self._expr()
+        if self._peek() is not None:
+            raise ConditionSyntaxError(f"unexpected {self._peek()!r} in condition")
+        return result
+
+    def _expr(self) -> bool:
+        results = [self._term()]
+        while self._peek() == "or":
+            self.pos += 1
+            results.append(self._term())
+        return any(results)
+
+    def _term(self) -> bool:
+        results = [self._factor()]
+        while self._peek() == "and":
+            self.pos += 1
+            results.append(self._factor())
+        return all(results)
+
+    def _factor(self) -> bool:
+        tok = self._peek()
+        if tok is None or tok in ("and", "or", ")"):
+            raise ConditionSyntaxError(f"expected a clause, got {tok!r}")
+        self.pos += 1
+        if tok == "(":
+            result = self._expr()
+            if self._peek() != ")":
+                raise ConditionSyntaxError("missing ')' in condition")
+            self.pos += 1
+            return result
+        clause_result, field, detail = _check_clause(tok, self.facts)
+        self.read.append(field)
+        if clause_result is None:
+            self.missing.append(field)
+        self.trace.append(ConditionTrace(condition=tok, result=bool(clause_result), detail=detail))
+        return bool(clause_result)
+
+
 def evaluate_condition(condition: str | None, facts: ComplaintFacts) -> ConditionOutcome:
     """Evaluate a trigger condition; ``None`` (no condition) is true."""
     if condition is None or not condition.strip():
         return ConditionOutcome(True, (), (), ())
-    trace: list[ConditionTrace] = []
-    read: list[str] = []
-    missing: list[str] = []
-    overall = True
-    for clause in re.split(r"\s+and\s+", condition.strip()):
-        result, field, detail = _check_clause(clause, facts)
-        read.append(field)
-        if result is None:
-            missing.append(field)
-        if not result:
-            overall = False
-        trace.append(ConditionTrace(condition=clause.strip(), result=bool(result), detail=detail))
-    return ConditionOutcome(overall, tuple(trace), tuple(read), tuple(missing))
+    parser = _Parser(_tokens(condition.strip()), facts)
+    result = parser.parse()
+    if not parser.trace:
+        raise ConditionSyntaxError(f"condition has no clause: {condition!r}")
+    return ConditionOutcome(result, tuple(parser.trace), tuple(parser.read), tuple(parser.missing))
