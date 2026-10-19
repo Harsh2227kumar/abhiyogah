@@ -14,21 +14,50 @@ Folding rules (see ``fold_events``):
 4. Any payload key equal to a ``ComplaintFacts`` field name sets that fact, on any event type
    (``FACTS_RECORDED`` exists for facts that arrive on their own). Other payload keys are ignored.
 5. ``OUTCOME_SET`` must carry ``payload["outcome"]``.
+6. Facts in ``HUMAN_ONLY_FACTS`` (``liability_fault``) must come from a ``HUMAN`` event; an LLM or
+   system feed never decides liability (CLAUDE.md hard rule 4).
 """
 
 from collections.abc import Iterable
 from datetime import date, datetime
-from typing import Any
+from typing import Annotated, Any
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    TypeAdapter,
+    ValidationError,
+)
 
-from abhiyogah.domain.enums import AccountType, Channel, EntityType, Outcome
+from abhiyogah.domain.enums import (
+    AccountType,
+    Appellant,
+    Channel,
+    EntityType,
+    FactSource,
+    IssueType,
+    LiabilityFault,
+    Outcome,
+)
 from abhiyogah.domain.errors import FactFoldError
 from abhiyogah.domain.events import ComplaintEvent, EventType, Provenance
 from abhiyogah.domain.money import Paise
 from abhiyogah.domain.tz import ist_date
 
-__all__ = ["EVENT_DATE_FACTS", "ComplaintFacts", "Fact", "fold_events"]
+__all__ = [
+    "EVENT_DATE_FACTS",
+    "HUMAN_ONLY_FACTS",
+    "ComplaintFacts",
+    "ExclusionCategory",
+    "Fact",
+    "fold_events",
+]
+
+ExclusionCategory = Annotated[str, StringConstraints(pattern=r"^14_5_[a-e]$")]
+"""IO Directions 2026 cl. 14(5) exclusion limb, ``14_5_a`` to ``14_5_e``."""
 
 
 class Fact[T](BaseModel):
@@ -60,6 +89,22 @@ class ComplaintFacts(BaseModel):
     final_reply_date: Fact[date] | None = None
     last_bank_communication_date: Fact[date] | None = None
     customer_dissatisfied_date: Fact[date] | None = None
+    exclusion_category: Fact[ExclusionCategory] | None = Field(
+        default=None, description="IO cl. 14(5) exclusion limb, '14_5_a' to '14_5_e' (A14, A16)."
+    )
+    handling_unit: Fact[str] | None = Field(
+        default=None, description="Unit that handled the complaint (A15)."
+    )
+    closing_unit: Fact[str] | None = Field(
+        default=None, description="Unit that closed the complaint (A15)."
+    )
+    senior_review_date: Fact[date] | None = None
+    io_upheld: Fact[bool] | None = Field(
+        default=None, description="Whether the IO upheld the bank's decision (IO_DECIDED, A18)."
+    )
+    reply_elements: Fact[list[str]] | None = Field(
+        default=None, description="Element codes found in the sent reply (A18)."
+    )
 
     # Ombudsman stage
     rbi_receipt_date: Fact[date] | None = None
@@ -69,6 +114,9 @@ class ComplaintFacts(BaseModel):
     acceptance_letter_date: Fact[date] | None = None
     compliance_intimated_date: Fact[date] | None = None
     appeal_filed_date: Fact[date] | None = None
+    appellant: Fact[Appellant] | None = Field(
+        default=None, description="Who filed the appeal (APPEAL_FILED payload, A8, Q18)."
+    )
 
     # Transactions, unauthorised and failed (RBC-CB paras 66-73, TAT circular)
     transaction_date_t: Fact[date] | None = None
@@ -77,6 +125,10 @@ class ComplaintFacts(BaseModel):
     customer_reported_date: Fact[date] | None = None
     shadow_credit_date: Fact[date] | None = None
     liability_determined_date: Fact[date] | None = None
+    issue_type: Fact[IssueType] | None = None
+    liability_fault: Fact[LiabilityFault] | None = Field(
+        default=None, description="Whose fault (B5). Set only by a HUMAN event."
+    )
     channel: Fact[Channel] | None = None
     account_type: Fact[AccountType] | None = None
     amount_paise: Fact[Paise] | None = None
@@ -106,6 +158,7 @@ EVENT_DATE_FACTS: dict[EventType, str] = {
     EventType.IO_DECIDED: "io_decided_date",
     EventType.FINAL_REPLY_SENT: "final_reply_date",
     EventType.CUSTOMER_DISSATISFIED: "customer_dissatisfied_date",
+    EventType.SENIOR_REVIEWED: "senior_review_date",
     EventType.RBI_RECEIVED: "rbi_receipt_date",
     EventType.RBIO_DIRECTION_RECEIVED: "rbio_direction_date",
     EventType.WRITTEN_RESPONSE_FILED: "written_response_date",
@@ -125,6 +178,9 @@ EVENT_DATE_FACTS: dict[EventType, str] = {
 }
 """Which date fact each lifecycle event sets from its ``occurred_at``."""
 
+HUMAN_ONLY_FACTS: frozenset[str] = frozenset({"liability_fault"})
+"""Facts only a person may assert (CLAUDE.md hard rule 4)."""
+
 _BANK_COMMUNICATIONS = frozenset({EventType.BANK_COMMUNICATION_SENT, EventType.FINAL_REPLY_SENT})
 
 _FACT_ADAPTERS: dict[str, TypeAdapter[Any]] = {
@@ -136,6 +192,8 @@ _FACT_ADAPTERS: dict[str, TypeAdapter[Any]] = {
 
 def _make_fact(name: str, value: object, ev: ComplaintEvent) -> Fact[Any]:
     """Validate ``value`` against the field's type and wrap it with the event's provenance."""
+    if name in HUMAN_ONLY_FACTS and ev.source is not FactSource.HUMAN:
+        raise FactFoldError(f"event {ev.event_id}: {name!r} must come from a HUMAN event")
     try:
         fact = _FACT_ADAPTERS[name].validate_python(
             {
