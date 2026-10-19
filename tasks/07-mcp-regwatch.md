@@ -19,7 +19,7 @@
 ### Regulatory Watch
 - [x] Polite fetcher for RBI notifications, Master Directions and press releases (and their RSS feeds):
       rate limit, user agent, retries, and handling of bot checks without circumventing them.
-- [ ] Immutable raw store: PDF/HTML + SHA-256 + circular number (regex `RBI/\d{4}-\d{2,4}/\d+`) + date + URL.
+- [x] Immutable raw store: PDF/HTML + SHA-256 + circular number (regex `RBI/\d{4}-\d{2,4}/\d+`) + date + URL.
 - [ ] Text extraction that keeps paragraph anchors.
 - [ ] Relevance classifier (keywords first, LLM optional) for complaints, customer service, fraud, KYC,
       payment TATs and IO.
@@ -47,3 +47,4 @@
 - 2026-10-19 · item 1 done · mcp/tools.py (EngineTools: five read-only tools over the API routes via in-process ASGI or HTTP; non-GET refused client-side; API errors as ToolCallError), mcp/server.py (MCPServer registration, read-only annotations, stdio main, SDK loaded lazily), tests/mcp; Requests for the mcp dependency and an API service layer · next: item 2 MCP == API equality test
 - 2026-10-19 · item 2 done · tests/mcp/test_api_parity.py: tool result and MCP protocol (SDK in-process Client) structured content both equal GET /complaints/{id} for the UPI demo complaint, now and time-travelled past both breaches; API refusals reach the agent as tool errors (server maps them to the SDK's ToolError) · next: item 3 polite RBI fetcher
 - 2026-10-19 · item 3 done · regwatch/fetcher.py: honest UA with contact, robots.txt obeyed (incl. Crawl-delay; unreadable robots stops), per-host rate limit, bounded retries with backoff + Retry-After, bot checks raise BotCheckError with no retry/bypass, 50 MB cap, RSS parsing refusing DOCTYPE/entities; SOURCES flagged unverified (sandbox proxy blocks rbi.org.in); synthetic fixtures in data/regwatch/fixtures · next: item 4 immutable raw store
+- 2026-10-19 · item 4 done · regwatch/raw_store.py: content-addressed blobs (exclusive create, 0444, hash-checked reads), append-only index.jsonl of RawDocument (sha256, url, fetched_at, circular numbers via RBI/\d{4}-\d{2,4}/\d+, feed date, title); changed bytes add a version, nothing deletes; verify() finds tampering; synthetic HTML circular fixture · next: item 5 text extraction with paragraph anchors
