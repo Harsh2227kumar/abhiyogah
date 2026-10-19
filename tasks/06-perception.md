@@ -22,7 +22,7 @@
       missing; never flags the required Ombudsman wording as a risk.
 - [x] Synthetic gold sets in `data/gold/` (English, Hindi, Hinglish), clearly synthetic; an eval script
       reporting recall per language. A TF-IDF baseline for comparison.
-- [ ] Rules-only fallback when no LLM is configured: everything goes to the manual queue.
+- [x] Rules-only fallback when no LLM is configured: everything goes to the manual queue.
 - [ ] Write `STREAM COMPLETE`.
 
 ## Requests
@@ -33,6 +33,11 @@
   and `LLM_ALLOW_NON_INDIA_REGION=false` next to the existing `LLM_*` placeholders.
 - `docs/open-questions.md` (rule pack): add the RBI complaint category list as the next Q (issue #35).
   Until answered, triage categories come from configuration and default to none.
+- `workflow/review.py` (platform): consider a `ReviewKind.MANUAL_PERCEPTION` so perception's
+  `ManualTask`s (rules-only mode or model failure) can share the review queue. Until then
+  `perception.service.ManualTask` is a separate queue entry.
+- `worker/` (platform): call `PerceptionService.perceive` for inbound complaint text and append its
+  `events`, `review_tasks` and `manual_tasks`; build it with `PerceptionService.from_config(GatewayConfig.from_env())`.
 
 ## Log
 - 2026-10-19 · item 1 done · `perception.gateway` (config, India-region check, LlmRequest/Response) + `perception.adapters` (FakeModel, Anthropic, Bedrock Converse, OpenAI-compatible; SDKs injected/lazy) · next: item 2 PII masking
@@ -41,3 +46,4 @@
 - 2026-10-19 · item 4 done · `perception.extraction`: amount/UTR/T/channel/account type with spans; grounding checks (value in span, no placeholders, no future dates, enum members), conflicts dropped; one FACTS_RECORDED event per fact with LLM provenance; folds into ComplaintFacts · next: item 5 reply QA gate
 - 2026-10-19 · item 5 done · `perception.reply_qa`: required codes from IO-CB-2026-14-11-12 params (+ IO codes when upheld or unknown), trigger condition via evaluator (fails closed on unknown facts); model only reports grounded element spans and risks; missing element or model failure blocks; risks overlapping required spans dropped; test fixture copied from PR #16 · next: item 6 gold sets + eval
 - 2026-10-19 · item 6 done · `data/gold/triage.jsonl` (20 synthetic each EN/HI/Hinglish, no identifiers) + `perception.eval`: recall/precision per language for cue rules, TF-IDF char-n-gram baseline (leave-one-out) and the LLM pipeline when configured · next: item 7 rules-only fallback
+- 2026-10-19 · item 7 done · `perception.service.PerceptionService`: from_config builds the gateway; with no provider it is rules-only (no model calls, untriaged text stays a complaint, ManualTask per step); model failures fall back per step · next: item 8 STREAM COMPLETE
