@@ -33,12 +33,24 @@
       parameters `max_days` / `base_days` / `io_review_days` / `base_days` + `filing_window` (A3, with
       `as_of` standing in for an unknown anchor that is the clock's own stop), `PERMISSION` never
       breaches or requires actions.
-- [ ] Clockless obligations end `DETERMINED` with `outputs` (A1 scheme, A2 `escalation_open`, A3
-      `filed_in_time`, A14, A15). Needs `DecisionResult.DETERMINED` and an outputs field from the domain
-      owner (issue #20).
-- [x] Scenario runner harness `tests/scenarios/runner.py` (events, profile, overrides closure, exact
-      comparison of results, deadlines, breaches, paise, actions; outputs reported as unsupported),
-      unit-tested against the example scenario.
+- [x] Follow the updated conventions: `FUTURE_DATED` rules are never evaluated, `tat_days_by_channel`
+      / `follows_underlying_system` durations (B1, B2), one action per obligation with the convention
+      codes (`REVERSE_TRANSACTION`, `SHADOW_CREDIT`, `SEND_FINAL_DECISION`, ...).
+- [x] Conditions support `or` and parentheses (`and` binds tighter), for the A14 cl. 14(5) exemption
+      "exclusion_category is not set or exclusion_category not in [...]" (rules request).
+- [x] Filtered clock stops: a `stop_conditions` parameter maps a stop event to a condition checked
+      against that event's own payload, so A8 stops only on `APPEAL_FILED` by the complainant and A7
+      only on one by the bank (rules request; `ClockSpec.stop` itself stays a list of events).
+- [ ] Clockless obligations end `DETERMINED` with `outputs` and required actions (A1 `scheme`; A14
+      `classified_at_closure` + `SET_OUTCOME`; A15 `closed_by_other_unit`, `senior_reviewed_before_io`
+      + `SENIOR_REVIEW`; A18 `reply_complete`/`missing_elements` + `SEND_CORRECTED_REPLY`), and clock
+      obligations carry their outputs (A2 `escalation_open`, A3 `filed_in_time`, A6 `award_lapsed`,
+      A8 `appeal_in_time`). Needs `DecisionRecord.outputs` (#25 → PR #28).
+- [ ] B5 `RBCCB-2025-67-71` is a determination: its clock only counts `delay_working_days`; it ends
+      `DETERMINED` with `delay_working_days`, `liability_tier`, `customer_liability_paise` (uses
+      `calculators.limited_liability`).
+- [ ] The scenario runner compares `outputs` exactly and runs on the real bank calendar
+      (`load_bank_calendar`), not the test double.
 - [ ] Scenario runner `tests/scenarios/test_scenarios.py`: loads every `rules/scenarios/*.yaml`, runs the
       evaluator, compares deadlines, breaches and paise exactly. Wired into `make rules`.
 - [x] Replay test: evaluating the same events at the same `as_of` twice yields byte-identical records.
@@ -76,3 +88,7 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · time-travel item done · tests/evaluator/test_time_travel.py: days 5/19/20 RUNNING, day 21 BREACHED, IST midnight boundary · next: scenario runner, waits on rules PR #16 (obligations not on main yet); DETERMINED/outputs waits on #20
 - 2026-10-19 · runner harness done · tests/scenarios/runner.py + test_runner.py. Trial run on a local merge of rules (#16) + calendar (#14), not pushed: 12/26 scenarios pass, the other 14 only fail on DETERMINED/outputs (#20) · next: test_scenarios.py over rules/scenarios once #16 and #14 are on main
 - 2026-10-19 · BLOCKED: test_scenarios.py needs rule-pack PR #16 (loader, obligations) and calendar PR #14 merged into main; DETERMINED/outputs needs the domain change in #20. Resume by merging origin/main.
+- 2026-10-19 · resume · merged main (#18 engine, #14 calendar); clocks now re-export calendar.protocol.BankCalendar and a clock test runs on the real bank calendar · still BLOCKED: test_scenarios.py on rules PR #16, DETERMINED/outputs on #20
+- 2026-10-19 · conventions item done · FUTURE_DATED never evaluated, tat_days_by_channel + follows_underlying_system, one action per obligation with convention codes. Local trial against rules branch: 40/72 scenarios pass; all 32 failures are DETERMINED/outputs (A1, A14, A15, A18, B5) · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16
+- 2026-10-19 · or-conditions item done · evaluator/conditions.py: recursive-descent grammar with `or`, `and` (tighter) and parentheses; every clause still traced · next: filtered clock stops
+- 2026-10-19 · filtered-stops item done · `stop_conditions` parameter: a stop event counts only if its own payload passes the condition; each candidate is traced · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16

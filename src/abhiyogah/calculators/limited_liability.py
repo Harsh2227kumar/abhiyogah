@@ -71,15 +71,19 @@ def delay_working_days(
 
 def customer_liability(
     delay_wd: int,
-    transaction_paise: int,
-    account_type: AccountType,
+    transaction_paise: int | None,
+    account_type: AccountType | None,
     caps: Mapping[AccountType, int],
     zero_max_wd: int,
     limited_max_wd: int,
     bank_at_fault: bool | None,
 ) -> LiabilityResult:
-    """The B5 tier and the customer's liability (see the module docstring)."""
-    if delay_wd < 0 or transaction_paise < 0:
+    """The B5 tier and the customer's liability (see the module docstring).
+
+    The transaction amount and account type are needed only for the ``LIMITED`` tier; pass None
+    when they are unknown and the tier turns out not to need them.
+    """
+    if delay_wd < 0 or (transaction_paise is not None and transaction_paise < 0):
         raise CalculatorError("delay and transaction amount must be >= 0")
     if not 0 <= zero_max_wd < limited_max_wd:
         raise CalculatorError(f"thresholds out of order: {zero_max_wd}, {limited_max_wd}")
@@ -104,6 +108,8 @@ def customer_liability(
             f"delay_wd {delay_wd} > {zero_max_wd}",
         )
     if delay_wd <= limited_max_wd:
+        if account_type is None or transaction_paise is None:
+            raise CalculatorError("the LIMITED tier needs the account type and transaction amount")
         if account_type not in caps:
             raise CalculatorError(f"no liability cap for account type {account_type}")
         cap = caps[account_type]
