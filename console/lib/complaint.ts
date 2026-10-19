@@ -1,4 +1,4 @@
-import type { ComplaintFacts, DecisionRecord, Provenance } from "./api";
+import type { ComplaintFacts, DeadlineItem, Provenance } from "./api";
 import { formatDate, formatInr, humanize } from "./format";
 
 export interface FactRow {
@@ -38,11 +38,11 @@ export function factRows(facts: ComplaintFacts): FactRow[] {
   return rows;
 }
 
-/** Decisions that ran a clock, soonest due first. */
-export function clocks(decisions: DecisionRecord[]): DecisionRecord[] {
-  return decisions
-    .filter((d) => d.deadline)
-    .sort((a, b) => (a.deadline!.due_date < b.deadline!.due_date ? -1 : a.deadline!.due_date > b.deadline!.due_date ? 1 : 0));
+/** Clocks soonest due first, then by obligation. */
+export function clocks(deadlines: DeadlineItem[]): DeadlineItem[] {
+  return [...deadlines].sort(
+    (a, b) => a.deadline.due_date.localeCompare(b.deadline.due_date) || a.obligation_id.localeCompare(b.obligation_id),
+  );
 }
 
 /** A one-line description of who asserted something. */

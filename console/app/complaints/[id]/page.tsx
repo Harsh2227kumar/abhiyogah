@@ -28,8 +28,7 @@ export default async function ComplaintPage({ params, searchParams }: Props) {
   const c = await load(decodeURIComponent(id), asOf);
   const replay = (obligationId: string) =>
     withAsOf(`/complaints/${encodeURIComponent(c.complaint_id)}/decisions/${encodeURIComponent(obligationId)}`, asOf);
-  const breaches = c.decisions.filter((d) => d.breach);
-  const actions = c.decisions.flatMap((d) => (d.required_actions ?? []).map((a) => ({ ...a, obligation_id: d.obligation_id })));
+  const triggered = new Set(c.deadlines.map((d) => d.obligation_id));
 
   return (
     <article>
@@ -38,27 +37,26 @@ export default async function ComplaintPage({ params, searchParams }: Props) {
       </p>
       <h1>Complaint {c.complaint_id}</h1>
       <p className="muted">
-        Evaluated at {formatDateTime(c.as_of)} ·{" "}
+        Evaluated live at {formatDateTime(c.as_of)} ·{" "}
         <span className={c.chain.verified ? "chain-ok" : "chain-broken"}>
           {c.chain.verified
-            ? `Decision chain verified (${c.chain.length} records)`
-            : `Decision chain broken at record ${c.chain.broken_at ?? "?"} of ${c.chain.length}`}
+            ? `Decision ledger verified (${c.chain.length} records)`
+            : `Decision ledger broken at record ${(c.chain.broken_at ?? 0) + 1} of ${c.chain.length}${c.chain.reason ? ` (${humanize(c.chain.reason).toLowerCase()})` : ""}`}
         </span>
       </p>
 
       <section aria-labelledby="breaches">
         <h2 id="breaches">Breaches</h2>
-        {breaches.length === 0 ? (
+        {c.breaches.length === 0 ? (
           <p>None.</p>
         ) : (
           <ul>
-            {breaches.map((d) => (
-              <li key={d.obligation_id} className="breach">
-                <Link href={replay(d.obligation_id)}>{d.obligation_id}</Link> (cl. {d.clause}): due{" "}
-                {formatDate(d.breach!.due_date)}
-                {d.breach!.stop_date ? `, stopped ${formatDate(d.breach!.stop_date)}` : ", not stopped"} —{" "}
-                {d.breach!.days_late} day{d.breach!.days_late === 1 ? "" : "s"} late
-                {d.compensation && <> · compensation {formatInr(d.compensation.amount_paise)}</>}
+            {c.breaches.map(({ breach: b, clause, compensation }) => (
+              <li key={b.obligation_id} className="breach">
+                <Link href={replay(b.obligation_id)}>{b.obligation_id}</Link> (cl. {clause}): due {formatDate(b.due_date)}
+                {b.stop_date ? `, stopped ${formatDate(b.stop_date)}` : ", not stopped"} — {b.days_late} day
+                {b.days_late === 1 ? "" : "s"} late
+                {compensation && <> · compensation {formatInr(compensation.amount_paise)}</>}
               </li>
             ))}
           </ul>
@@ -67,14 +65,15 @@ export default async function ComplaintPage({ params, searchParams }: Props) {
 
       <section aria-labelledby="actions">
         <h2 id="actions">Required actions</h2>
-        {actions.length === 0 ? (
+        {c.required_actions.length === 0 ? (
           <p>None.</p>
         ) : (
           <ul>
-            {actions.map((a) => (
-              <li key={`${a.obligation_id}-${a.action}`}>
+            {c.required_actions.map(({ action: a, obligation_id, source }) => (
+              <li key={`${obligation_id ?? source}-${a.action}`}>
                 <strong>{humanize(a.action)}</strong>
-                {a.due_date && <> by {formatDate(a.due_date)}</>} ({a.obligation_id}){a.reason && <> — {localizeDates(a.reason)}</>}
+                {a.due_date && <> by {formatDate(a.due_date)}</>} ({obligation_id ?? humanize(source)})
+                {a.reason && <> — {localizeDates(a.reason)}</>}
               </li>
             ))}
           </ul>
@@ -96,8 +95,8 @@ export default async function ComplaintPage({ params, searchParams }: Props) {
             </tr>
           </thead>
           <tbody>
-            {clocks(c.decisions).map((d) => {
-              const dl = d.deadline!;
+            {clocks(c.deadlines).map((d) => {
+              const dl = d.deadline;
               return (
                 <tr key={d.obligation_id}>
                   <td>
@@ -115,7 +114,7 @@ export default async function ComplaintPage({ params, searchParams }: Props) {
                       ({humanize(dl.basis)}, {humanize(dl.basis_status).toLowerCase()})
                     </span>
                   </td>
-                  <td>{formatDate(dl.due_date)}</td>
+                  <td className="nowrap">{formatDate(dl.due_date)}</td>
                   <td>
                     <ResultTag result={d.result} />
                   </td>
@@ -125,10 +124,10 @@ export default async function ComplaintPage({ params, searchParams }: Props) {
           </tbody>
         </table>
         <details>
-          <summary>Obligations without a running clock</summary>
+          <summary>Obligations without a clock on this complaint</summary>
           <ul>
             {c.decisions
-              .filter((d) => !d.deadline)
+              .filter((d) => !triggered.has(d.obligation_id))
               .map((d) => (
                 <li key={d.obligation_id}>
                   <Link href={replay(d.obligation_id)}>{d.obligation_id}</Link>: <ResultTag result={d.result} />
@@ -137,6 +136,25 @@ export default async function ComplaintPage({ params, searchParams }: Props) {
           </ul>
         </details>
       </section>
+
+      {c.review_tasks.length > 0 && (
+        <section aria-labelledby="reviews">
+          <h2 id="reviews">Human review</h2>
+          <ul>
+            {c.review_tasks.map((t) => (
+              <li key={t.task_id}>
+                <strong>{humanize(t.kind)}</strong> ({humanize(t.status ?? "OPEN")}) — {t.reason}
+                {t.provenance && (
+                  <>
+                    {" "}
+                    <ProvenanceBadge provenance={t.provenance} />
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section aria-labelledby="facts">
         <h2 id="facts">Facts</h2>

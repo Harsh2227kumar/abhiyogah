@@ -156,3 +156,4 @@ h2 { margin-top: 28px; font-size: 1.15em; }
 .timetravel-active { background: #fdf6b2; color: #723b13; }
 .timetravel-note { font-weight: 700; }
 .admin-tag { font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.notice { background: #fdf6b2; color: #723b13; padding: 8px 12px; border-radius: 6px; }

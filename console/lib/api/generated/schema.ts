@@ -4,6 +4,66 @@
  */
 
 export interface paths {
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Health
+         * @description Liveness probe; no authentication.
+         */
+        get: operations["health"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/complaints/{complaint_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Events
+         * @description Record business events on a complaint, then re-evaluate it.
+         */
+        post: operations["postEvents"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/complaints/{complaint_id}/findings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Finding
+         * @description Record a perception finding; a dismissive one opens a human-review task.
+         */
+        post: operations["postFinding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/complaints": {
         parameters: {
             query?: never;
@@ -33,9 +93,49 @@ export interface paths {
         };
         /**
          * Get Complaint
-         * @description One complaint: events, facts, decisions and chain status.
+         * @description One complaint: facts, deadlines, breaches, required actions and chain status.
          */
         get: operations["getComplaint"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/complaints/{complaint_id}/closure": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check Closure
+         * @description Whether ``unit`` may close the complaint now, with every reason it may not.
+         */
+        get: operations["checkClosure"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/complaints/{complaint_id}/decisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Decisions
+         * @description The complaint's stored, hash-chained decision records and their verification.
+         */
+        get: operations["listDecisions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -53,9 +153,29 @@ export interface paths {
         };
         /**
          * Get Decision
-         * @description The latest decision record for one obligation on one complaint.
+         * @description The latest stored decision record for one obligation on one complaint.
          */
         get: operations["getDecision"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/decisions/{decision_id}/explain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Explain Decision
+         * @description A stored decision rendered as text from the record itself.
+         */
+        get: operations["explainDecision"];
         put?: never;
         post?: never;
         delete?: never;
@@ -84,6 +204,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/board/deadlines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Board Deadlines
+         * @description Running deadlines due within ``within_days`` calendar days, soonest first.
+         */
+        get: operations["boardDeadlines"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/review-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Review Tasks
+         * @description Human-review tasks, optionally for one complaint or one status.
+         */
+        get: operations["listReviewTasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -96,6 +256,20 @@ export interface components {
          * @enum {string}
          */
         AccountType: "BSBD" | "OTHER_SAVINGS" | "PPI" | "GIFT_CARD" | "MSME_CURRENT_CASH_CREDIT_OD" | "INDIVIDUAL_CURRENT_CASH_CREDIT_OD_SMALL" | "CREDIT_CARD_SMALL_LIMIT" | "OTHER_CURRENT_CASH_CREDIT_OD" | "CREDIT_CARD_LARGE_LIMIT";
+        /**
+         * ActionItem
+         * @description A required action, from an obligation's clock or from a workflow gate.
+         */
+        ActionItem: {
+            /**
+             * Source
+             * @description 'EVALUATOR' or 'WORKFLOW'.
+             */
+            source: string;
+            /** Obligation Id */
+            obligation_id?: string | null;
+            action: components["schemas"]["RequiredAction"];
+        };
         /**
          * Appellant
          * @description Who filed an appeal against an Ombudsman award or decision (RB-IOS 2026 cl. 17, A8).
@@ -144,8 +318,24 @@ export interface components {
             days_late: number;
         };
         /**
+         * BreachItem
+         * @description A breach and any compensation it carries.
+         */
+        BreachItem: {
+            /** Clause */
+            clause: string;
+            breach: components["schemas"]["Breach"];
+            compensation?: components["schemas"]["Compensation"] | null;
+        };
+        /**
+         * ChainBreak
+         * @description Why a record does not verify.
+         * @enum {string}
+         */
+        ChainBreak: "UNSEALED" | "PREV_HASH_MISMATCH" | "HASH_MISMATCH";
+        /**
          * ChainStatus
-         * @description Whether a complaint's decision-record hash chain verifies.
+         * @description Result of verifying one chain of decision records.
          */
         ChainStatus: {
             /** Verified */
@@ -157,6 +347,12 @@ export interface components {
              * @description Index of the first bad record.
              */
             broken_at?: number | null;
+            reason?: components["schemas"]["ChainBreak"] | null;
+            /**
+             * Head
+             * @description Hash of the last verified record, or the genesis hash.
+             */
+            head: string;
         };
         /**
          * Channel
@@ -201,6 +397,19 @@ export interface components {
             pause?: components["schemas"]["ClockPause"] | null;
         };
         /**
+         * ClosureCheck
+         * @description Whether a unit may close the complaint now (A14, A15).
+         */
+        ClosureCheck: {
+            /** Complaint Id */
+            complaint_id: string;
+            /** Unit */
+            unit: string;
+            gate: components["schemas"]["GateResult"];
+            /** Allowed */
+            allowed: boolean;
+        };
+        /**
          * Compensation
          * @description Money owed, with the formula and inputs that produced it.
          */
@@ -220,6 +429,9 @@ export interface components {
         /**
          * ComplaintDetail
          * @description Everything the complaint view shows, as evaluated at ``as_of``.
+         *
+         *     ``decisions`` is the evaluation at ``as_of`` (unsealed; a read never writes). The stored,
+         *     hash-chained records are under ``/complaints/{id}/decisions``; ``chain`` is their status.
          */
         ComplaintDetail: {
             /** Complaint Id */
@@ -234,6 +446,14 @@ export interface components {
             facts: components["schemas"]["ComplaintFacts"];
             /** Decisions */
             decisions: components["schemas"]["DecisionRecord"][];
+            /** Deadlines */
+            deadlines: components["schemas"]["DeadlineItem"][];
+            /** Breaches */
+            breaches: components["schemas"]["BreachItem"][];
+            /** Required Actions */
+            required_actions: components["schemas"]["ActionItem"][];
+            /** Review Tasks */
+            review_tasks: components["schemas"]["ReviewTask"][];
             chain: components["schemas"]["ChainStatus"];
         };
         /**
@@ -392,6 +612,29 @@ export interface components {
             rule: string;
         };
         /**
+         * DeadlineItem
+         * @description A computed deadline and the state of its clock.
+         */
+        DeadlineItem: {
+            /** Obligation Id */
+            obligation_id: string;
+            /** Clause */
+            clause: string;
+            result: components["schemas"]["DecisionResult"];
+            deadline: components["schemas"]["Deadline"];
+        };
+        /**
+         * DecisionChain
+         * @description A complaint's stored decision records and the status of their chain.
+         */
+        DecisionChain: {
+            /** Complaint Id */
+            complaint_id: string;
+            /** Records */
+            records: components["schemas"]["DecisionRecord"][];
+            chain: components["schemas"]["ChainStatus"];
+        };
+        /**
          * DecisionRecord
          * @description The replayable record of one obligation evaluation. See the module docstring.
          */
@@ -432,6 +675,13 @@ export interface components {
             /** Required Actions */
             required_actions?: components["schemas"]["RequiredAction"][];
             /**
+             * Outputs
+             * @description Values the obligation determined, by output name (e.g. 'scheme').
+             */
+            outputs?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /**
              * Prev Hash
              * @default 0000000000000000000000000000000000000000000000000000000000000000
              */
@@ -471,11 +721,95 @@ export interface components {
          */
         EntityType: "COMMERCIAL_BANK" | "SMALL_FINANCE_BANK" | "PAYMENTS_BANK" | "LOCAL_AREA_BANK" | "REGIONAL_RURAL_BANK" | "COOPERATIVE_BANK" | "NBFC" | "PPI_ISSUER" | "CREDIT_INFORMATION_COMPANY" | "OTHER";
         /**
+         * EventIn
+         * @description A business event as a client sends it. The server sets ``recorded_at`` and the actor.
+         */
+        EventIn: {
+            /**
+             * Event Id
+             * @description Client-chosen, unique; re-sending is a no-op.
+             */
+            event_id: string;
+            type: components["schemas"]["EventType"];
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Payload */
+            payload?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** @default HUMAN */
+            source: components["schemas"]["FactSource"];
+            /**
+             * Model
+             * @description Model identifier, for LLM facts.
+             */
+            model?: string | null;
+            /** Prompt Version */
+            prompt_version?: string | null;
+            span?: components["schemas"]["TextSpan"] | null;
+        };
+        /**
          * EventType
          * @description Business event types (report architecture diagram [3] and clock table).
          * @enum {string}
          */
         EventType: "BANK_RECEIVED" | "ACKNOWLEDGED" | "INFO_REQUESTED" | "OUTCOME_SET" | "IO_REFERRED" | "IO_DECIDED" | "FINAL_REPLY_SENT" | "BANK_COMMUNICATION_SENT" | "CUSTOMER_DISSATISFIED" | "SENIOR_REVIEWED" | "CUSTOMER_REPORTED" | "ALERT_RECEIVED" | "SHADOW_CREDITED" | "REVERSAL_POSTED" | "LIABILITY_DETERMINED" | "RBI_RECEIVED" | "RBIO_DIRECTION_RECEIVED" | "WRITTEN_RESPONSE_FILED" | "AWARD_RECEIVED" | "ACCEPTANCE_LETTER_RECEIVED" | "COMPLIANCE_INTIMATED" | "APPEAL_FILED" | "ALL_DOCUMENTS_RECEIVED" | "CLAIM_SETTLED" | "FULL_REPAYMENT" | "DOCUMENTS_RELEASED" | "FACTS_RECORDED";
+        /**
+         * EventsAccepted
+         * @description What a POST of events did.
+         */
+        EventsAccepted: {
+            /**
+             * Accepted
+             * @description Event IDs stored now.
+             */
+            accepted: string[];
+            /**
+             * Already Recorded
+             * @description Event IDs that were already stored.
+             */
+            already_recorded: string[];
+            /** Decisions Appended */
+            decisions_appended: number;
+            /** Review Tasks Opened */
+            review_tasks_opened?: string[];
+            /**
+             * Evaluation Error
+             * @description Set when the events were stored but the engine could not re-evaluate.
+             */
+            evaluation_error?: string | null;
+        };
+        /**
+         * EventsIn
+         * @description One or more events for one complaint.
+         */
+        EventsIn: {
+            /** Events */
+            events: components["schemas"]["EventIn"][];
+        };
+        /**
+         * Explanation
+         * @description A stored decision rendered as text, line by line.
+         */
+        Explanation: {
+            /**
+             * Decision Id
+             * @description The record's hash.
+             */
+            decision_id: string;
+            /** Complaint Id */
+            complaint_id: string;
+            /** Obligation Id */
+            obligation_id: string;
+            /** Position */
+            position: number;
+            chain: components["schemas"]["ChainStatus"];
+            /** Lines */
+            lines: string[];
+        };
         /**
          * FactSource
          * @description Who asserted a fact: a person, a bank system feed, or an LLM extraction.
@@ -716,6 +1050,84 @@ export interface components {
              */
             recorded_at: string;
         };
+        /**
+         * FindingIn
+         * @description A perception finding (classification) about a complaint.
+         */
+        FindingIn: {
+            /** Finding Id */
+            finding_id: string;
+            kind: components["schemas"]["FindingKind"];
+            /** @default LLM */
+            source: components["schemas"]["FactSource"];
+            /** Model */
+            model?: string | null;
+            /** Prompt Version */
+            prompt_version?: string | null;
+            span?: components["schemas"]["TextSpan"] | null;
+            /**
+             * Detail
+             * @default
+             */
+            detail: string;
+        };
+        /**
+         * FindingKind
+         * @description What a perception step concluded about a complaint.
+         * @enum {string}
+         */
+        FindingKind: "IS_COMPLAINT" | "NOT_A_COMPLAINT" | "DEFICIENCY" | "NO_DEFICIENCY";
+        /**
+         * ForecastItem
+         * @description A running deadline that falls due within the horizon.
+         */
+        ForecastItem: {
+            /** Complaint Id */
+            complaint_id: string;
+            /** Obligation Id */
+            obligation_id: string;
+            /** Clause */
+            clause: string;
+            /**
+             * Due Date
+             * Format: date
+             */
+            due_date: string;
+            basis: components["schemas"]["DayBasis"];
+            /**
+             * Calendar Days Left
+             * @description due_date - as_of date, in calendar days.
+             */
+            calendar_days_left: number;
+            /** Required Actions */
+            required_actions?: components["schemas"]["RequiredAction"][];
+        };
+        /**
+         * GateReason
+         * @description One reason an action is refused, with the clause behind it.
+         */
+        GateReason: {
+            /**
+             * Code
+             * @description UPPER_SNAKE reason code, e.g. 'OUTCOME_NOT_SET'.
+             */
+            code: string;
+            /** Message */
+            message: string;
+            /**
+             * Clause
+             * @description Instrument and clause, e.g. 'IO Directions 2026 cl. 14(2)'.
+             */
+            clause: string;
+        };
+        /**
+         * GateResult
+         * @description ``allowed`` is true exactly when there are no reasons.
+         */
+        GateResult: {
+            /** Reasons */
+            reasons?: components["schemas"]["GateReason"][];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -897,6 +1309,45 @@ export interface components {
             reason: string;
         };
         /**
+         * ReviewKind
+         * @description Why a person must look at a complaint.
+         * @enum {string}
+         */
+        ReviewKind: "NOT_A_COMPLAINT" | "NO_DEFICIENCY" | "EXCLUSION_ROUTING";
+        /**
+         * ReviewStatus
+         * @description Review task lifecycle; a decision is recorded as a new business event, never an edit.
+         * @enum {string}
+         */
+        ReviewStatus: "OPEN" | "DONE";
+        /**
+         * ReviewTask
+         * @description A task for a person, opened by the engine.
+         */
+        ReviewTask: {
+            /** Task Id */
+            task_id: string;
+            /** Complaint Id */
+            complaint_id: string;
+            kind: components["schemas"]["ReviewKind"];
+            /** Reason */
+            reason: string;
+            /**
+             * Source Ref
+             * @description The finding ID or rule that opened the task.
+             */
+            source_ref: string;
+            /** @description Provenance of the finding under review, if any. */
+            provenance?: components["schemas"]["Provenance"] | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** @default OPEN */
+            status: components["schemas"]["ReviewStatus"];
+        };
+        /**
          * RuleStatus
          * @description Lifecycle status of an obligation. Only the owner sets ``IN_FORCE``.
          * @enum {string}
@@ -957,9 +1408,102 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    health: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
+    postEvents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                complaint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventsAccepted"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    postFinding: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                complaint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FindingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewTask"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listComplaints: {
         parameters: {
             query?: {
+                /** @description Evaluate as of this instant (ISO 8601 with offset). ADMIN only. */
                 as_of?: string | null;
             };
             header?: never;
@@ -991,6 +1535,7 @@ export interface operations {
     getComplaint: {
         parameters: {
             query?: {
+                /** @description Evaluate as of this instant (ISO 8601 with offset). ADMIN only. */
                 as_of?: string | null;
             };
             header?: never;
@@ -1021,9 +1566,80 @@ export interface operations {
             };
         };
     };
+    checkClosure: {
+        parameters: {
+            query: {
+                /** @description Unit that would close it. */
+                unit: string;
+                /** @description Evaluate as of this instant (ISO 8601 with offset). ADMIN only. */
+                as_of?: string | null;
+            };
+            header?: never;
+            path: {
+                complaint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClosureCheck"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listDecisions: {
+        parameters: {
+            query?: {
+                /** @description Evaluate as of this instant (ISO 8601 with offset). ADMIN only. */
+                as_of?: string | null;
+            };
+            header?: never;
+            path: {
+                complaint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecisionChain"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     getDecision: {
         parameters: {
             query?: {
+                /** @description Evaluate as of this instant (ISO 8601 with offset). ADMIN only. */
                 as_of?: string | null;
             };
             header?: never;
@@ -1055,6 +1671,37 @@ export interface operations {
             };
         };
     };
+    explainDecision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                decision_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Explanation"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     listObligations: {
         parameters: {
             query?: never;
@@ -1071,6 +1718,71 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Obligation"][];
+                };
+            };
+        };
+    };
+    boardDeadlines: {
+        parameters: {
+            query?: {
+                within_days?: number;
+                /** @description Evaluate as of this instant (ISO 8601 with offset). ADMIN only. */
+                as_of?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForecastItem"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listReviewTasks: {
+        parameters: {
+            query?: {
+                complaint_id?: string | null;
+                status?: components["schemas"]["ReviewStatus"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewTask"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
