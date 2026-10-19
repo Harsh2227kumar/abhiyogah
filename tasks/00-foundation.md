@@ -51,7 +51,7 @@
       anchor_date, input facts with provenance, condition trace, computed deadline, calendar_version,
       result, compensation with formula, as_of, prev_hash, hash). Add a `Deadline` model (due_date,
       basis, basis_status, start_event, stop_event) and a `Breach` model.
-- [ ] `registry/schema.py`: Pydantic model of one obligation YAML file, matching the report's example
+- [x] `registry/schema.py`: Pydantic model of one obligation YAML file, matching the report's example
       (`obligation_id, deontic, subject, instrument, instrument_ref, clause, source_url, applies_to,
       trigger, clock{start, stop, basis, basis_status, tz, pause}, parameters{name: {effective_date:
       {value, reference, verification}}}, overridden_by, valid_from, valid_to, status, verification,
@@ -82,3 +82,4 @@ _(other streams add requests for changes to owned paths here)_
 - 2026-10-19 · item 8 done · domain/events.py: EventType (task list + BANK_COMMUNICATION_SENT, CUSTOMER_DISSATISFIED, FACTS_RECORDED), frozen ComplaintEvent; `source` lives in Provenance (event.source is a shortcut), LLM provenance requires model + prompt_version · next: item 9 domain/complaint.py
 - 2026-10-19 · item 9 done · domain/complaint.py: Fact[T] (value + provenance + event_id + recorded_at), ComplaintFacts (all optional, IST dates), fold_events(complaint_id, events, known_at) with documented correction rules; domain/tz.py (IST, ist_date) and domain/errors.py · next: item 10 domain/decision.py
 - 2026-10-19 · item 10 done · domain/decision.py: DecisionRecord (+ parameters used, required_actions), DecisionResult, Deadline, Breach, Compensation, InputFact, ConditionTrace; canonical_json/seal/verify_chain for the SHA-256 chain · next: item 11 registry/schema.py
+- 2026-10-19 · item 11 done · registry/schema.py: Obligation (+ AppliesTo, Trigger, ClockSpec, ClockPause, ParameterValue); clock.start may be an event or a ComplaintFacts date (e.g. transaction_date_t); stop is a list; optional `anchor`; parameter values need verification; IN_FORCE without PRIMARY_TEXT_READ + signed_off_by is refused at parse time · next: item 12 rules/README.md + scenario schema
