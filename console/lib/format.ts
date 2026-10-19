@@ -67,3 +67,8 @@ export function formatInr(paise: number): string {
   const frac = String(abs % 100).padStart(2, "0");
   return `${sign}₹${groupIndian(String(rupees))}.${frac}`;
 }
+
+/** Prose from the engine with every ISO date (`2026-10-19`) shown as `19-10-2026`. */
+export function localizeDates(text: string): string {
+  return text.replace(/\b(\d{4})-(\d{2})-(\d{2})\b/g, "$3-$2-$1");
+}

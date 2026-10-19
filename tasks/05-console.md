@@ -21,7 +21,7 @@
 - [x] Rule browser: obligations with clause, source link, verification grade and status; DRAFT and
       UNVERIFIED clearly marked.
 - [x] Time-travel control (admin) that sets `as_of` for demos.
-- [ ] Indian formats throughout: ₹ with lakh/crore grouping, DD-MM-YYYY, IST.
+- [x] Indian formats throughout: ₹ with lakh/crore grouping, DD-MM-YYYY, IST.
 - [ ] Write `STREAM COMPLETE`.
 
 ## Definition of done
@@ -37,3 +37,4 @@ The plan's end-to-end demo can be clicked through in the console against a local
 - 2026-10-19 · item 5 done · `/complaints/[id]/decisions/[obligationId]`: instrument, clause and source link, status and grade, version, anchor, as_of, calendar version, inputs with provenance, dated parameters with grades, ordered condition trace, deadline/breach/compensation/actions, hash, prev hash and chain status (warns when the break precedes the record) · next: item 6 (rule browser)
 - 2026-10-19 · item 6 done · `/rules`: every obligation with instrument, clause, source link, type, trigger, clock, validity, dated parameters with grades and open questions; warnings for DRAFT, FUTURE_DATED, non-primary grades (rule or parameter) and open questions; filter by status, grade and text · next: item 7 (time-travel control)
 - 2026-10-19 · item 7 done · admin time-travel control in the header (IST datetime, Go, +1 day, Now) sets `?as_of=` on the current page; highlighted banner while active; off with `ABHIYOGAH_TIME_TRAVEL=off`; checked end to end in Chromium (IO clock due today → 2 days overdue) · next: item 8 (Indian formats)
+- 2026-10-19 · item 8 done · ₹ with lakh/crore grouping (matches `format_inr`), DD-MM-YYYY and IST everywhere; payload amounts, compensation inputs, parameter values and engine prose (trace detail, rule, reasons) localized; a test renders every page and fails on any ISO date or raw paise outside `<code>` · next: item 9

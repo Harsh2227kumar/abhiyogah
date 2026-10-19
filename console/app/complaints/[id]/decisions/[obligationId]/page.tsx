@@ -6,7 +6,8 @@ import { VerificationTag } from "@/components/VerificationTag";
 import { ApiError, getApi, type DecisionReplay, type Obligation } from "@/lib/api";
 import { parseAsOf, withAsOf } from "@/lib/asof";
 import { displayFact } from "@/lib/complaint";
-import { formatDate, formatDateTime, formatInr, humanize } from "@/lib/format";
+import { formatParam } from "@/lib/rules";
+import { formatDate, formatDateTime, formatInr, humanize, localizeDates } from "@/lib/format";
 
 type Props = {
   params: Promise<{ id: string; obligationId: string }>;
@@ -135,9 +136,9 @@ export default async function DecisionPage({ params, searchParams }: Props) {
                   <td>
                     <code>{p.name}</code>
                   </td>
-                  <td>{json(p.value)}</td>
+                  <td>{formatParam(p.name, p.value)}</td>
                   <td>{formatDate(p.effective_date)}</td>
-                  <td>{p.reference}</td>
+                  <td>{localizeDates(p.reference)}</td>
                   <td>
                     <VerificationTag grade={p.verification} />
                   </td>
@@ -154,7 +155,7 @@ export default async function DecisionPage({ params, searchParams }: Props) {
           {(r.condition_trace ?? []).map((t, i) => (
             <li key={i} className={t.result ? "pass" : "fail"}>
               <span aria-label={t.result ? "true" : "false"}>{t.result ? "✓" : "✗"}</span> <code>{t.condition}</code>
-              {t.detail && <span className="muted"> — {t.detail}</span>}
+              {t.detail && <span className="muted"> — {localizeDates(t.detail)}</span>}
             </li>
           ))}
         </ol>
@@ -167,7 +168,7 @@ export default async function DecisionPage({ params, searchParams }: Props) {
           <dd>
             {dl ? (
               <>
-                {formatDate(dl.due_date)} — {dl.rule || "—"}
+                {formatDate(dl.due_date)} — {dl.rule ? localizeDates(dl.rule) : "—"}
                 {dl.start_date && <> from {formatDate(dl.start_date)}</>} ({humanize(dl.start_event)}
                 {dl.stop_event && <> → {humanize(dl.stop_event)}</>}; {humanize(dl.basis).toLowerCase()} days,{" "}
                 {humanize(dl.basis_status).toLowerCase()})
@@ -194,7 +195,7 @@ export default async function DecisionPage({ params, searchParams }: Props) {
               <>
                 {formatInr(r.compensation.amount_paise)} — <code>{r.compensation.formula}</code>
                 {r.compensation.inputs && Object.keys(r.compensation.inputs).length > 0 && (
-                  <span className="muted"> ({Object.entries(r.compensation.inputs).map(([k, v]) => `${k} = ${json(v)}`).join(", ")})</span>
+                  <span className="muted"> ({Object.entries(r.compensation.inputs).map(([k, v]) => `${k} = ${v !== null && typeof v === "object" ? json(v) : displayFact(k, v)}`).join(", ")})</span>
                 )}
               </>
             ) : (
@@ -206,7 +207,7 @@ export default async function DecisionPage({ params, searchParams }: Props) {
             {(r.required_actions ?? []).length === 0
               ? "None"
               : (r.required_actions ?? [])
-                  .map((a) => `${humanize(a.action)}${a.due_date ? ` by ${formatDate(a.due_date)}` : ""}`)
+                  .map((a) => `${humanize(a.action)}${a.due_date ? ` by ${formatDate(a.due_date)}` : ""}${a.reason ? ` (${localizeDates(a.reason)})` : ""}`)
                   .join("; ")}
           </dd>
         </dl>

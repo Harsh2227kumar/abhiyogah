@@ -4,8 +4,8 @@ import { ProvenanceBadge } from "@/components/ProvenanceBadge";
 import { ResultTag } from "@/components/ResultTag";
 import { ApiError, getApi, type ComplaintDetail } from "@/lib/api";
 import { parseAsOf, withAsOf } from "@/lib/asof";
-import { clocks, factRows } from "@/lib/complaint";
-import { formatDate, formatDateTime, formatInr, humanize } from "@/lib/format";
+import { clocks, displayFact, factRows } from "@/lib/complaint";
+import { formatDate, formatDateTime, formatInr, humanize, localizeDates } from "@/lib/format";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -74,7 +74,7 @@ export default async function ComplaintPage({ params, searchParams }: Props) {
             {actions.map((a) => (
               <li key={`${a.obligation_id}-${a.action}`}>
                 <strong>{humanize(a.action)}</strong>
-                {a.due_date && <> by {formatDate(a.due_date)}</>} ({a.obligation_id}){a.reason && <> — {a.reason}</>}
+                {a.due_date && <> by {formatDate(a.due_date)}</>} ({a.obligation_id}){a.reason && <> — {localizeDates(a.reason)}</>}
               </li>
             ))}
           </ul>
@@ -110,7 +110,7 @@ export default async function ComplaintPage({ params, searchParams }: Props) {
                   </td>
                   <td>{dl.stop_event ? humanize(dl.stop_event) : "—"}</td>
                   <td>
-                    {dl.rule || "—"}{" "}
+                    {dl.rule ? localizeDates(dl.rule) : "—"}{" "}
                     <span className="muted">
                       ({humanize(dl.basis)}, {humanize(dl.basis_status).toLowerCase()})
                     </span>
@@ -183,7 +183,7 @@ export default async function ComplaintPage({ params, searchParams }: Props) {
                 {Object.keys(e.payload ?? {}).length > 0 && (
                   <div className="payload">
                     {Object.entries(e.payload ?? {})
-                      .map(([k, v]) => `${k}: ${v === null || typeof v !== "object" ? String(v) : JSON.stringify(v)}`)
+                      .map(([k, v]) => `${k}: ${v === null || typeof v !== "object" ? displayFact(k, v) : JSON.stringify(v)}`)
                       .join(" · ")}
                   </div>
                 )}

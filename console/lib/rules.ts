@@ -1,5 +1,5 @@
 import type { Obligation, Verification } from "./api";
-import { formatInr } from "./format";
+import { formatDate, formatInr } from "./format";
 
 export interface ParameterRow {
   name: string;
@@ -33,7 +33,7 @@ export function parameterRows(ob: Obligation): ParameterRow[] {
 export function warnings(ob: Obligation): string[] {
   const out: string[] = [];
   if (ob.status === "DRAFT") out.push("Draft: not signed off by the owner");
-  if (ob.status === "FUTURE_DATED") out.push(`Not yet in force (valid from ${ob.valid_from})`);
+  if (ob.status === "FUTURE_DATED") out.push(`Not yet in force (valid from ${formatDate(ob.valid_from)})`);
   if (ob.verification === "UNVERIFIED") out.push("Unverified: no primary text read");
   if (ob.verification === "CONFLICTING") out.push("Sources conflict");
   if (ob.verification === "SECONDARY_ONLY") out.push("Secondary sources only");
