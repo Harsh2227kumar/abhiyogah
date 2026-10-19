@@ -82,7 +82,8 @@ Log line format (newest at the bottom, one line per item):
 8. **No real customer data, secrets or PII** in the repo, tests or logs. Use synthetic data. Real
    Aadhaar/PAN/account numbers must never appear, even in fixtures.
 9. Never skip, disable or weaken a test to get green. Never commit with `make check` failing.
-10. Don't write model identifiers or session links into code, docs or commit messages.
+10. Don't write model identifiers into code or docs. Attribution trailers that the tooling adds to
+    commits and PRs are fine.
 
 ## Conventions
 
