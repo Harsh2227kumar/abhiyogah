@@ -111,6 +111,7 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
 | `SEND_CORRECTED_REPLY` | A18 | Send the complainant a reply carrying the missing cl. 14(11)–(12) elements |
 | `REVERSE_TRANSACTION` | B1, B2 | Complete the failed-transaction reversal (compensation keeps accruing) |
 | `SHADOW_CREDIT` | B6 | Credit the disputed amount to the customer, value-dated to the transaction date |
+| `COMPENSATE_PER_PARAS_67_72` | B7 | Liability not established within 90 days: pay the customer as paras 67–72 set out |
 | `SET_OUTCOME` | A14 | Record one of the three cl. 14(2) outcomes for a complaint already replied to |
 
 ## Scenario inputs that are not regulatory values
