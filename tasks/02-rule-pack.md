@@ -40,7 +40,7 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 - [x] B5 limited liability tiers and account-type caps (paras 67–71, Tables 1–2)
 - [x] B6 shadow credit in 10 working days (para 72)
 - [x] B7 liability determination within 90 days (para 73)
-- [ ] B10 1 Jan 2027 fraud regime: `FUTURE_DATED`, every draft figure `UNVERIFIED`
+- [x] B10 1 Jan 2027 fraud regime: `FUTURE_DATED`, every draft figure `UNVERIFIED`
 - [ ] A5, A6, A7, A8 RBI Ombudsman-stage clocks
 
 ### Open questions
@@ -60,6 +60,7 @@ Tracked together in issue #20.
 - `src/abhiyogah/domain/` (foundation/integrator), for A15: facts `handling_unit: Fact[str]` and `closing_unit: Fact[str]` (set from payloads), and an event `SENIOR_REVIEWED` that sets `senior_review_date: Fact[date]`. The A15 scenarios wait on these.
 - `src/abhiyogah/domain/` (foundation/integrator), for A18: facts `reply_elements: Fact[list[str]]` (element codes found in the sent reply, from reply QA or a human) and `io_upheld: Fact[bool]` (from the `IO_DECIDED` payload). The A18 scenarios wait on these.
 - `src/abhiyogah/domain/` (foundation/integrator), for B1–B7: a fact `issue_type` (values `FAILED_TRANSACTION`, `UNAUTHORISED_TRANSACTION`, open to more) so failed-transaction and limited-liability rules do not both trigger on every transaction complaint; and split `Channel.AEPS` into `AEPS_MERCHANT` (T+5, B1) and `AEPS_BENEFICIARY` (T+1, B2), since the annex has two AePS rows.
+- `issue_type` also needs `FRAUDULENT_TRANSACTION` for B10 (other fraud types under the 1 Jan 2027 regime).
 - `src/abhiyogah/domain/` (foundation/integrator), for B5: a fact `liability_fault` (values `BANK`, `THIRD_PARTY`, `CUSTOMER`), set by a human (never by an LLM) on the limited-liability case.
 
 ## Log
@@ -79,3 +80,4 @@ Tracked together in issue #20.
 - 2026-10-19 · B5 done · RBCCB-2025-67-71 determination (3/7 working-day tiers, Table 2 caps in paise, outputs delay_working_days/liability_tier/customer_liability_paise), 6 scenarios on MH June 2026 dates (holiday-free assumption stated, Q13); requested `liability_fault` fact (#20) · next: B6
 - 2026-10-19 · B6 done · RBCCB-2025-72 (10 working days from CUSTOMER_REPORTED, report day excluded), action SHADOW_CREDIT, 4 scenarios incl. 3rd-Saturday due date and report on a 2nd Saturday · next: B7
 - 2026-10-19 · B7 done · RBCCB-2025-73 (90 calendar days inferred, outer limit only), action COMPENSATE_PER_PARAS_67_72, 3 scenarios · next: B10
+- 2026-10-19 · B10 done · RBCCB-2026-AMEND3-FRAUD FUTURE_DATED, draft figures UNVERIFIED (Q7), combination rule/basis/stop flagged; FUTURE_DATED never evaluated (convention); 2 scenarios · next: A5–A8

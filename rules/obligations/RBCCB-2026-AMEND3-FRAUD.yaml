@@ -1,0 +1,38 @@
+# B10 (report Table B row B10): the fraudulent electronic transaction regime notified for 1 Jan 2027
+# by the RBC (Commercial Banks) Third Amendment Directions 2026 (press release 24 Jun 2026). Themes
+# (secondary sources, grade S): limits extended beyond "unauthorised" to other fraud types, shorter
+# processing time, small-value fraud compensation. The figures below are from the DRAFT only and are
+# all UNVERIFIED (Q7): fraud <= ₹50,000 compensated up to ₹25,000 or 85%; 30-day resolution.
+# How "up to ₹25,000 or 85%" combines (lesser of? greater of?) is not known and is not encoded. The
+# day basis is not known; CALENDAR/INFERRED is a placeholder. The stop event is uncertain too:
+# FINAL_REPLY_SENT is a placeholder for "resolution and compensation".
+# status FUTURE_DATED: the report says to block activation until the final text is read, so the
+# engine never evaluates it (NOT_APPLICABLE, before and after 1 Jan 2027) until the owner changes
+# the status. Paragraph numbers of the amendment were not extracted.
+obligation_id: RBCCB-2026-AMEND3-FRAUD
+deontic: OBLIGATION
+subject: bank
+instrument: "RBI (Commercial Banks – Responsible Business Conduct) Third Amendment Directions, 2026"
+clause: "not extracted (press release 24 Jun 2026)"
+source_url: "https://www.rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=63011"
+applies_to: {entity_type: COMMERCIAL_BANK}
+trigger: {event: BANK_RECEIVED, condition: "issue_type in [FRAUDULENT_TRANSACTION]"}
+clock: {start: BANK_RECEIVED, stop: FINAL_REPLY_SENT, basis: CALENDAR, basis_status: INFERRED, tz: Asia/Kolkata}
+parameters:
+  max_days:
+    "2027-01-01": {value: 30, reference: "draft figure (report row B10)", verification: UNVERIFIED, open_question: Q7}
+  small_value_ceiling_paise:
+    "2027-01-01": {value: 5000000, reference: "draft figure ₹50,000 (report row B10)", verification: UNVERIFIED,
+                   open_question: Q7}
+  compensation_cap_paise:
+    "2027-01-01": {value: 2500000, reference: "draft figure ₹25,000 (report row B10)", verification: UNVERIFIED,
+                   open_question: Q7}
+  compensation_percent:
+    "2027-01-01": {value: 85, reference: "draft figure 85% (report row B10)", verification: UNVERIFIED, open_question: Q7}
+valid_from: 2027-01-01
+valid_to: null
+status: FUTURE_DATED
+verification: SECONDARY_ONLY
+tests:
+  - fraud_regime_before_commencement.yaml
+  - fraud_regime_blocked_after_commencement.yaml

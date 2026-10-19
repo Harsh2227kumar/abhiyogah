@@ -38,6 +38,13 @@ them in payloads; until they exist those payload keys are ignored by folding.
   not apply then: the result is `NOT_APPLICABLE`, and no earlier value is assumed. An anchor fact
   that is unknown (and has no stated stand-in) gives `INSUFFICIENT_FACTS`.
 
+## Status
+
+The engine evaluates `DRAFT` obligations (every agent-written rule is `DRAFT`, and decision records
+carry the status and verification grades). A `FUTURE_DATED` obligation is never evaluated: its result
+is `NOT_APPLICABLE` before and after `valid_from`, until the owner changes its status. B10 relies on
+this to keep unverified draft figures from running.
+
 ## Deadline building blocks
 
 The clock spec gives the start, stop events, day basis and basis status. The parameters present on

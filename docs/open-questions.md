@@ -12,7 +12,7 @@ the date below it. Agents may add new questions and link obligation IDs.
 | Q4 | "Days" in RB-IOS and IO Directions: calendar days is an inference | Every deadline marked `basis_status: INFERRED` | A2–A8, A13, A17, B7 | Open |
 | Q5 | Illegible failed-transaction TAT rows (CNP T+5, AePS beneficiary T+1, NACH-revoked) | B2 values are `UNVERIFIED` | B2: TAT-2019-ILLEGIBLE-ROWS (`tat_days_by_channel`, `compensation_per_day_paise`); TAT-2019-FAILED-TXN (NACH compensation also covers row 7b) | Open |
 | Q6 | Claimed switch of TATs to working days from 1 Jan 2021 (single weak source; conflicts with RBI's definition of T) | Would change every B1 deadline | B1, B3: TAT-2019-FAILED-TXN, TAT-2019-ILLEGIBLE-ROWS (basis kept CALENDAR/EXPLICIT) | Open (treat as false) |
-| Q7 | Final figures of the 1 Jan 2027 fraudulent e-transaction regime (draft: ≤ ₹50,000 compensated up to ₹25,000 or 85%; 30-day resolution) | B10 must stay `FUTURE_DATED` + `UNVERIFIED` | B10 | Open |
+| Q7 | Final figures of the 1 Jan 2027 fraudulent e-transaction regime (draft: ≤ ₹50,000 compensated up to ₹25,000 or 85%; 30-day resolution) | B10 must stay `FUTURE_DATED` + `UNVERIFIED`; also how "up to ₹25,000 or 85%" combines, the day basis and the stop event | B10: RBCCB-2026-AMEND3-FRAUD (`max_days`, `small_value_ceiling_paise`, `compensation_cap_paise`, `compensation_percent`) | Open |
 | Q8 | NPCI dispute stage TATs (credit adjustment, chargeback, re-presentment) | External TAT feeding A2 and A13 | B11 | Open |
 | Q9 | Where the 2019 TAT circular sits in the 2025 consolidated directions | Citation for B1 | B1: TAT-2019-FAILED-TXN (`tat_days_by_channel`) | Open |
 | Q10 | Credit-information complaint day basis (calendar vs working) | B12 deadline | B12 | Open (conflicting) |
