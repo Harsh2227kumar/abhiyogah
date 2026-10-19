@@ -14,7 +14,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "check": "pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "openapi": "openapi-typescript ${OPENAPI_SPEC:-mock/provisional.openapi.json} -o lib/api/generated/schema.ts",
+    "mock": "cd .. && uv run python console/mock/provisional_api.py && uv run python console/mock/build_fixtures.py && cd console && pnpm openapi"
   },
   "dependencies": {
     "next": "16.4.2",
@@ -31,6 +33,7 @@
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.2",
     "jsdom": "30.1.3",
+    "openapi-typescript": "7.13.0",
     "typescript": "5.9.3",
     "vitest": "4.1.12"
   }

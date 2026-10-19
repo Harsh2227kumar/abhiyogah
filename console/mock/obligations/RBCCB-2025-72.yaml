@@ -1,0 +1,29 @@
+# B6 (report Table B row B6; clock table "Shadow credit"; formula "shadow credit due at
+# notification + 10 WD"): after the customer reports an unauthorised electronic transaction, the bank
+# credits the amount (shadow credit) within 10 working days, value-dated to the transaction date,
+# without waiting for insurance; the customer suffers no loss of interest.
+# Working days follow the home branch's schedule; the day of the report is not counted (para 71's
+# rule; the report's formula adds 10 working days to the notification date). No pause is stated.
+obligation_id: RBCCB-2025-72
+deontic: OBLIGATION
+subject: bank
+instrument: "RBI (Commercial Banks – Responsible Business Conduct) Directions, 2025"
+instrument_ref: "RBI/DOR/2025-26/170"
+clause: "para 72"
+source_url: "https://www.caalley.com/rbi_mc_md_25/md/170MD.pdf"
+applies_to: {entity_type: COMMERCIAL_BANK}
+trigger: {event: CUSTOMER_REPORTED, condition: "issue_type in [UNAUTHORISED_TRANSACTION]"}
+clock: {start: CUSTOMER_REPORTED, stop: SHADOW_CREDITED, basis: WORKING, basis_status: EXPLICIT, tz: Asia/Kolkata}
+parameters:
+  max_days:
+    "2025-11-28": {value: 10, reference: "para 72 (report row B6)", verification: PRIMARY_TEXT_READ}
+valid_from: 2025-11-28
+valid_to: null
+status: DRAFT
+verification: PRIMARY_TEXT_READ
+supersedes_note: "Restates the 2017 limited-liability circular"
+tests:
+  - shadow_credit_on_time_third_saturday.yaml
+  - shadow_credit_late.yaml
+  - shadow_credit_breached.yaml
+  - shadow_credit_reported_on_second_saturday.yaml
