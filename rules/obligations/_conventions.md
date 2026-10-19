@@ -30,8 +30,9 @@ exactly one limb produces a deadline and the trace still names the override.
   moment of evaluation? Outside them the result is `NOT_APPLICABLE`.
 - Parameter versions are chosen at the **anchor date**: the `anchor` fact when the obligation names
   one (A1 uses `rbi_receipt_date`), else the clock start date. An obligation with neither resolves
-  at the `as_of` date. No version in force on the anchor date gives `INSUFFICIENT_FACTS`; nothing is
-  assumed.
+  at the `as_of` date. An anchor date before a parameter's first effective date means the rule did
+  not apply then: the result is `NOT_APPLICABLE`, and no earlier value is assumed. An anchor fact
+  that is unknown (and has no stated stand-in) gives `INSUFFICIENT_FACTS`.
 
 ## Deadline building blocks
 
@@ -66,9 +67,14 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
   |---|---|---|
   | A1 `RBIOS-2026-20-2` | `scheme` | the `scheme` parameter in force at `rbi_receipt_date`: `RB-IOS-2021` or `RB-IOS-2026` |
   | A3 `RBIOS-2026-10-1-g` | `filed_in_time` | once `rbi_receipt_date` is known: `true` for `STOPPED_ON_TIME`, `false` for `STOPPED_LATE`; absent before filing |
+  | A14 `IO-CB-2026-14-2` | `classified_at_closure` | `true` when `outcome` is set and `outcome_date` ≤ `final_reply_date` |
   | A2 `RBIOS-2026-10-1-f` | `escalation_open` | `true` when the clock is `BREACHED` or `STOPPED_LATE` (no reply by the due date) or `customer_dissatisfied_date` is set, else `false` |
 
   Clock obligations may also have outputs; `DETERMINED` ones must.
+- **Check obligations** have no clock: they test the complaint's state when the trigger fires (A14,
+  A15, A18). They end `DETERMINED` with a boolean output naming what was checked. A failed check has
+  no `Breach` entry (a breach needs a due date). It shows as the output `false` plus a required action
+  while the failure can still be fixed.
 - `deontic: PERMISSION` (a right of the complainant, such as A2 and A3) never produces a breach or a
   required action. Its clock result says whether the window has lapsed; what that means comes out as
   an output (`escalation_open`).
@@ -82,6 +88,7 @@ hold, with units in the name: `_days`, `_paise`, `_percent`.
 | Action code | Obligation | Meaning |
 |---|---|---|
 | `REFER_TO_IO` | A13 (both limbs) | Send the complaint to the Internal Ombudsman |
+| `SET_OUTCOME` | A14 | Record one of the three cl. 14(2) outcomes for a complaint already replied to |
 
 ## Scenario inputs that are not regulatory values
 
