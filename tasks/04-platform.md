@@ -14,7 +14,7 @@
 
 ### Ledger (pure)
 - [x] Canonical JSON serialisation of `DecisionRecord`; `hash = sha256(prev_hash + canonical_json)`.
-- [ ] `verify_chain(records)` that pinpoints the first broken link; tests that tamper with a record.
+- [x] `verify_chain(records)` that pinpoints the first broken link; tests that tamper with a record.
 
 ### Workflow (pure)
 - [ ] Three-state outcome gate (A14): closing a complaint requires one of the three outcomes.
@@ -50,3 +50,4 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 ## Log
 
 - 2026-10-19 · item 1 done · ledger.chain: canonical_json, record_hash, seal_chain, chain_head on top of domain DecisionRecord helpers · next: verify_chain pinpointing the first broken link
+- 2026-10-19 · item 2 done · ledger.verify_chain returns ChainStatus (verified, length, broken_at, reason, head); tamper/remove/reorder/unsealed tests + hypothesis · next: three-state outcome gate (A14)
