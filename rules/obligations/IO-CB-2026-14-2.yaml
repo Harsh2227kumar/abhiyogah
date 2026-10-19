@@ -3,10 +3,9 @@
 # (rules/obligations/_conventions.md): when the final reply goes out, the outcome must already be
 # recorded. The Outcome enum already refuses any fourth value, so the check is that one of the three
 # was set on or before the final reply.
-# Out-of-purview complaints under cl. 14(5)(c)-(e) are exempt. The exclusion_category fact exists,
-# but the condition grammar cannot say "unknown, or not in [14_5_c, 14_5_d, 14_5_e]" (a clause on an
-# unknown fact is false), so the exemption is not applied yet: an exempt complaint is flagged and
-# needs human review (request in tasks/02-rule-pack.md).
+# Out-of-purview complaints under cl. 14(5)(c)-(e) are exempt: the trigger skips a complaint whose
+# exclusion_category is 14_5_c, 14_5_d or 14_5_e. An unknown category does not exempt. The trigger
+# deliberately does not require the outcome to be set, because a missing outcome is what A14 checks.
 # The parameter is dated from the compliance date and resolved at final_reply_date, so replies sent
 # before 30 Jun 2026 are NOT_APPLICABLE.
 obligation_id: IO-CB-2026-14-2
@@ -17,7 +16,9 @@ instrument_ref: "RBI/CEPD/2025-26/381; CEPD.PRD.No.S1027/13.01.019/2025-26"
 clause: "14(2)"
 source_url: "https://sbi.bank.in/documents/53471/53742/11082026_Annexure+I-RBI+Commercial+Banks-Internal+Ombudsman+Directions+2026.pdf/7a497eab-60d3-155f-e5cd-357b80ebda24"
 applies_to: {entity_type: COMMERCIAL_BANK, min_outlets: 10, outlets_as_on: 2025-03-31}  # A12, cl. 3
-trigger: {event: FINAL_REPLY_SENT}
+trigger:
+  event: FINAL_REPLY_SENT
+  condition: "exclusion_category is not set or exclusion_category not in [14_5_c, 14_5_d, 14_5_e]"
 anchor: final_reply_date
 parameters:
   allowed_outcomes:
@@ -33,3 +34,4 @@ tests:
   - outcome_set_after_closure.yaml
   - outcome_reply_before_compliance_date.yaml
   - outcome_no_reply_yet.yaml
+  - outcome_out_of_purview_exempt.yaml

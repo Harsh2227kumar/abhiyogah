@@ -1,0 +1,40 @@
+name: rbio_bank_appeal_does_not_stop_complainant_clock
+description: >
+  The bank appeals against the award; that does not stop the complainant's own 30-day appeal window,
+  which lapses without a complainant appeal.
+obligation_ids: [RBIOS-2026-17]
+hand_check: |
+  Source: RB-IOS 2026 cl. 17 (report Table A, row A8, verification P): the complainant may appeal
+  within 30 days of receiving the award (extension not encoded, Q18). PERMISSION: no breach, no
+  action. Day basis: calendar, inferred (Q4).
+  AWARD_RECEIVED 2026-09-01; due_date = 2026-09-01 + 30 days = 2026-10-01
+  APPEAL_FILED 2026-09-20 has appellant BANK; stop_conditions requires appellant in [COMPLAINANT], so
+  it does not stop the clock. as_of 2026-10-10 > 2026-10-01: BREACHED. No complainant appeal filed,
+  so no appeal_in_time output.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-07-06T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-07-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-25T10:00:00+05:30
+  - type: AWARD_RECEIVED
+    occurred_at: 2026-09-01T12:00:00+05:30
+  - type: APPEAL_FILED
+    occurred_at: 2026-09-20T15:00:00+05:30
+    payload: {appellant: BANK}
+as_of: 2026-10-10T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-17: BREACHED
+  outputs: {}
+  deadlines:
+    - {obligation_id: RBIOS-2026-17, due_date: 2026-10-01, result: BREACHED}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

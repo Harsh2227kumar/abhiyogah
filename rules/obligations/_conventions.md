@@ -8,8 +8,8 @@ stream implements these as the "small set of Python clock and condition building
 
 ## Trigger conditions
 
-`trigger.condition` is one or more clauses joined by ` and ` (no `or`, no brackets). Each clause names a
-`ComplaintFacts` field and compares its known value:
+`trigger.condition` is clauses joined by ` and ` and ` or ` (`and` binds tighter), with parentheses
+for grouping. Each clause names a `ComplaintFacts` field and compares its known value:
 
 | Clause | True when |
 |---|---|
@@ -20,6 +20,14 @@ stream implements these as the "small set of Python clock and condition building
 
 A fact the condition needs that is unknown makes an `in` clause false; it never defaults to a value.
 Each clause is one `ConditionTrace` entry in the decision record.
+
+A14 uses `or` to exempt out-of-purview complaints without dropping those whose category is unknown:
+`exclusion_category is not set or exclusion_category not in [14_5_c, 14_5_d, 14_5_e]`.
+
+**Stop conditions.** The optional parameter `stop_conditions` maps a clock stop event to a condition
+checked against that event's own payload; the event stops the clock only if it passes. It is dated
+and cited like any parameter. A7 stops on `APPEAL_FILED` only with `appellant in [BANK]`, A8 only
+with `appellant in [COMPLAINANT]`. An `APPEAL_FILED` without `appellant` stops neither.
 
 Limbs of one clause that override each other (A13: 20 days vs TAT − 10 days) use mutually exclusive
 conditions (`external_tat_days is set` / `is not set`) **and** list the override in `overridden_by`, so

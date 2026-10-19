@@ -56,11 +56,8 @@ hand calculation; the owner can review each obligation against its clause in und
 Issue #20 (DETERMINED, issue_type, liability_fault, A15/A18 facts, SENIOR_REVIEWED, appellant, AEPS split,
 cl. 14(5) exclusion fact) was delivered by PR #23.
 
-- `src/abhiyogah/evaluator/` (engine): A14 needs a condition meaning "exclusion_category is unknown, or
-  not in [14_5_c, 14_5_d, 14_5_e]" to exempt out-of-purview complaints (IO cl. 14(5)). The grammar has
-  no `or`, and a clause on an unknown fact is false. Until then the exemption is not applied.
-- `src/abhiyogah/evaluator/` (engine): A8's clock should stop only on an `APPEAL_FILED` whose `appellant`
-  is `COMPLAINANT` (and A7's on one whose appellant is `BANK`); clock stops cannot be filtered by a fact.
+- Delivered by engine PR #27: `or`/parentheses in conditions (A14 exemption) and `stop_conditions`
+  (A7/A8 appeal stops). The rule pack uses both.
 
 ## Log
 - 2026-10-19 · item 1 done · registry/loader.py + errors.py: load rules/obligations/*.yaml, duplicate ID is an error; tests/registry/test_loader.py · next: registry/resolve.py
@@ -85,4 +82,5 @@ cl. 14(5) exclusion fact) was delivered by PR #23.
 - 2026-10-19 · A15 + A18 scenarios done · 3 per A15 limb (senior review via HUMAN FACTS_RECORDED until SENIOR_REVIEWED exists), 4 for A18; like the B-table, they rely on facts requested in #20 · next: final PR update, STREAM COMPLETE
 - 2026-10-19 · stream done · 20 obligations (19 DRAFT, B10 FUTURE_DATED), 71 scenarios, linter clean; open dependencies for the engine runner: domain request #20; owner decisions: Q14–Q18 (#15, #17, #19, #21, #22)
 - 2026-10-19 · follow-up after #23 · merged main; AEPS scenario split into AEPS_MERCHANT (B1) / AEPS_BENEFICIARY (B2); DETERMINED placeholder dropped; A15 scenarios use SENIOR_REVIEWED; appellant set on APPEAL_FILED; requests left for the engine (A14 exemption condition, appeal stop by appellant); no regulatory value changed
+- 2026-10-19 · follow-up after #27 · A14 exemption via `or` condition (+ scenario); stop_conditions on A7 (BANK) and A8 (COMPLAINANT) appeals (+ scenarios); conventions updated; no regulatory value changed
 STREAM COMPLETE
