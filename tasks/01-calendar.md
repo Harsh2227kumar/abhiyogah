@@ -12,7 +12,7 @@
 
 - [x] `BankCalendar` protocol: `is_working_day(d, state)`, `add_working_days(d, n, state)`,
       `working_days_between(start_exclusive, end_inclusive, state)`, `add_calendar_days(d, n)`, `version`.
-- [ ] Implementation on the MIT `holidays` package (India with subdivisions) and a bank overlay: all
+- [x] Implementation on the MIT `holidays` package (India with subdivisions) and a bank overlay: all
       Sundays, 2nd and 4th Saturdays closed, plus state-specific Negotiable Instruments Act holidays.
 - [ ] Overlay data in `data/calendars/<year>/<state>.yaml`, each with a source URL. Leave years and states
       you can't source as empty files with a `TODO: source` note; never invent holiday dates.
@@ -33,3 +33,4 @@ All properties pass with at least 500 hypothesis examples; `make check` green; n
 
 ## Log
 - 2026-10-19 · item 1 done · `BankCalendar` protocol in `calendar/protocol.py` with runtime-checkable test · next: item 2 (holidays + bank overlay implementation)
+- 2026-10-19 · item 2 done · `HolidaysBankCalendar` (Sundays, 2nd/4th Saturdays, `holidays` India subdivisions, per-state overlay); years without package lunar data raise `CalendarRangeError` · next: item 3 (overlay data files)
