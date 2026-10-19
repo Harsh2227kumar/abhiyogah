@@ -5,17 +5,27 @@ source. A file nobody could source yet carries a ``todo`` note and no dates: hol
 invented (CLAUDE.md hard rule 2). Reading local files is the only I/O here; there is no network.
 """
 
+import hashlib
 from datetime import date
+from importlib.metadata import version as package_version
 from pathlib import Path
 from typing import Self
 
 import yaml
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, ValidationError, model_validator
 
-from abhiyogah.calendar.bank import STATES
+from abhiyogah.calendar.bank import STATES, HolidaysBankCalendar
 from abhiyogah.calendar.errors import OverlayDataError
 
-__all__ = ["DEFAULT_OVERLAY_DIR", "Overlay", "OverlayFile", "OverlayHoliday", "load_overlay"]
+__all__ = [
+    "DEFAULT_OVERLAY_DIR",
+    "Overlay",
+    "OverlayFile",
+    "OverlayHoliday",
+    "calendar_version",
+    "load_bank_calendar",
+    "load_overlay",
+]
 
 DEFAULT_OVERLAY_DIR = Path(__file__).resolve().parents[3] / "data" / "calendars"
 """``data/calendars/`` in a source checkout."""
@@ -71,6 +81,8 @@ class Overlay(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     files: dict[tuple[str, int], OverlayFile]
+    digest: str
+    """SHA-256 over every file's relative path and exact bytes, in path order."""
 
     def holidays(self) -> dict[tuple[str, int], frozenset[date]]:
         """Holiday dates keyed by ``(state, year)``, as ``HolidaysBankCalendar`` takes them."""
@@ -84,9 +96,29 @@ class Overlay(BaseModel):
 def load_overlay(root: Path = DEFAULT_OVERLAY_DIR) -> Overlay:
     """Read and validate every ``<year>/<state>.yaml`` file under ``root``."""
     files: dict[tuple[str, int], OverlayFile] = {}
+    sha = hashlib.sha256()
     for path in sorted(root.glob("*/*.yaml")):
         files[_key(path)] = _read(path)
-    return Overlay(files=files)
+        data = path.read_bytes()
+        rel = path.relative_to(root).as_posix().encode()
+        sha.update(len(rel).to_bytes(8, "big") + rel + len(data).to_bytes(8, "big") + data)
+    return Overlay(files=files, digest=sha.hexdigest())
+
+
+def calendar_version(overlay: Overlay, holidays_version: str | None = None) -> str:
+    """SHA-256 of the overlay digest plus the ``holidays`` package version, as ``sha256:<hex>``.
+
+    Decision records store this so a replay can tell exactly which calendar data produced a date.
+    """
+    pkg = package_version("holidays") if holidays_version is None else holidays_version
+    payload = f"holidays=={pkg}\noverlay={overlay.digest}\n".encode()
+    return "sha256:" + hashlib.sha256(payload).hexdigest()
+
+
+def load_bank_calendar(root: Path = DEFAULT_OVERLAY_DIR) -> HolidaysBankCalendar:
+    """Load the overlay under ``root`` and return a calendar stamped with its version."""
+    overlay = load_overlay(root)
+    return HolidaysBankCalendar(overlay.holidays(), version=calendar_version(overlay))
 
 
 def _key(path: Path) -> tuple[str, int]:
