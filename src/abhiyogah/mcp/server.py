@@ -15,14 +15,15 @@ is imported when the server is built, and ``McpUnavailableError`` says how to ge
 
 import importlib
 import os
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
 from datetime import datetime
 from typing import Any
 
 import httpx
 
 from abhiyogah.api.schemas import ComplaintDetail, DeadlineItem, Explanation
-from abhiyogah.mcp.tools import EngineTools, ReplyCheck
+from abhiyogah.mcp.tools import EngineTools, ReadOnlyError, ReplyCheck, ToolCallError
 from abhiyogah.registry.schema import Obligation
 
 __all__ = ["McpUnavailableError", "build_server", "main", "tools_from_env"]
@@ -53,20 +54,30 @@ def tools_from_env(env: Mapping[str, str] = os.environ) -> EngineTools:
 
 
 def _sdk() -> Any:
-    """The SDK's ``MCPServer`` and ``ToolAnnotations``, or ``McpUnavailableError``."""
+    """The SDK's server class, tool annotations and ``ToolError``; else ``McpUnavailableError``."""
     try:
         server = importlib.import_module("mcp.server.mcpserver")
+        errors = importlib.import_module("mcp.server.mcpserver.exceptions")
         types = importlib.import_module("mcp.types")
     except ModuleNotFoundError as exc:
         raise McpUnavailableError(
             "the MCP server needs the MCP Python SDK: uv pip install 'mcp>=2.2,<3'"
         ) from exc
-    return server.MCPServer, types.ToolAnnotations
+    return server.MCPServer, types.ToolAnnotations, errors.ToolError
+
+
+@contextmanager
+def _reported(tool_error: type[Exception]) -> Iterator[None]:
+    """Turn an API refusal into the SDK's ``ToolError``, so the agent reads the API's message."""
+    try:
+        yield
+    except (ToolCallError, ReadOnlyError) as exc:
+        raise tool_error(str(exc)) from exc
 
 
 def build_server(tools: EngineTools) -> Any:
     """An ``MCPServer`` whose five tools call ``tools``; every tool is annotated read-only."""
-    server_cls, annotations_cls = _sdk()
+    server_cls, annotations_cls, tool_error = _sdk()
     server = server_cls(name=SERVER_NAME, instructions=INSTRUCTIONS)
     read_only = annotations_cls(
         read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False
@@ -80,23 +91,28 @@ def build_server(tools: EngineTools) -> Any:
         ``as_of`` (ISO 8601 with offset) evaluates at a past or future instant; it needs an ADMIN
         key.
         """
-        return await tools.evaluate_complaint(complaint_id, as_of)
+        with _reported(tool_error):
+            return await tools.evaluate_complaint(complaint_id, as_of)
 
     async def get_deadlines(complaint_id: str, as_of: datetime | None = None) -> list[DeadlineItem]:
         """A complaint's computed deadlines: clause, day basis and clock state, soonest first."""
-        return await tools.get_deadlines(complaint_id, as_of)
+        with _reported(tool_error):
+            return await tools.get_deadlines(complaint_id, as_of)
 
     async def explain_decision(decision_id: str) -> Explanation:
         """Render a stored decision record (by its hash) as text, with its chain status."""
-        return await tools.explain_decision(decision_id)
+        with _reported(tool_error):
+            return await tools.explain_decision(decision_id)
 
     async def check_reply(complaint_id: str, as_of: datetime | None = None) -> ReplyCheck:
         """The engine's check that the sent final reply carries every required element (A18)."""
-        return await tools.check_reply(complaint_id, as_of)
+        with _reported(tool_error):
+            return await tools.check_reply(complaint_id, as_of)
 
     async def list_obligations() -> list[Obligation]:
         """Every obligation in the loaded rule pack, with clause, parameters and verification."""
-        return await tools.list_obligations()
+        with _reported(tool_error):
+            return await tools.list_obligations()
 
     for tool in (
         evaluate_complaint,
