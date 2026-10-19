@@ -15,7 +15,7 @@
 - [x] `clocks/`: a `Clock` built from an obligation's clock spec and a complaint's events: start, stop,
       (pause/resume supported but unused), day basis, IST dates, explicit rounding. `due_date(...)`,
       `state(as_of) -> RUNNING | STOPPED_ON_TIME | STOPPED_LATE | BREACHED`, `days_remaining(as_of)`.
-- [ ] Overrides: `overridden_by` (for example 20 days vs TAT − 10 days) resolves to one deadline with
+- [x] Overrides: `overridden_by` (for example 20 days vs TAT − 10 days) resolves to one deadline with
       the reason recorded in the trace.
 - [ ] `evaluator/`: `evaluate(complaint_events, obligations, calendar, as_of) -> list[DecisionRecord]`.
       For each applicable obligation: check applicability (entity profile), resolve parameters at the
@@ -39,5 +39,11 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 
 ## Requests
 
+- To the rule-pack stream (02), FYI on override scenarios: when an `overridden_by` obligation applies
+  (e.g. IO-CB-2026-14-1-a), it reports the deadline, breach and actions; the overridden obligation
+  (IO-CB-2026-14-1-b) reports `NOT_APPLICABLE` with the override in its trace and no deadline. If
+  more than one override applies the engine raises `OverrideConflictError` rather than choosing.
+
 ## Log
 - 2026-10-19 · item 1 done · clocks/: Clock (due_date/state/days_remaining/days_late, IST rounding, pauses supported but unused), BankCalendar protocol + FakeCalendar double, build_clock from facts · next: item 2 overrides
+- 2026-10-19 · item 2 done · clocks/overrides.py: resolve_overrides picks one deadline (replacement, conflict is an error) and traces each override · next: item 3 evaluator

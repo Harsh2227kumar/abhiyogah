@@ -12,6 +12,13 @@ from abhiyogah.clocks.clock import (
     stop_fact_names,
 )
 from abhiyogah.clocks.errors import ClockError, ClockSpecError, MissingFactError
+from abhiyogah.clocks.overrides import (
+    DeadlineCandidate,
+    NotApplied,
+    OverrideConflictError,
+    OverrideResolution,
+    resolve_overrides,
+)
 
 __all__ = [
     "BankCalendar",
@@ -19,11 +26,16 @@ __all__ = [
     "ClockError",
     "ClockSpecError",
     "ClockState",
+    "DeadlineCandidate",
     "MissingFactError",
+    "NotApplied",
+    "OverrideConflictError",
+    "OverrideResolution",
     "Pause",
     "build_clock",
     "clock_date",
     "pauses_from_events",
+    "resolve_overrides",
     "start_fact_name",
     "stop_fact_names",
 ]
