@@ -142,3 +142,11 @@ h2 { margin-top: 28px; font-size: 1.15em; }
 .status-future_dated { color: #7e3af2; }
 .status-in_force { color: #057a55; }
 .status-superseded, .status-repealed_but_saved { color: var(--muted); }
+
+.rule { border: 1px solid var(--border); border-radius: 6px; padding: 4px 16px 12px; margin-bottom: 16px; }
+.rule-flagged { border-left: 5px solid #c27803; }
+.rule[data-verification="UNVERIFIED"], .rule[data-verification="CONFLICTING"] { border-left-color: #c81e1e; }
+.warnings { list-style: none; padding: 0; color: #9b1c1c; font-weight: 600; }
+.params { margin-top: 10px; font-size: 0.9em; }
+.nowrap { white-space: nowrap; }
+.params td { overflow-wrap: anywhere; }

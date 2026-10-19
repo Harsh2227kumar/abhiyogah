@@ -17,6 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <span className="brand">Abhiyogah</span>
           <nav aria-label="Main">
             <Link href="/">Deadline board</Link>
+            <Link href="/rules">Rule browser</Link>
           </nav>
         </header>
         <main>{children}</main>
