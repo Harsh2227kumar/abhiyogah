@@ -10,7 +10,7 @@
 
 ## Checklist
 
-- [ ] `BankCalendar` protocol: `is_working_day(d, state)`, `add_working_days(d, n, state)`,
+- [x] `BankCalendar` protocol: `is_working_day(d, state)`, `add_working_days(d, n, state)`,
       `working_days_between(start_exclusive, end_inclusive, state)`, `add_calendar_days(d, n)`, `version`.
 - [ ] Implementation on the MIT `holidays` package (India with subdivisions) and a bank overlay: all
       Sundays, 2nd and 4th Saturdays closed, plus state-specific Negotiable Instruments Act holidays.
@@ -32,3 +32,4 @@ All properties pass with at least 500 hypothesis examples; `make check` green; n
 ## Requests
 
 ## Log
+- 2026-10-19 · item 1 done · `BankCalendar` protocol in `calendar/protocol.py` with runtime-checkable test · next: item 2 (holidays + bank overlay implementation)
