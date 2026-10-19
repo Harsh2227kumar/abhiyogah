@@ -44,6 +44,8 @@ class ReevaluationResult:
     complaint_id: str
     appended: list[DecisionRecord] = field(default_factory=list)
     review_tasks_opened: list[str] = field(default_factory=list)
+    error: str | None = None
+    """Set by the sweep when the engine could not evaluate this complaint."""
 
 
 _NOT_MATERIAL = frozenset({"as_of", "prev_hash", "hash", "condition_trace"})

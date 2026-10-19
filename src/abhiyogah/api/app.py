@@ -14,7 +14,8 @@ from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
+from fastapi.responses import JSONResponse
 
 from abhiyogah.api.auth import Principal, Role, parse_api_keys, require
 from abhiyogah.api.rulepack import load_obligations
@@ -37,7 +38,7 @@ from abhiyogah.api.settings import Settings
 from abhiyogah.calendar import load_bank_calendar
 from abhiyogah.domain.complaint import fold_events
 from abhiyogah.domain.decision import DecisionRecord, DecisionResult
-from abhiyogah.domain.errors import FactFoldError
+from abhiyogah.domain.errors import DomainError, FactFoldError
 from abhiyogah.domain.events import ComplaintEvent, Provenance
 from abhiyogah.evaluator import ForecastItem, forecast_records
 from abhiyogah.ledger import ChainStatus, render_explanation, verify_chain
@@ -114,8 +115,17 @@ def create_app(
         description="RBI complaint-compliance engine: clause-cited deadlines and breaches.",
     )
     api.state.keyring = parse_api_keys(settings.api_keys)
+    api.add_exception_handler(DomainError, _engine_failed)
     _routes(api, store, ctx, now)
     return api
+
+
+async def _engine_failed(request: Request, exc: Exception) -> JSONResponse:
+    """A rule-pack or engine error on a read: 500 with the engine's message, not a traceback."""
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": f"the engine could not evaluate: {exc}"},
+    )
 
 
 def _as_of(principal: Principal, as_of: datetime | None, now: Now) -> datetime:
@@ -273,11 +283,22 @@ def _routes(api: FastAPI, store: Store, ctx: EngineContext, now: Now) -> None:
             new = store.append_events(fresh)
         except EvidenceConflictError as exc:
             raise HTTPException(status.HTTP_409_CONFLICT, str(exc)) from exc
-        result = reevaluate(store, ctx, complaint_id, at)
         new_ids = {e.event_id for e in new}
+        accepted = [e.event_id for e in events if e.event_id in new_ids]
+        already = [e.event_id for e in events if e.event_id not in new_ids]
+        # The events are evidence and stay stored even if the engine fails; the scheduler retries.
+        try:
+            result = reevaluate(store, ctx, complaint_id, at)
+        except DomainError as exc:
+            return EventsAccepted(
+                accepted=accepted,
+                already_recorded=already,
+                decisions_appended=0,
+                evaluation_error=str(exc),
+            )
         return EventsAccepted(
-            accepted=[e.event_id for e in events if e.event_id in new_ids],
-            already_recorded=[e.event_id for e in events if e.event_id not in new_ids],
+            accepted=accepted,
+            already_recorded=already,
             decisions_appended=len(result.appended),
             review_tasks_opened=result.review_tasks_opened,
         )

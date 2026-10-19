@@ -14,10 +14,12 @@ the re-evaluation that runs on each new event. Appending stays "only when the re
 (``worker.reevaluate``), so a sweep that finds nothing new writes nothing.
 """
 
+import logging
 from collections.abc import Sequence
 from datetime import datetime
 
 from abhiyogah.domain.decision import DecisionRecord, DecisionResult
+from abhiyogah.domain.errors import DomainError
 from abhiyogah.domain.tz import ist_date
 from abhiyogah.evaluator import obligation_version
 from abhiyogah.registry.schema import Obligation
@@ -30,6 +32,8 @@ from abhiyogah.worker.reevaluate import (
 )
 
 __all__ = ["TIME_SENSITIVE", "needs_reevaluation", "sweep"]
+
+log = logging.getLogger(__name__)
 
 TIME_SENSITIVE = frozenset(
     {DecisionResult.RUNNING, DecisionResult.BREACHED, DecisionResult.INSUFFICIENT_FACTS}
@@ -60,9 +64,14 @@ def needs_reevaluation(
 
 
 def sweep(store: Store, ctx: EngineContext, as_of: datetime) -> list[ReevaluationResult]:
-    """Re-evaluate every complaint that needs it; return what each appended."""
+    """Re-evaluate every complaint that needs it; one failing complaint does not stop the rest."""
     results = []
     for cid in store.complaint_ids():
-        if needs_reevaluation(store.decisions(cid), ctx.obligations, as_of):
+        if not needs_reevaluation(store.decisions(cid), ctx.obligations, as_of):
+            continue
+        try:
             results.append(reevaluate(store, ctx, cid, as_of))
+        except DomainError as exc:
+            log.warning("re-evaluation of %s failed: %s", cid, exc)
+            results.append(ReevaluationResult(cid, error=str(exc)))
     return results

@@ -66,6 +66,10 @@ class EventsAccepted(_Model):
     already_recorded: list[str] = Field(description="Event IDs that were already stored.")
     decisions_appended: int = Field(ge=0)
     review_tasks_opened: list[str] = Field(default_factory=list)
+    evaluation_error: str | None = Field(
+        default=None,
+        description="Set when the events were stored but the engine could not re-evaluate.",
+    )
 
 
 class FindingIn(_Model):

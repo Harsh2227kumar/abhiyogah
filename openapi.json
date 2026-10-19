@@ -2260,6 +2260,18 @@
             },
             "type": "array",
             "title": "Review Tasks Opened"
+          },
+          "evaluation_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Error",
+            "description": "Set when the events were stored but the engine could not re-evaluate."
           }
         },
         "additionalProperties": false,
