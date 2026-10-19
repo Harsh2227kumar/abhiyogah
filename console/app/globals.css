@@ -150,3 +150,9 @@ h2 { margin-top: 28px; font-size: 1.15em; }
 .params { margin-top: 10px; font-size: 0.9em; }
 .nowrap { white-space: nowrap; }
 .params td { overflow-wrap: anywhere; }
+
+.topbar { flex-wrap: wrap; }
+.timetravel { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 0.9em; padding: 4px 8px; border-radius: 6px; }
+.timetravel-active { background: #fdf6b2; color: #723b13; }
+.timetravel-note { font-weight: 700; }
+.admin-tag { font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }

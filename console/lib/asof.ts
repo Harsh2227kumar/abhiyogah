@@ -19,3 +19,21 @@ export function withAsOf(path: string, asOf: string | undefined): string {
 export function asOfDate(asOf: string | undefined): string {
   return istDate(asOf ?? Date.now());
 }
+
+/** An instant as the value of a `datetime-local` input, in IST (`YYYY-MM-DDTHH:mm`). */
+export function toIstInput(instant: string | number): string {
+  const ist = new Date(new Date(instant).getTime() + 330 * 60_000);
+  return ist.toISOString().slice(0, 16);
+}
+
+/** A `datetime-local` value read as IST, as an instant with a +05:30 offset; undefined if invalid. */
+export function fromIstInput(value: string): string | undefined {
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return undefined;
+  return parseAsOf(`${value}:00+05:30`);
+}
+
+/** `asOf` (or now) moved by `days` whole days, as a +05:30 instant. */
+export function shiftDays(asOf: string | undefined, days: number, now: () => number = Date.now): string {
+  const base = asOf === undefined ? now() : Date.parse(asOf);
+  return `${toIstInput(base + days * 86_400_000)}:00+05:30`;
+}

@@ -20,7 +20,7 @@
       date, inputs, comparison, deadline, calendar version), plus the hash and chain status.
 - [x] Rule browser: obligations with clause, source link, verification grade and status; DRAFT and
       UNVERIFIED clearly marked.
-- [ ] Time-travel control (admin) that sets `as_of` for demos.
+- [x] Time-travel control (admin) that sets `as_of` for demos.
 - [ ] Indian formats throughout: ₹ with lakh/crore grouping, DD-MM-YYYY, IST.
 - [ ] Write `STREAM COMPLETE`.
 
@@ -36,3 +36,4 @@ The plan's end-to-end demo can be clicked through in the console against a local
 - 2026-10-19 · item 4 done · `/complaints/[id]`: breaches, required actions, clocks (start/stop/rule/basis/due/result), facts with HUMAN/SYSTEM/LLM provenance badges (LLM span and prompt in the tooltip), IST event timeline, chain status · next: item 5 (decision replay)
 - 2026-10-19 · item 5 done · `/complaints/[id]/decisions/[obligationId]`: instrument, clause and source link, status and grade, version, anchor, as_of, calendar version, inputs with provenance, dated parameters with grades, ordered condition trace, deadline/breach/compensation/actions, hash, prev hash and chain status (warns when the break precedes the record) · next: item 6 (rule browser)
 - 2026-10-19 · item 6 done · `/rules`: every obligation with instrument, clause, source link, type, trigger, clock, validity, dated parameters with grades and open questions; warnings for DRAFT, FUTURE_DATED, non-primary grades (rule or parameter) and open questions; filter by status, grade and text · next: item 7 (time-travel control)
+- 2026-10-19 · item 7 done · admin time-travel control in the header (IST datetime, Go, +1 day, Now) sets `?as_of=` on the current page; highlighted banner while active; off with `ABHIYOGAH_TIME_TRAVEL=off`; checked end to end in Chromium (IO clock due today → 2 days overdue) · next: item 8 (Indian formats)
