@@ -49,6 +49,7 @@
       deadline, the shadow-credit deadline and the liability tier. Needs rule pack #16 in main
       (#27 and #28 merged).
 - [x] Write `STREAM COMPLETE`.
+- [x] Fix #40: anchor dates that follow `as_of` no longer append an unchanged record every day.
 
 ## Definition of done
 End-to-end test: post the UPI fraud demo events → API returns IO deadline, shadow-credit deadline and
@@ -81,4 +82,6 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · resume · merged main (#27, #28, #30), regenerated openapi.json for outputs; preview with agent/rules' 20 obligations over the API: IO due 23 Aug (breached +2 on 25 Aug), shadow credit breached, RBCCB-2025-67-71 DETERMINED tier ZERO, REFER_TO_IO required · BLOCKED: only rule pack #16 left to merge into main
 - 2026-10-20 · item 15 done · review tasks close: store.close_review_task (memory + SQL, row lock, once only) and POST /review-tasks/{id}/close accepting only a HUMAN event on the same complaint recorded after the task opened; ReviewTask.closed_by_event_id; openapi.json regenerated; 32 store tests pass on PG 16 · next: rule-pack DoD E2E (BLOCKED on #16)
 - 2026-10-20 · item 16 done · rule pack #16 merged; tests/api/test_rulepack_end_to_end.py runs the UPI fraud demo through the API on all 20 obligations with the real MH calendar: shadow credit due 17 Aug, liability tier ZERO (₹0), IO due 23 Aug; as of 25 Aug IO breach +2, shadow credit +8, REFER_TO_IO required; chain verifies · next: STREAM COMPLETE
+- 2026-10-20 · STREAM COMPLETE
+- 2026-10-20 · fix #40 · worker.reevaluate.material() ignores anchor_date (its effect shows in `parameters`); regression test on the rule pack: daily sweeps no longer re-append RBIOS-2026-10-1-g or IO-CB-2026-14-3-4-review
 - 2026-10-20 · STREAM COMPLETE
