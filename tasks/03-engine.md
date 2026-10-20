@@ -49,9 +49,9 @@
 - [x] B5 `RBCCB-2025-67-71` is a determination: its clock only counts `delay_working_days`; it ends
       `DETERMINED` with `delay_working_days`, `liability_tier`, `customer_liability_paise` (uses
       `calculators.limited_liability`).
-- [ ] The scenario runner compares `outputs` exactly and runs on the real bank calendar
+- [x] The scenario runner compares `outputs` exactly and runs on the real bank calendar
       (`load_bank_calendar`), not the test double.
-- [ ] Scenario runner `tests/scenarios/test_scenarios.py`: loads every `rules/scenarios/*.yaml`, runs the
+- [x] Scenario runner `tests/scenarios/test_scenarios.py`: loads every `rules/scenarios/*.yaml`, runs the
       evaluator, compares deadlines, breaches and paise exactly. Wired into `make rules`.
 - [x] Replay test: evaluating the same events at the same `as_of` twice yields byte-identical records.
 - [x] Time-travel test: one complaint evaluated at day 5, 19, 20 and 21 shows the IO clock RUNNING then BREACHED.
@@ -93,3 +93,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · or-conditions item done · evaluator/conditions.py: recursive-descent grammar with `or`, `and` (tighter) and parentheses; every clause still traced · next: filtered clock stops
 - 2026-10-19 · filtered-stops item done · `stop_conditions` parameter: a stop event counts only if its own payload passes the condition; each candidate is traced · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16
 - 2026-10-19 · determinations + B5 items done · merged main (#27, #28 outputs); evaluator/determinations.py: A1 router, A14, A15 ×2, A18 checks and the B5 determination end DETERMINED with outputs/actions; A2/A3/A6/A8 clock outputs; runner compares outputs exactly. Local trial against rules PR #16 @5baaca9 on the real bank calendar: 75/75 scenarios pass · next: test_scenarios.py on the real calendar once #16 is on main
+- 2026-10-20 · scenario-suite items done · merged main (rules #16); tests/scenarios/test_scenarios.py runs all 75 rule-pack scenarios on load_bank_calendar() through the runner, in `make rules`; all pass · next: switch parameter_at to registry/resolve.py
