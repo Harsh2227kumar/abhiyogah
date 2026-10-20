@@ -49,13 +49,13 @@
 - [x] B5 `RBCCB-2025-67-71` is a determination: its clock only counts `delay_working_days`; it ends
       `DETERMINED` with `delay_working_days`, `liability_tier`, `customer_liability_paise` (uses
       `calculators.limited_liability`).
-- [ ] The scenario runner compares `outputs` exactly and runs on the real bank calendar
+- [x] The scenario runner compares `outputs` exactly and runs on the real bank calendar
       (`load_bank_calendar`), not the test double.
-- [ ] Scenario runner `tests/scenarios/test_scenarios.py`: loads every `rules/scenarios/*.yaml`, runs the
+- [x] Scenario runner `tests/scenarios/test_scenarios.py`: loads every `rules/scenarios/*.yaml`, runs the
       evaluator, compares deadlines, breaches and paise exactly. Wired into `make rules`.
 - [x] Replay test: evaluating the same events at the same `as_of` twice yields byte-identical records.
 - [x] Time-travel test: one complaint evaluated at day 5, 19, 20 and 21 shows the IO clock RUNNING then BREACHED.
-- [ ] Write `STREAM COMPLETE`.
+- [x] Write `STREAM COMPLETE`.
 
 ## Definition of done
 Every scenario from stream 02 passes; mypy strict clean; import-linter confirms no I/O imports.
@@ -69,11 +69,11 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - To the rule-pack stream (02), FYI: the evaluator follows `rules/obligations/_conventions.md`. It
   also accepts `is known`/`is unknown`, `==`, `!=` and integer `<`/`>` clauses, and an optional
   `compensation_per_day_paise` parameter (per calendar day late) for B1 and the C-table.
-- To the foundation/domain owner (same as the rule-pack request in issue #20): `DecisionResult.DETERMINED`
-  and an `outputs` field on `DecisionRecord`, so clockless obligations (A1, A14, A15, A18) and outputs
-  such as `escalation_open` can be reported. Today clockless obligations end `NOT_APPLICABLE` with
-  an "obligation has a clock: false" trace line.
-- Engine side, once 02 merges: switch `evaluator/parameters.parameter_at` to `registry/resolve.py`.
+- To the rule-pack stream (02), FYI: conditions also take `or` and parentheses (`and` binds tighter),
+  and a clock stop can be filtered with a `stop_conditions` parameter checked against the stop
+  event's own payload (A7/A8). Adopted in #16.
+- Resolved: `DecisionResult.DETERMINED` (#23, closes #20) and `DecisionRecord.outputs` (#28, closes
+  #25).
 
 ## Log
 - 2026-10-19 · item 1 done · clocks/: Clock (due_date/state/days_remaining/days_late, IST rounding, pauses supported but unused), BankCalendar protocol + FakeCalendar double, build_clock from facts · next: item 2 overrides
@@ -93,3 +93,7 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · or-conditions item done · evaluator/conditions.py: recursive-descent grammar with `or`, `and` (tighter) and parentheses; every clause still traced · next: filtered clock stops
 - 2026-10-19 · filtered-stops item done · `stop_conditions` parameter: a stop event counts only if its own payload passes the condition; each candidate is traced · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16
 - 2026-10-19 · determinations + B5 items done · merged main (#27, #28 outputs); evaluator/determinations.py: A1 router, A14, A15 ×2, A18 checks and the B5 determination end DETERMINED with outputs/actions; A2/A3/A6/A8 clock outputs; runner compares outputs exactly. Local trial against rules PR #16 @5baaca9 on the real bank calendar: 75/75 scenarios pass · next: test_scenarios.py on the real calendar once #16 is on main
+- 2026-10-20 · scenario-suite items done · merged main (rules #16); tests/scenarios/test_scenarios.py runs all 75 rule-pack scenarios on load_bank_calendar() through the runner, in `make rules`; all pass · next: switch parameter_at to registry/resolve.py
+- 2026-10-20 · parameter_at now wraps registry/resolve.py (one source for the latest-on-or-before rule) and adds the effective date for the record; Request removed · next: STREAM COMPLETE
+- 2026-10-20 · stream done · all checklist items ticked; 75/75 rule-pack scenarios pass on the real bank calendar; mypy strict and import-linter clean
+STREAM COMPLETE

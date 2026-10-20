@@ -45,10 +45,10 @@
 - [x] Close review tasks: `close_review_task(task_id, event_id)` in the store and
       `POST /review-tasks/{id}/close`, closed only by a HUMAN business event on the same complaint
       (the DB trigger already allows only OPEN -> DONE with `closed_by_event_id`).
-- [ ] Definition-of-done end-to-end against the merged rule pack: the UPI fraud demo returns the IO
+- [x] Definition-of-done end-to-end against the merged rule pack: the UPI fraud demo returns the IO
       deadline, the shadow-credit deadline and the liability tier. Needs rule pack #16 in main
       (#27 and #28 merged).
-- [ ] Write `STREAM COMPLETE`.
+- [x] Write `STREAM COMPLETE`.
 
 ## Definition of done
 End-to-end test: post the UPI fraud demo events → API returns IO deadline, shadow-credit deadline and
@@ -80,3 +80,5 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · BLOCKED: DoD E2E needs #16 (rule pack), #27 (engine: tier/limits on RBCCB-2025-67-71) and #28 (outputs) merged into main. Resume: merge origin/main, run the UPI fraud demo through the API with rules/obligations, then STREAM COMPLETE.
 - 2026-10-19 · resume · merged main (#27, #28, #30), regenerated openapi.json for outputs; preview with agent/rules' 20 obligations over the API: IO due 23 Aug (breached +2 on 25 Aug), shadow credit breached, RBCCB-2025-67-71 DETERMINED tier ZERO, REFER_TO_IO required · BLOCKED: only rule pack #16 left to merge into main
 - 2026-10-20 · item 15 done · review tasks close: store.close_review_task (memory + SQL, row lock, once only) and POST /review-tasks/{id}/close accepting only a HUMAN event on the same complaint recorded after the task opened; ReviewTask.closed_by_event_id; openapi.json regenerated; 32 store tests pass on PG 16 · next: rule-pack DoD E2E (BLOCKED on #16)
+- 2026-10-20 · item 16 done · rule pack #16 merged; tests/api/test_rulepack_end_to_end.py runs the UPI fraud demo through the API on all 20 obligations with the real MH calendar: shadow credit due 17 Aug, liability tier ZERO (₹0), IO due 23 Aug; as of 25 Aug IO breach +2, shadow credit +8, REFER_TO_IO required; chain verifies · next: STREAM COMPLETE
+- 2026-10-20 · STREAM COMPLETE
