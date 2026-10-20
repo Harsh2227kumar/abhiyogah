@@ -12,8 +12,10 @@ pack is loaded from YAML files and the bank calendar is the real one (``load_ban
 5. MCP: an agent calling the ``evaluate_complaint``, ``get_deadlines`` and ``explain_decision``
    tools gets exactly what the API returns, now and time-travelled.
 
-The real-rule-pack version waits on PR #16 (open item in tasks/08-integrator.md). Until then the
-rules come from ``tests/e2e/rulepack/`` (unchanged DRAFT copies, see its ``_README.md``).
+The rules are the merged rule pack, ``rules/obligations/`` (all DRAFT or FUTURE_DATED, unsigned), so
+other obligations apply to the same complaint too: the final decision (A17), the complainant's
+escalation and filing windows (A2, A3), the 90-day liability determination (B7) and the senior
+review check before IO referral (A15).
 
 Hand check (home branch MH; 2nd/4th Saturdays and Sundays closed; 15 Aug 2026 is Independence Day):
 
@@ -23,6 +25,12 @@ Hand check (home branch MH; 2nd/4th Saturdays and Sundays closed; 15 Aug 2026 is
 - B6: 10 working days after Mon 10 Aug: 11-14, 17-21 and 24 Aug (Sat 15 Aug is a holiday and Sat
   22 Aug the 4th Saturday), so due Mon 24 Aug; credited on 21 Aug, on time.
 - A13(b): bank receipt 10 Aug + 20 calendar days = 30 Aug; not referred by 1 Sep, so 2 days late.
+- A17 (cl. 14(9)) and A2 (cl. 10(1)(f)): 10 Aug + 30 calendar days = 9 Sep; no reply yet, so A2's
+  escalation window is not open.
+- B7 (para 73): 10 Aug + 90 calendar days = 8 Nov.
+- A3 (cl. 10(1)(g)): max(10 Aug + 30 days, last bank communication: none) + 90 days = 8 Dec.
+- A15 (cl. 14(3)-(4)): rejected with no SENIOR_REVIEWED event, so not senior-reviewed before the IO
+  referral, and a SENIOR_REVIEW action (no due date) stays open while unreferred.
 """
 
 import asyncio
@@ -48,7 +56,7 @@ from abhiyogah.worker.reevaluate import EngineContext, evaluate_stored
 from abhiyogah.worker.schedule import sweep
 from abhiyogah.workflow import REFER_TO_IO
 
-RULES = Path(__file__).parent / "rulepack"
+RULES = Path(__file__).parents[2] / "rules" / "obligations"
 WRITER = {"X-API-Key": "demo-writer-key-0123456789"}
 ADMIN = {"X-API-Key": "demo-admin-key-01234567890"}
 KEYS = "officer-demo:writer:demo-writer-key-0123456789;admin-demo:admin:demo-admin-key-01234567890"
@@ -60,8 +68,20 @@ PROFILE = EntityProfile(
 )
 CID = "CMP-DEMO-UPI-1"
 A13 = "IO-CB-2026-14-1-b"
+A15 = "IO-CB-2026-14-3-4-review"
+A17 = "IO-CB-2026-14-9"
+A2 = "RBIOS-2026-10-1-f"
+A3 = "RBIOS-2026-10-1-g"
 B5 = "RBCCB-2025-67-71"
 B6 = "RBCCB-2025-72"
+B7 = "RBCCB-2025-73"
+RECEIPT_DEADLINES = {A17: "2026-09-09", A2: "2026-09-09", B7: "2026-11-08", A3: "2026-12-08"}
+"""Deadlines that run from bank receipt on 10 Aug (see the hand check)."""
+RECEIPT_ACTIONS = {
+    ("SEND_FINAL_DECISION", "2026-09-09"),
+    ("COMPENSATE_PER_PARAS_67_72", "2026-11-08"),
+}
+"""Actions those deadlines require while they run (A2 and A3 are rights: no action)."""
 
 EVENTS: list[dict[str, Any]] = [
     {
@@ -164,6 +184,11 @@ def due(body: dict[str, Any]) -> dict[str, str]:
     return {d["obligation_id"]: d["deadline"]["due_date"] for d in body["deadlines"]}
 
 
+def outputs(body: dict[str, Any]) -> dict[str, Any]:
+    """obligation_id -> outputs, for decisions that determined something."""
+    return {d["obligation_id"]: d["outputs"] for d in body["decisions"] if d["outputs"]}
+
+
 def actions(body: dict[str, Any]) -> set[tuple[str, str | None]]:
     """(action code, due date) of every required action."""
     return {(a["action"]["action"], a["action"]["due_date"]) for a in body["required_actions"]}
@@ -176,7 +201,10 @@ def demo() -> Demo:
         obligations=load_obligations(RULES), calendar=load_bank_calendar(), profile=PROFILE
     )
     assert {o.obligation_id for o in ctx.obligations} >= {A13, B5, B6}
-    assert all(o.status == "DRAFT" and o.signed_off_by is None for o in ctx.obligations)
+    # Agent-written rules: nothing signed off; B10 is FUTURE_DATED and never evaluated.
+    assert all(
+        o.status in ("DRAFT", "FUTURE_DATED") and o.signed_off_by is None for o in ctx.obligations
+    )
     store = MemoryStore()
     clock = Clock(datetime(2026, 8, 1, tzinfo=UTC))
     app = create_app(settings=Settings(api_keys=KEYS), store=store, ctx=ctx, now=clock)
@@ -189,9 +217,10 @@ def test_demo_upi_fraud_complaint(demo: Demo) -> None:
     for event in EVENTS[:3]:
         demo.post(event)
     body = demo.complaint()
-    assert due(body) == {B6: "2026-08-24"}
+    assert due(body) == {B6: "2026-08-24", **RECEIPT_DEADLINES}
     assert results(body)[B5] == "NOT_TRIGGERED"  # nobody has recorded whose fault it was yet
-    assert actions(body) == {("SHADOW_CREDIT", "2026-08-24")}
+    assert actions(body) == {("SHADOW_CREDIT", "2026-08-24"), *RECEIPT_ACTIONS}
+    assert outputs(body)[A2] == {"escalation_open": False}
 
     # A person records the fault: the liability tier (B5) is determined.
     demo.post(EVENTS[3])
@@ -206,14 +235,16 @@ def test_demo_upi_fraud_complaint(demo: Demo) -> None:
     # Rejected: the IO referral clock (A13, 20 days from bank receipt) applies.
     demo.post(EVENTS[4])
     body = demo.complaint()
-    assert due(body) == {B6: "2026-08-24", A13: "2026-08-30"}
+    assert due(body) == {B6: "2026-08-24", A13: "2026-08-30", **RECEIPT_DEADLINES}
     assert (REFER_TO_IO, "2026-08-30") in actions(body)
+    assert results(body)[A15] == "DETERMINED"
+    assert outputs(body)[A15] == {"senior_reviewed_before_io": False}
 
     # Shadow credit on 21 Aug: B6 stops on time and its action goes away.
     demo.post(EVENTS[5])
     body = demo.complaint()
     assert results(body)[B6] == "STOPPED_ON_TIME"
-    assert actions(body) == {(REFER_TO_IO, "2026-08-30")}
+    assert actions(body) == {(REFER_TO_IO, "2026-08-30"), ("SENIOR_REVIEW", None), *RECEIPT_ACTIONS}
 
     # 2. Time travel past day 20: nothing new happened, but A13 is now breached.
     travel = demo.complaint(as_of="2026-09-01T12:00:00+05:30")
@@ -223,9 +254,11 @@ def test_demo_upi_fraud_complaint(demo: Demo) -> None:
     ]
 
     # 3. Auto-escalation: the scheduler records the breach; the referral is still required.
+    before = results(demo.complaint())
     demo.clock.at = datetime(2026, 9, 1, 6, 30, tzinfo=UTC)
     appended = [r for res in sweep(demo.store, demo.ctx, demo.clock.at) for r in res.appended]
-    assert [(r.obligation_id, r.result) for r in appended] == [(A13, "BREACHED")]
+    changed = {r.obligation_id: r.result for r in appended if r.result != before[r.obligation_id]}
+    assert changed == {A13: "BREACHED"}
     assert (REFER_TO_IO, "2026-08-30") in actions(demo.complaint())
 
     # 4. The stored decision cites its clause and parameter, explains itself and replays.
@@ -242,7 +275,7 @@ def test_demo_upi_fraud_complaint(demo: Demo) -> None:
     assert "14(1)(b)" in text
     assert "Breach" in text
 
-    stored = demo.store.decisions(CID)[-1]
+    stored = next(r for r in reversed(demo.store.decisions(CID)) if r.obligation_id == A13)
     replayed = next(
         r
         for r in evaluate_stored(demo.store.events(CID), demo.ctx, CID, stored.as_of)
@@ -276,5 +309,6 @@ def test_demo_upi_fraud_complaint(demo: Demo) -> None:
     assert {d["obligation_id"]: d["deadline"]["due_date"] for d in deadlines} == {
         B6: "2026-08-24",
         A13: "2026-08-30",
+        **RECEIPT_DEADLINES,
     }
     assert explanation == explained
