@@ -3,11 +3,14 @@
 Shared by the API (after each new event) and the scheduler (periodically). It reads events from the
 store, calls the pure evaluator at ``as_of`` and appends to the complaint's chain only records whose
 material content differs from the latest stored record for that obligation. ``as_of``, the hash
-fields and the condition trace are not material: the trace names the ``as_of`` date, and every
-outcome it explains is already in the result, deadline, breach, compensation, actions, inputs and
-parameters. So an unchanged result is never written twice, and a breach is re-recorded only when
-days late (and so any compensation) grows. It also opens the review
-tasks the workflow asks for. This module imports no queue library, so the API can use it.
+fields, the condition trace and the anchor date are not material: the trace names the ``as_of``
+date, and every outcome it explains is already in the result, deadline, breach, compensation,
+actions, inputs and parameters. The anchor date matters only through the parameter versions it
+selects, and those are in ``parameters`` (with their effective dates); for obligations whose anchor
+stands in for ``as_of`` (A3 before RBI receipt, clockless checks) it changes every day (#40).
+So an unchanged result is never written twice, and a breach is re-recorded only when days late (and
+so any compensation) grows. It also opens the review tasks the workflow asks for. This module
+imports no queue library, so the API can use it.
 """
 
 from collections.abc import Sequence
@@ -48,11 +51,11 @@ class ReevaluationResult:
     """Set by the sweep when the engine could not evaluate this complaint."""
 
 
-_NOT_MATERIAL = frozenset({"as_of", "prev_hash", "hash", "condition_trace"})
+_NOT_MATERIAL = frozenset({"as_of", "prev_hash", "hash", "condition_trace", "anchor_date"})
 
 
 def material(record: DecisionRecord) -> dict[str, JsonValue]:
-    """The record without ``as_of``, hashes and trace: what must change for a new record."""
+    """The record without ``as_of``, hashes, trace and anchor date: what must change to append."""
     return record.model_dump(mode="json", exclude=set(_NOT_MATERIAL))
 
 
