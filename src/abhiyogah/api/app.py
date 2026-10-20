@@ -22,6 +22,7 @@ from abhiyogah.api.rulepack import load_obligations
 from abhiyogah.api.schemas import (
     ActionItem,
     BreachItem,
+    CloseReviewIn,
     ClosureCheck,
     ComplaintDetail,
     ComplaintSummary,
@@ -38,12 +39,19 @@ from abhiyogah.api.settings import Settings
 from abhiyogah.calendar import load_bank_calendar
 from abhiyogah.domain.complaint import fold_events
 from abhiyogah.domain.decision import DecisionRecord, DecisionResult
+from abhiyogah.domain.enums import FactSource
 from abhiyogah.domain.errors import DomainError, FactFoldError
 from abhiyogah.domain.events import ComplaintEvent, Provenance
 from abhiyogah.evaluator import ForecastItem, forecast_records
 from abhiyogah.ledger import ChainStatus, render_explanation, verify_chain
 from abhiyogah.registry.schema import Obligation
-from abhiyogah.store import EvidenceConflictError, MemoryStore, Store
+from abhiyogah.store import (
+    EvidenceConflictError,
+    MemoryStore,
+    ReviewTaskClosedError,
+    Store,
+    UnknownReviewTaskError,
+)
 from abhiyogah.worker.reevaluate import EngineContext, evaluate_stored, reevaluate
 from abhiyogah.workflow import (
     Actor,
@@ -468,6 +476,37 @@ def _routes(api: FastAPI, store: Store, ctx: EngineContext, now: Now) -> None:
     ) -> list[ReviewTask]:
         """Human-review tasks, optionally for one complaint or one status."""
         return store.review_tasks(complaint_id, task_status)
+
+    @api.post("/review-tasks/{task_id}/close", operation_id="closeReviewTask", tags=["review"])
+    def close_review_task(task_id: str, body: CloseReviewIn, principal: Writer) -> ReviewTask:
+        """Close a review task with the HUMAN business event that records the decision."""
+        task = store.review_task(task_id)
+        if task is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, f"unknown review task {task_id}")
+        event = next(
+            (e for e in store.events(task.complaint_id) if e.event_id == body.event_id), None
+        )
+        if event is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                f"event {body.event_id} is not on complaint {task.complaint_id}",
+            )
+        if event.source is not FactSource.HUMAN:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                f"event {body.event_id} is {event.source.value}; a person decides a review",
+            )
+        if event.recorded_at < task.created_at:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                f"event {body.event_id} was recorded before the task was opened",
+            )
+        try:
+            return store.close_review_task(task_id, body.event_id)
+        except ReviewTaskClosedError as exc:
+            raise HTTPException(status.HTTP_409_CONFLICT, f"task {exc} is already closed") from exc
+        except UnknownReviewTaskError as exc:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, str(exc)) from exc
 
 
 app = create_app()

@@ -42,6 +42,9 @@
 - [x] End-to-end test over the API with test obligations shaped like the rule pack (A13 limbs,
       a RBCCB-2025-72-like shadow-credit clock): post → deadlines → reject → time travel past day 20 →
       breach and IO referral → chain verifies (`tests/api/test_end_to_end.py`).
+- [x] Close review tasks: `close_review_task(task_id, event_id)` in the store and
+      `POST /review-tasks/{id}/close`, closed only by a HUMAN business event on the same complaint
+      (the DB trigger already allows only OPEN -> DONE with `closed_by_event_id`).
 - [ ] Definition-of-done end-to-end against the merged rule pack: the UPI fraud demo returns the IO
       deadline, the shadow-credit deadline and the liability tier. Needs rule pack #16 in main
       (#27 and #28 merged).
@@ -55,6 +58,7 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 
 - docs/open-questions.md owner: add the cl. 14(5)(c)-(e) IO-routing question (#26) as the next Q; the workflow routes those limbs to human review until it is answered.
 - console: `openapi.json` is published at the repo root; regenerate the client with `OPENAPI_SPEC=../openapi.json pnpm openapi` (or `make openapi`). The console typechecks against it as is. New: `ComplaintDetail` adds `deadlines`, `breaches`, `required_actions`, `review_tasks`; `ChainStatus` adds `reason` and `head`; every route needs `X-API-Key`.
+- domain owner: consider a `REVIEW_DECIDED` event type for closing review tasks; until then any HUMAN event on the complaint (e.g. `FACTS_RECORDED`) recorded after the task opened can close it.
 - foundation (`.env.example`, `docker-compose.yml`): add `ABHIYOGAH_API_KEYS`, `ABHIYOGAH_PROFILE`, `ABHIYOGAH_RULES_DIR`, `ABHIYOGAH_REEVALUATE_MINUTES` placeholders (documented in `src/abhiyogah/api/settings.py`), and run `alembic upgrade head` plus `procrastinate --app=abhiyogah.worker.app.app schema --apply` (first run only) before the api and worker start. The `openapi` target in the Makefile was filled in by this stream (it was a stub).
 
 ## Log
@@ -75,3 +79,4 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 - 2026-10-19 · item 14 done · synthetic E2E (IO + shadow-credit-like clock) over the API passes; fix: events are kept and engine errors reported (201 + evaluation_error, 500 with message on reads, sweep continues) · next: rule-pack E2E
 - 2026-10-19 · BLOCKED: DoD E2E needs #16 (rule pack), #27 (engine: tier/limits on RBCCB-2025-67-71) and #28 (outputs) merged into main. Resume: merge origin/main, run the UPI fraud demo through the API with rules/obligations, then STREAM COMPLETE.
 - 2026-10-19 · resume · merged main (#27, #28, #30), regenerated openapi.json for outputs; preview with agent/rules' 20 obligations over the API: IO due 23 Aug (breached +2 on 25 Aug), shadow credit breached, RBCCB-2025-67-71 DETERMINED tier ZERO, REFER_TO_IO required · BLOCKED: only rule pack #16 left to merge into main
+- 2026-10-20 · item 15 done · review tasks close: store.close_review_task (memory + SQL, row lock, once only) and POST /review-tasks/{id}/close accepting only a HUMAN event on the same complaint recorded after the task opened; ReviewTask.closed_by_event_id; openapi.json regenerated; 32 store tests pass on PG 16 · next: rule-pack DoD E2E (BLOCKED on #16)

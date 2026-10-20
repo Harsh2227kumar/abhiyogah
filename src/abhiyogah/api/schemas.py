@@ -22,6 +22,7 @@ from abhiyogah.workflow import FindingKind, GateResult, ReviewTask
 __all__ = [
     "ActionItem",
     "BreachItem",
+    "CloseReviewIn",
     "ComplaintDetail",
     "ComplaintSummary",
     "DeadlineItem",
@@ -70,6 +71,12 @@ class EventsAccepted(_Model):
         default=None,
         description="Set when the events were stored but the engine could not re-evaluate.",
     )
+
+
+class CloseReviewIn(_Model):
+    """The business event that records the person's review decision."""
+
+    event_id: str = Field(min_length=1, description="A HUMAN event on the same complaint.")
 
 
 class FindingIn(_Model):

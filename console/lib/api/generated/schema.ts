@@ -244,6 +244,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/review-tasks/{task_id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Close Review Task
+         * @description Close a review task with the HUMAN business event that records the decision.
+         */
+        post: operations["closeReviewTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -395,6 +415,17 @@ export interface components {
              */
             tz: "Asia/Kolkata";
             pause?: components["schemas"]["ClockPause"] | null;
+        };
+        /**
+         * CloseReviewIn
+         * @description The business event that records the person's review decision.
+         */
+        CloseReviewIn: {
+            /**
+             * Event Id
+             * @description A HUMAN event on the same complaint.
+             */
+            event_id: string;
         };
         /**
          * ClosureCheck
@@ -1346,6 +1377,11 @@ export interface components {
             created_at: string;
             /** @default OPEN */
             status: components["schemas"]["ReviewStatus"];
+            /**
+             * Closed By Event Id
+             * @description The business event that recorded the person's decision.
+             */
+            closed_by_event_id?: string | null;
         };
         /**
          * RuleStatus
@@ -1774,6 +1810,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewTask"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    closeReviewTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CloseReviewIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewTask"];
                 };
             };
             /** @description Validation Error */
