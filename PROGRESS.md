@@ -5,7 +5,7 @@ progress at the bottom of their task files, not here. Tracking issue: #1.
 
 _Last updated: 2026-10-20, by the integrator (final board)_
 
-Every stream has delivered its build and its stream issue (#2–#9) is closed. The full rule pack
+Every stream is complete and its stream issue (#2–#9) is closed. The full rule pack
 (#16) is in `main`, and the end-to-end demo (UPI fraud complaint → deadlines and liability tier →
 time travel past day 20 → IO breach and referral → clause-cited trace → the same result over MCP)
 runs on it in `tests/e2e/test_demo.py` and `scripts/demo.sh`. Every rule is `DRAFT` (B10 is
@@ -16,8 +16,8 @@ runs on it in `tests/e2e/test_demo.py` and `scripts/demo.sh`. Every rule is `DRA
 | 00 Foundation | #2 (closed) | `tasks/00-foundation.md` | Complete; follow-ups done by the integrator | #12 | — |
 | 01 Calendar | #3 (closed) | `tasks/01-calendar.md` | Complete | #14 | Q19 holidays vs NI Act (#13); overlay files are unsourced |
 | 02 Rule pack | #4 (closed) | `tasks/02-rule-pack.md` | Complete | #16 | Sign-off of every rule; open questions below |
-| 03 Engine | #5 (closed) | `tasks/03-engine.md` | Delivered; 3 follow-up items open (scenario runner on the merged pack with exact `outputs` and the real calendar), unblocked now that #16 is in | #30 | — |
-| 04 Platform | #6 (closed) | `tasks/04-platform.md` | Delivered; 2 follow-up items open (definition-of-done E2E on the merged pack), unblocked now that #16 is in; bug #40 | #38 | — |
+| 03 Engine | #5 (closed) | `tasks/03-engine.md` | Complete; runs every rule-pack scenario on the real calendar | #41 | — |
+| 04 Platform | #6 (closed) | `tasks/04-platform.md` | Complete, including the definition-of-done E2E on the merged pack; bug #40 open | #39 | — |
 | 05 Console | #7 (closed) | `tasks/05-console.md` | Complete | #33 | — |
 | 06 Perception | #8 (closed) | `tasks/06-perception.md` | Complete | #36 | Choose an LLM provider and India region (`llm` extra, `.env.example`) |
 | 07 MCP + RegWatch | #9 (closed) | `tasks/07-mcp-regwatch.md` | Complete | #37 | — |
@@ -43,5 +43,4 @@ runs on it in `tests/e2e/test_demo.py` and `scripts/demo.sh`. Every rule is `DRA
 - #40: the worker appends an unchanged decision record each day for obligations anchored on `as_of`
   (A3 before RBI receipt, the A15 review check).
 - Requests still open in task files: an API service layer for MCP (07 → 04), `ReviewKind.MANUAL_PERCEPTION`
-  and perception in the worker (06 → 04), a `REVIEW_DECIDED` event (04 → domain), and
-  `parameter_at` moving to `registry/resolve.py` (03).
+  and perception in the worker (06 → 04), and a `REVIEW_DECIDED` event (04 → domain).
