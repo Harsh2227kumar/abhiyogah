@@ -100,13 +100,15 @@ class RawStore:
             fh.write(body)
             fh.flush()
             os.fsync(fh.fileno())
-        tmp.chmod(0o444)
         try:
             os.link(tmp, path)  # fails if another writer got there first; never overwrites
         except FileExistsError:
             pass
         finally:
             tmp.unlink()
+        # Read-only only after the temp name is gone: Windows refuses to delete a read-only file,
+        # and NTFS hard links share that attribute.
+        path.chmod(0o444)
 
     def put(
         self, fetched: Fetched, *, title: str = "", published_on: date | None = None, hint: str = ""

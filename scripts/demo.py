@@ -1,4 +1,4 @@
-"""The plan's end-to-end demo, as an API client. Started by ``scripts/demo.sh``; stdlib only.
+"""The plan's end-to-end demo, as an API client. Started by ``make demo``; stdlib only.
 
 Posts a synthetic UPI fraud complaint dated relative to today, so the API (which refuses events in
 the future and reads facts bitemporally) accepts it at any time, then:
@@ -180,4 +180,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyError as exc:
-        sys.exit(f"missing setting {exc}; start the demo with scripts/demo.sh")
+        sys.exit(f"missing setting {exc}; start the demo with `make demo` (Windows: .\\make demo)")
