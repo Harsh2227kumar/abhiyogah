@@ -1,0 +1,41 @@
+name: liability_third_party_4wd_txn_below_cap
+description: >
+  A third-party breach on a BSBD account reported on the fourth working day: the customer bears the transaction amount, which is below the ₹5,000 cap.
+obligation_ids: [RBCCB-2025-67-71]
+hand_check: |
+  Source: RBC-CB paras 67-71, Tables 1-2 (report Table B, row B5, verification P). Formula:
+  delay_wd = working days after alert_received (excluded, para 71) up to and including the report,
+  home-branch calendar (MH): Sundays and 2nd/4th Saturdays closed. Assumes no NI Act holiday in MH on
+  the dates counted; the calendar overlay decides that (Q13).
+  liability = 0 if bank fault or third-party with delay_wd <= 3; min(txn, cap) if 4-7; board policy
+  beyond 7. Result DETERMINED; no deadline, no breach.
+  alert Mon 2026-06-08 (excluded). Counted: Tue 09, Wed 10, Thu 11, Fri 12 = 4 working days: LIMITED.
+  cap BSBD = 500000 paise (₹5,000, Table 2). txn = 300000 paise (₹3,000).
+  customer_liability_paise = min(300000, 500000) = 300000.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: ALERT_RECEIVED
+    occurred_at: 2026-06-08T14:00:00+05:30
+  - type: FACTS_RECORDED
+    occurred_at: 2026-06-12T10:00:00+05:30
+    payload: {issue_type: UNAUTHORISED_TRANSACTION, account_type: BSBD, amount_paise: 300000, home_branch_state: MH}
+  - type: CUSTOMER_REPORTED
+    occurred_at: 2026-06-12T10:05:00+05:30
+  - type: FACTS_RECORDED
+    occurred_at: 2026-06-12T16:00:00+05:30
+    payload: {liability_fault: THIRD_PARTY}
+    source: HUMAN
+as_of: 2026-06-12T18:00:00+05:30
+expect:
+  results:
+    RBCCB-2025-67-71: DETERMINED
+  outputs:
+    RBCCB-2025-67-71: {delay_working_days: 4, liability_tier: LIMITED, customer_liability_paise: 300000}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

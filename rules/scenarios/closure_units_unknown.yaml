@@ -1,0 +1,34 @@
+name: closure_units_unknown
+description: >
+  The closing unit was never recorded, so the engine cannot tell whether the handling unit closed the complaint and assumes nothing.
+obligation_ids: [IO-CB-2026-14-3-4-closure]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(3)-(4) (report Table A, row A15, verification P; limb mapping
+  Q16): a complaint is not closed by the branch/unit/touch point that handled it. Check obligation at
+  FINAL_REPLY_SENT: closed_by_other_unit = closing_unit != handling_unit. Unit codes are synthetic.
+  handling_unit and closing_unit are ComplaintFacts facts.
+  handling_unit BR-0412 known; closing_unit unknown: INSUFFICIENT_FACTS, no output.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+    payload: {handling_unit: BR-0412}
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-10T15:00:00+05:30
+    payload: {outcome: FULLY_RESOLVED}
+    source: HUMAN
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-08-12T16:00:00+05:30
+as_of: 2026-08-13T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-3-4-closure: INSUFFICIENT_FACTS
+  outputs: {}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

@@ -1,0 +1,23 @@
+# A6 (report Table A row A6): the complainant has 30 days from receiving the award to send the bank
+# a letter accepting it; otherwise the award lapses. A PERMISSION of the complainant: never a bank
+# breach. The bank sees the bank's receipt events, so the clock uses AWARD_RECEIVED as the start and
+# ACCEPTANCE_LETTER_RECEIVED as the stop, standing in for "complainant receives award" and "letter
+# sent to bank"; how far those dates can differ is Q18. "Days" read as calendar (Q4).
+obligation_id: RBIOS-2026-15-4
+deontic: PERMISSION
+subject: complainant
+instrument: "Reserve Bank – Integrated Ombudsman Scheme, 2026"
+# instrument_ref omitted: final circular number not found (Q1)
+clause: "15(4)"
+source_url: "https://av.sc.com/in/content/docs/in-integrated-ombudsman-scheme.pdf"
+applies_to: {entity_type: COMMERCIAL_BANK}
+trigger: {event: AWARD_RECEIVED}
+clock: {start: AWARD_RECEIVED, stop: ACCEPTANCE_LETTER_RECEIVED, basis: CALENDAR, basis_status: INFERRED, tz: Asia/Kolkata}
+parameters:
+  max_days:
+    "2026-07-01": {value: 30, reference: "cl. 15(4) (report row A6)", verification: PRIMARY_TEXT_READ, open_question: Q4}
+valid_from: 2026-07-01
+valid_to: null
+status: DRAFT
+verification: PRIMARY_TEXT_READ
+tests: [rbio_award_accepted_in_time.yaml, rbio_award_lapsed.yaml]

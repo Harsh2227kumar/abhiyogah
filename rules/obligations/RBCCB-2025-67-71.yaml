@@ -1,0 +1,56 @@
+# B5 (report Table B row B5; formula in "Formulas an engine can execute today"): the customer's
+# liability for an unauthorised electronic transaction depends on who was at fault and how many
+# working days passed between the bank's transaction communication and the customer's report:
+#   delay_wd = working_days(home_branch_calendar, alert_received + 1 … report_date)   (para 71)
+#   liability = 0 if bank fault (reported or not), or third-party breach with delay_wd <= 3;
+#               min(txn, cap[account_type]) if third-party breach with delay_wd 4-7;
+#               board-approved policy beyond 7.
+# Working days follow the home branch's schedule and exclude the day the communication was received
+# (para 71): basis WORKING, EXPLICIT. The clock here only counts delay_wd; it sets no due date.
+# A determination, not a deadline: result DETERMINED with outputs (rules/obligations/_conventions.md).
+# The fault attribution is a human finding (fact liability_fault, HUMAN events only); an LLM
+# never decides it (CLAUDE.md hard rule 4). Customer-negligence liability is outside row B5 and not
+# encoded: liability_fault CUSTOMER does not trigger this rule.
+obligation_id: RBCCB-2025-67-71
+deontic: OBLIGATION
+subject: bank
+instrument: "RBI (Commercial Banks – Responsible Business Conduct) Directions, 2025"
+instrument_ref: "RBI/DOR/2025-26/170"
+clause: "paras 67-71, Tables 1-2"
+source_url: "https://www.caalley.com/rbi_mc_md_25/md/170MD.pdf"
+applies_to: {entity_type: COMMERCIAL_BANK}
+trigger:
+  event: CUSTOMER_REPORTED
+  condition: "issue_type in [UNAUTHORISED_TRANSACTION] and liability_fault in [BANK, THIRD_PARTY] and alert_received_date is set"
+clock: {start: ALERT_RECEIVED, stop: CUSTOMER_REPORTED, basis: WORKING, basis_status: EXPLICIT, tz: Asia/Kolkata}
+parameters:
+  zero_liability_max_working_days:
+    "2025-11-28": {value: 3, reference: "paras 67-71, Table 1 (report row B5)", verification: PRIMARY_TEXT_READ}
+  limited_liability_max_working_days:
+    "2025-11-28": {value: 7, reference: "paras 67-71, Table 1 (report row B5)", verification: PRIMARY_TEXT_READ}
+  cap_paise_by_account_type:
+    "2025-11-28":
+      value:
+        BSBD: 500000                                      # ₹5,000
+        OTHER_SAVINGS: 1000000                            # ₹10,000
+        PPI: 1000000
+        GIFT_CARD: 1000000
+        MSME_CURRENT_CASH_CREDIT_OD: 1000000
+        INDIVIDUAL_CURRENT_CASH_CREDIT_OD_SMALL: 1000000  # limit up to ₹25 lakh
+        CREDIT_CARD_SMALL_LIMIT: 1000000                  # limit up to ₹5 lakh
+        OTHER_CURRENT_CASH_CREDIT_OD: 2500000             # ₹25,000
+        CREDIT_CARD_LARGE_LIMIT: 2500000                  # limit above ₹5 lakh
+      reference: "Table 2 (report row B5)"
+      verification: PRIMARY_TEXT_READ
+valid_from: 2025-11-28
+valid_to: null
+status: DRAFT
+verification: PRIMARY_TEXT_READ
+supersedes_note: "Restates the 2017 limited-liability circular; Board-committee approval option from 1 Oct 2026"
+tests:
+  - liability_third_party_3wd_zero.yaml
+  - liability_first_saturday_is_working.yaml
+  - liability_third_party_5wd_capped.yaml
+  - liability_third_party_4wd_txn_below_cap.yaml
+  - liability_third_party_beyond_7wd_board_policy.yaml
+  - liability_bank_fault_zero_regardless.yaml

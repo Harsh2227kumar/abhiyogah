@@ -1,0 +1,38 @@
+name: rbio_award_complied_on_time
+description: >
+  The bank complies with the accepted award and intimates the Ombudsman within 30 days.
+obligation_ids: [RBIOS-2026-15-5]
+hand_check: |
+  Source: RB-IOS 2026 cl. 15(5), 17 (report Table A, row A7, verification P): within 30 days of
+  receiving the acceptance letter the bank complies (and intimates the Ombudsman) or appeals; either
+  stops the clock. Appellate extension not encoded (Q18). Day basis: calendar, inferred (Q4).
+  ACCEPTANCE_LETTER_RECEIVED 2026-09-22; due_date = 2026-09-22 + 30 days = 2026-10-22
+  COMPLIANCE_INTIMATED 2026-10-15 <= 2026-10-22: STOPPED_ON_TIME.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-07-06T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-07-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-25T10:00:00+05:30
+  - type: AWARD_RECEIVED
+    occurred_at: 2026-09-01T12:00:00+05:30
+  - type: ACCEPTANCE_LETTER_RECEIVED
+    occurred_at: 2026-09-22T11:00:00+05:30
+  - type: COMPLIANCE_INTIMATED
+    occurred_at: 2026-10-15T15:00:00+05:30
+as_of: 2026-10-20T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-15-5: STOPPED_ON_TIME
+  outputs: {}
+  deadlines:
+    - {obligation_id: RBIOS-2026-15-5, due_date: 2026-10-22, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

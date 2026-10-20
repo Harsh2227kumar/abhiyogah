@@ -16,34 +16,36 @@ verification grade. **All files `status: DRAFT`, no `signed_off_by`.**
 ## Checklist
 
 ### Registry code
-- [ ] `registry/loader.py`: load every `rules/obligations/*.yaml` into the schema models; a duplicate ID is an error.
-- [ ] `registry/resolve.py`: `parameter_at(obligation, name, anchor_date)` returns the value whose effective
+- [x] `registry/loader.py`: load every `rules/obligations/*.yaml` into the schema models; a duplicate ID is an error.
+- [x] `registry/resolve.py`: `parameter_at(obligation, name, anchor_date)` returns the value whose effective
       date is the latest ≤ anchor (OpenFisca-style), or raises `NoParameterInForce`.
-- [ ] `registry/lint.py` + `python -m abhiyogah.registry.lint` wired into `make rules`. Errors for: missing
+- [x] `registry/lint.py` + `python -m abhiyogah.registry.lint` wired into `make rules`. Errors for: missing
       clause or source_url; IN_FORCE without PRIMARY_TEXT_READ and signed_off_by; overlapping validity
       periods for the same obligation; `overridden_by` pointing to an unknown ID; a test file that doesn't
       exist; a non-null `pause` (pause semantics not researched); parameters with no reference.
 
 ### Obligations (one file each, with ≥ 2 scenarios: one compliant, one breach, plus edge cases)
-- [ ] A1 scheme router (RB-IOS 2021 vs 2026 by RBI receipt date, cl. 20(2))
-- [ ] A2 30-day bank reply / max(30, external TAT) (RB-IOS cl. 10(1)(f))
-- [ ] A3 90-day RBI filing window (cl. 10(1)(g)), including the 2021 comparator
-- [ ] A13 IO auto-escalation: 20 days (14(1)(b)) and TAT − 10 days (14(1)(a))
-- [ ] A14 three-state outcome (14(2))
-- [ ] A15 no same-unit closure and senior review (14(3)–(4))
-- [ ] A17 final decision within 30 days (14(9))
-- [ ] A18 mandatory reply content (14(11)–(12)): as a checklist obligation consumed by reply QA
-- [ ] B1 failed-transaction TATs: one parameter table covering every verified channel row, plus ₹100/day
-- [ ] B2 illegible rows: encoded but `verification: UNVERIFIED`
-- [ ] B5 limited liability tiers and account-type caps (paras 67–71, Tables 1–2)
-- [ ] B6 shadow credit in 10 working days (para 72)
-- [ ] B7 liability determination within 90 days (para 73)
-- [ ] B10 1 Jan 2027 fraud regime: `FUTURE_DATED`, every draft figure `UNVERIFIED`
-- [ ] A5, A6, A7, A8 RBI Ombudsman-stage clocks
+- [x] A1 scheme router (RB-IOS 2021 vs 2026 by RBI receipt date, cl. 20(2))
+- [x] A2 30-day bank reply / max(30, external TAT) (RB-IOS cl. 10(1)(f))
+- [x] A3 90-day RBI filing window (cl. 10(1)(g)), including the 2021 comparator
+- [x] A13 IO auto-escalation: 20 days (14(1)(b)) and TAT − 10 days (14(1)(a))
+- [x] A14 three-state outcome (14(2))
+- [x] A15 no same-unit closure and senior review (14(3)–(4)): obligation files
+- [x] A15 scenarios (≥ 2 per limb), written against the A15 facts requested below (#20)
+- [x] A17 final decision within 30 days (14(9))
+- [x] A18 mandatory reply content (14(11)–(12)): as a checklist obligation consumed by reply QA
+- [x] A18 scenarios (complete reply, missing elements, IO-upheld statement), written against `reply_elements` and `io_upheld` (#20)
+- [x] B1 failed-transaction TATs: one parameter table covering every verified channel row, plus ₹100/day
+- [x] B2 illegible rows: encoded but `verification: UNVERIFIED`
+- [x] B5 limited liability tiers and account-type caps (paras 67–71, Tables 1–2)
+- [x] B6 shadow credit in 10 working days (para 72)
+- [x] B7 liability determination within 90 days (para 73)
+- [x] B10 1 Jan 2027 fraud regime: `FUTURE_DATED`, every draft figure `UNVERIFIED`
+- [x] A5, A6, A7, A8 RBI Ombudsman-stage clocks
 
 ### Open questions
-- [ ] Keep `docs/open-questions.md` current: every flagged parameter links to its obligation ID.
-- [ ] Write `STREAM COMPLETE`.
+- [x] Keep `docs/open-questions.md` current: every flagged parameter links to its obligation ID.
+- [x] Write `STREAM COMPLETE`.
 
 ## Definition of done
 `make rules` lints every file clean; each scenario's expected values include a short comment showing the
@@ -51,4 +53,34 @@ hand calculation; the owner can review each obligation against its clause in und
 
 ## Requests
 
+Issue #20 (DETERMINED, issue_type, liability_fault, A15/A18 facts, SENIOR_REVIEWED, appellant, AEPS split,
+cl. 14(5) exclusion fact) was delivered by PR #23.
+
+- Delivered by engine PR #27: `or`/parentheses in conditions (A14 exemption) and `stop_conditions`
+  (A7/A8 appeal stops). The rule pack uses both.
+
 ## Log
+- 2026-10-19 · item 1 done · registry/loader.py + errors.py: load rules/obligations/*.yaml, duplicate ID is an error; tests/registry/test_loader.py · next: registry/resolve.py
+- 2026-10-19 · item 2 done · registry/resolve.py parameter_at (latest effective ≤ anchor, else NoParameterInForce) with property test · next: registry/lint.py
+- 2026-10-19 · A13 done (ahead of lint, because the linter refuses the foundation scenario until IO-CB-2026-14-1-b exists) · IO-CB-2026-14-1-a/-b with mutually exclusive limbs, 8 scenarios, `expect.results` key, rules/obligations/_conventions.md, Q14, scenario consistency test · next: registry/lint.py
+- 2026-10-19 · item 3 done · registry/lint.py (citations, IN_FORCE gate, pause, references, file name, duplicates/overlap, overridden_by, test files, scenario obligation IDs); `make rules` runs it · next: A1 scheme router
+- 2026-10-19 · A1 done · RBIOS-2026-20-2 router (`scheme` anchored at rbi_receipt_date; 2021 start UNVERIFIED, Q15/#17), 3 scenarios, `expect.outputs` + DETERMINED (requested from domain), validity/anchor conventions · next: A2
+- 2026-10-19 · A2 done · RBIOS-2026-10-1-f as complainant PERMISSION (`base_days` 30, max with external TAT, output `escalation_open`), 5 scenarios; PERMISSION never breaches (convention + test) · next: A3
+- 2026-10-19 · A3 done · RBIOS-2026-10-1-g PERMISSION with `base_days` + `filing_window` dated by rbi_receipt_date (2026: 90 days P; 2021: 1 year S, Q15), output `filed_in_time`, 5 scenarios incl. the 2025-receipt time-bar case · next: A14
+- 2026-10-19 · A14 done · IO-CB-2026-14-2 check obligation (`allowed_outcomes` from 2026-06-30 at final_reply_date, output `classified_at_closure`, action SET_OUTCOME), 5 scenarios; anchor before first effective date → NOT_APPLICABLE; requested an exclusion-category fact for cl. 14(5) · next: A15
+- 2026-10-19 · A15 obligation files done · IO-CB-2026-14-3-4-closure (PROHIBITION) and -review (check obligations, outputs + SENIOR_REVIEW action); clause split and 30 Jun date flagged as Q16; facts requested; scenarios split into a new item · next: A17
+- 2026-10-19 · A17 done · IO-CB-2026-14-9 (30 calendar days, inferred, no pause), action SEND_FINAL_DECISION, 4 scenarios incl. combined A13+A17 and INFO_REQUESTED-does-not-pause · next: A18
+- 2026-10-19 · A18 obligation file done · IO-CB-2026-14-11-12 checklist (`required_elements`, `required_elements_if_io_upheld`), outputs reply_complete/missing_elements, action SEND_CORRECTED_REPLY; Q17; facts requested; scenarios split into a new item · next: B1
+- 2026-10-19 · B1 done · TAT-2019-FAILED-TXN with `tat_days_by_channel` (verified rows), `follows_underlying_system`, ₹100/day as 10000 paise; 5 scenarios; requested `issue_type` fact and AEPS channel split (#20) · next: B2
+- 2026-10-19 · B2 done · TAT-2019-ILLEGIBLE-ROWS (CNP T+5, AePS beneficiary T+1, ₹100/day) all UNVERIFIED/Q5, 2 scenarios; Q5/Q6/Q9 now name obligation IDs · next: B5
+- 2026-10-19 · B5 done · RBCCB-2025-67-71 determination (3/7 working-day tiers, Table 2 caps in paise, outputs delay_working_days/liability_tier/customer_liability_paise), 6 scenarios on MH June 2026 dates (holiday-free assumption stated, Q13); requested `liability_fault` fact (#20) · next: B6
+- 2026-10-19 · B6 done · RBCCB-2025-72 (10 working days from CUSTOMER_REPORTED, report day excluded), action SHADOW_CREDIT, 4 scenarios incl. 3rd-Saturday due date and report on a 2nd Saturday · next: B7
+- 2026-10-19 · B7 done · RBCCB-2025-73 (90 calendar days inferred, outer limit only), action COMPENSATE_PER_PARAS_67_72, 3 scenarios · next: B10
+- 2026-10-19 · B10 done · RBCCB-2026-AMEND3-FRAUD FUTURE_DATED, draft figures UNVERIFIED (Q7), combination rule/basis/stop flagged; FUTURE_DATED never evaluated (convention); 2 scenarios · next: A5–A8
+- 2026-10-19 · A5–A8 done · RBIOS-2026-14-2 (15d), -15-4 (30d, complainant PERMISSION, award_lapsed), -15-5 (30d, comply or appeal), -17 (30d complainant appeal, appeal_in_time); no extensions encoded (Q18/#22); appellant fact requested; 9 scenarios · next: open-questions sweep
+- 2026-10-19 · open-questions done · every Q row now lists the obligation IDs it affects; registry linter checks each parameter's open_question exists and names its obligation · next: A15 and A18 scenarios (written against the facts requested in #20, like the B-table scenarios)
+- 2026-10-19 · A15 + A18 scenarios done · 3 per A15 limb (senior review via HUMAN FACTS_RECORDED until SENIOR_REVIEWED exists), 4 for A18; like the B-table, they rely on facts requested in #20 · next: final PR update, STREAM COMPLETE
+- 2026-10-19 · stream done · 20 obligations (19 DRAFT, B10 FUTURE_DATED), 71 scenarios, linter clean; open dependencies for the engine runner: domain request #20; owner decisions: Q14–Q18 (#15, #17, #19, #21, #22)
+- 2026-10-19 · follow-up after #23 · merged main; AEPS scenario split into AEPS_MERCHANT (B1) / AEPS_BENEFICIARY (B2); DETERMINED placeholder dropped; A15 scenarios use SENIOR_REVIEWED; appellant set on APPEAL_FILED; requests left for the engine (A14 exemption condition, appeal stop by appellant); no regulatory value changed
+- 2026-10-19 · follow-up after #27 · A14 exemption via `or` condition (+ scenario); stop_conditions on A7 (BANK) and A8 (COMPLAINANT) appeals (+ scenarios); conventions updated; no regulatory value changed
+STREAM COMPLETE

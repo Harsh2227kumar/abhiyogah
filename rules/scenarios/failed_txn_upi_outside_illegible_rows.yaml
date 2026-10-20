@@ -1,0 +1,31 @@
+name: failed_txn_upi_outside_illegible_rows
+description: >
+  A failed UPI P2P transfer reversed on T+1 is handled by the verified table only; the illegible-row
+  rule does not trigger.
+obligation_ids: [TAT-2019-ILLEGIBLE-ROWS, TAT-2019-FAILED-TXN]
+hand_check: |
+  B2 (report row B2, U): condition "channel in [CARD_NOT_PRESENT, AEPS_BENEFICIARY]" is false
+  for UPI_P2P: NOT_TRIGGERED.
+  B1 (RBI/2019-20/67 Annex, report row B1, P): UPI P2P n = 1; T = 2026-08-10; due_date = 2026-08-11.
+  REVERSAL_POSTED R = 2026-08-11 <= 2026-08-11: STOPPED_ON_TIME; compensation 0.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-10T21:00:00+05:30
+    payload: {issue_type: FAILED_TRANSACTION, channel: UPI_P2P, transaction_date_t: "2026-08-10", amount_paise: 50000}
+  - type: REVERSAL_POSTED
+    occurred_at: 2026-08-11T09:00:00+05:30
+as_of: 2026-08-12T12:00:00+05:30
+expect:
+  results:
+    TAT-2019-ILLEGIBLE-ROWS: NOT_TRIGGERED
+    TAT-2019-FAILED-TXN: STOPPED_ON_TIME
+  deadlines:
+    - {obligation_id: TAT-2019-FAILED-TXN, due_date: 2026-08-11, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

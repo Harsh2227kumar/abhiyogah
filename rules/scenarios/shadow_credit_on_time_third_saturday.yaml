@@ -1,0 +1,35 @@
+name: shadow_credit_on_time_third_saturday
+description: >
+  A shadow credit posted one day before the due date, which falls on a working 3rd Saturday.
+obligation_ids: [RBCCB-2025-72]
+hand_check: |
+  Source: RBC-CB para 72 (report Table B, row B6, verification P): shadow credit within 10 working
+  days of the customer's report. Formula: due = notification + 10 WD, report day excluded.
+  Home-branch calendar MH: Sundays and 2nd/4th Saturdays closed; 1st/3rd/5th Saturdays are working.
+  June 2026 Saturdays: 06 (1st), 13 (2nd), 20 (3rd), 27 (4th). Assumes no NI Act holiday in MH on the
+  dates counted; the calendar overlay decides that (Q13). days_late is in calendar days.
+  reported Mon 2026-06-08 (excluded). Working days: 09, 10, 11, 12 (4); Sat 13 2nd Saturday closed;
+  Sun 14 closed; 15, 16, 17, 18, 19 (9); Sat 20 3rd Saturday, working (10). due_date = 2026-06-20.
+  SHADOW_CREDITED 2026-06-19 <= 2026-06-20: STOPPED_ON_TIME.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: ALERT_RECEIVED
+    occurred_at: 2026-06-05T09:00:00+05:30
+  - type: CUSTOMER_REPORTED
+    occurred_at: 2026-06-08T10:00:00+05:30
+    payload: {issue_type: UNAUTHORISED_TRANSACTION, transaction_date_t: "2026-06-05", amount_paise: 2500000, home_branch_state: MH}
+  - type: SHADOW_CREDITED
+    occurred_at: 2026-06-19T15:00:00+05:30
+as_of: 2026-06-22T18:00:00+05:30
+expect:
+  results:
+    RBCCB-2025-72: STOPPED_ON_TIME
+  deadlines:
+    - {obligation_id: RBCCB-2025-72, due_date: 2026-06-20, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

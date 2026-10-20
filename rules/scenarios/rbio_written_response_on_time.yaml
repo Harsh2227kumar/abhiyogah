@@ -1,0 +1,36 @@
+name: rbio_written_response_on_time
+description: >
+  The bank files its written response to the Ombudsman one day before the 15-day deadline.
+obligation_ids: [RBIOS-2026-14-2]
+hand_check: |
+  Source: RB-IOS 2026 cl. 13(1)-(2), 14(2)-(3) (report Table A, row A5, verification P): written
+  response within 15 days of the Ombudsman's direction, extendable on written request (extension not
+  encoded, Q18). Day basis: calendar, inferred (Q4).
+  RBIO_DIRECTION_RECEIVED 2026-08-10; due_date = 2026-08-10 + 15 days = 2026-08-25
+  WRITTEN_RESPONSE_FILED 2026-08-24 <= 2026-08-25: STOPPED_ON_TIME.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-07-06T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-07-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-25T10:00:00+05:30
+  - type: RBIO_DIRECTION_RECEIVED
+    occurred_at: 2026-08-10T12:00:00+05:30
+  - type: WRITTEN_RESPONSE_FILED
+    occurred_at: 2026-08-24T17:00:00+05:30
+as_of: 2026-08-26T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-14-2: STOPPED_ON_TIME
+  outputs: {}
+  deadlines:
+    - {obligation_id: RBIOS-2026-14-2, due_date: 2026-08-25, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

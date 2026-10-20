@@ -1,0 +1,28 @@
+# A8 (report Table A row A8): the complainant may appeal within 30 days of receiving the award, plus
+# up to 30 more days the Appellate Authority may allow. A PERMISSION of the complainant: never a bank
+# breach. The extra 30 days are discretionary and have no event, so only the base 30 days are encoded
+# (Q18). AWARD_RECEIVED stands in for the complainant's receipt. Only an APPEAL_FILED with appellant
+# COMPLAINANT stops the clock (stop_conditions); a bank appeal does not.
+# "Days" read as calendar (Q4).
+obligation_id: RBIOS-2026-17
+deontic: PERMISSION
+subject: complainant
+instrument: "Reserve Bank – Integrated Ombudsman Scheme, 2026"
+# instrument_ref omitted: final circular number not found (Q1)
+clause: "17"
+source_url: "https://av.sc.com/in/content/docs/in-integrated-ombudsman-scheme.pdf"
+applies_to: {entity_type: COMMERCIAL_BANK}
+trigger: {event: AWARD_RECEIVED}
+clock: {start: AWARD_RECEIVED, stop: APPEAL_FILED, basis: CALENDAR, basis_status: INFERRED, tz: Asia/Kolkata}
+parameters:
+  max_days:
+    "2026-07-01": {value: 30, reference: "cl. 17 (report row A8)", verification: PRIMARY_TEXT_READ, open_question: Q4}
+  stop_conditions:
+    "2026-07-01": {value: {APPEAL_FILED: "appellant in [COMPLAINANT]"},
+                   reference: "cl. 17: the complainant's appeal (report row A8)", verification: PRIMARY_TEXT_READ}
+valid_from: 2026-07-01
+valid_to: null
+status: DRAFT
+verification: PRIMARY_TEXT_READ
+tests: [rbio_complainant_appeal_in_time.yaml, rbio_complainant_appeal_window_lapsed.yaml,
+        rbio_bank_appeal_does_not_stop_complainant_clock.yaml]

@@ -1,0 +1,40 @@
+# A18 (report Table A row A18): a partially resolved or wholly rejected complaint's reply, after IO
+# review, must (i) say the IO reviewed it, where the IO upheld the decision, and (ii) advise the RB-IOS
+# option with complete complaint details, the cms.rbi.org.in portal, and the CRPC postal and email
+# address. Which element sits in cl. 14(11) and which in 14(12) is not in the report, so both are cited.
+# A checklist obligation consumed by the reply QA gate: parameters list the element codes, nothing
+# else. The CRPC address text itself is not in the report (Q17), so QA checks presence, not wording.
+# Per-complaint evaluation uses the facts reply_elements and io_upheld (from the IO_DECIDED
+# payload). LLM QA only perceives which elements a draft contains; whether
+# the reply complies is decided here.
+obligation_id: IO-CB-2026-14-11-12
+deontic: OBLIGATION
+subject: bank
+instrument: "RBI (Commercial Banks – Internal Ombudsman) Directions, 2026"
+instrument_ref: "RBI/CEPD/2025-26/381; CEPD.PRD.No.S1027/13.01.019/2025-26"
+clause: "14(11)-(12)"
+source_url: "https://sbi.bank.in/documents/53471/53742/11082026_Annexure+I-RBI+Commercial+Banks-Internal+Ombudsman+Directions+2026.pdf/7a497eab-60d3-155f-e5cd-357b80ebda24"
+applies_to: {entity_type: COMMERCIAL_BANK, min_outlets: 10, outlets_as_on: 2025-03-31}  # A12, cl. 3
+trigger: {event: FINAL_REPLY_SENT, condition: "outcome in [PARTIALLY_RESOLVED, WHOLLY_REJECTED]"}
+anchor: final_reply_date
+parameters:
+  required_elements:
+    "2026-01-14":
+      value: [RBIOS_OPTION_ADVICE, RBIOS_COMPLETE_COMPLAINT_DETAILS, CMS_PORTAL_LINK, CRPC_POSTAL_ADDRESS, CRPC_EMAIL_ADDRESS]
+      reference: "cl. 14(11)-(12) (report row A18)"
+      verification: PRIMARY_TEXT_READ
+      open_question: Q17
+  required_elements_if_io_upheld:
+    "2026-01-14":
+      value: [IO_REVIEW_STATEMENT]
+      reference: "cl. 14(11)-(12) (report row A18: must state IO reviewed it, if upheld)"
+      verification: PRIMARY_TEXT_READ
+valid_from: 2026-01-14
+valid_to: null
+status: DRAFT
+verification: PRIMARY_TEXT_READ
+tests:
+  - reply_content_complete_io_upheld.yaml
+  - reply_content_missing_elements.yaml
+  - reply_content_io_not_upheld.yaml
+  - reply_content_fully_resolved.yaml

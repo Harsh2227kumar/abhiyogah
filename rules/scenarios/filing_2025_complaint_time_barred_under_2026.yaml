@@ -1,0 +1,42 @@
+name: filing_2025_complaint_time_barred_under_2026
+description: >
+  The report's warning case: a complaint the bank received in 2025 but filed with RBI after 30 June
+  2026 falls under the 2026 scheme's 90-day window and is already time-barred, although the 2021
+  one-year window would have allowed it.
+obligation_ids: [RBIOS-2026-10-1-g]
+hand_check: |
+  Source: RB-IOS 2026 cl. 10(1)(g) (report Table A, row A3, verification P). Report formula:
+  filing_deadline = max(bank_deadline, last_bank_communication) + 90d, bank_deadline from A2
+  (cl. 10(1)(f)): bank_receipt + max(30, external TAT). Day basis: calendar, inferred (Q4).
+  A3 is a PERMISSION of the complainant: no breach entry, no required action.
+  Scheme by RBI receipt date (cl. 20(2), row A1); applying it here is the report's inference, not an
+  RBI statement.
+  bank_receipt_date = 2025-12-01; bank_deadline = 2025-12-01 + 30 = 2025-12-31
+  last_bank_communication_date = 2025-12-10 (FINAL_REPLY_SENT)
+  start = max(2025-12-31, 2025-12-10) = 2025-12-31
+  RBI_RECEIVED 2026-07-02 >= 2026-07-01, so 2026 values: due_date = 2025-12-31 + 90 = 2026-03-31
+  2026-07-02 > 2026-03-31 (93 days after), so STOPPED_LATE; filed_in_time = false.
+  (2021 values would give 2025-12-31 + 1 year = 2026-12-31: in time.)
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2025-12-01T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2025-12-10T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-02T10:00:00+05:30
+as_of: 2026-07-03T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-10-1-g: STOPPED_LATE
+  outputs:
+    RBIOS-2026-10-1-g: {filed_in_time: false}
+  deadlines:
+    - {obligation_id: RBIOS-2026-10-1-g, due_date: 2026-03-31, result: STOPPED_LATE}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

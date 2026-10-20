@@ -1,0 +1,40 @@
+name: filing_2021_comparator_saved
+description: >
+  RBI received the complaint before 1 July 2026, so the RB-IOS 2021 one-year window applies and the
+  filing is in time, although it would be late under the 2026 90-day window.
+obligation_ids: [RBIOS-2026-10-1-g]
+hand_check: |
+  Source: RB-IOS 2026 cl. 10(1)(g) and 20(2) (report rows A3 and A1). The 2021 comparator is one year
+  (one year + 30 days if no reply), verification S (secondary only); 2021 start date UNVERIFIED (Q15).
+  The 2021 rule is encoded in the same shape: max(receipt + 30d, last communication) + 1 year.
+  bank_receipt_date = 2025-10-01; bank_deadline = 2025-10-01 + 30 = 2025-10-31
+  last_bank_communication_date = 2025-10-20 (FINAL_REPLY_SENT)
+  start = max(2025-10-31, 2025-10-20) = 2025-10-31
+  RBI_RECEIVED 2026-06-25 < 2026-07-01, so the anchor selects the 2021 values: window = 1 year.
+  due_date = 2025-10-31 + 1 year = 2026-10-31
+  2026-06-25 <= 2026-10-31, so STOPPED_ON_TIME; filed_in_time = true.
+  (Under the 2026 values the due date would be 2025-10-31 + 90 = 2026-01-29 and the filing late.)
+  as_of 2026-07-05 is after valid_from 2026-07-01, so the obligation is in the pack.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2025-10-01T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2025-10-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-06-25T10:00:00+05:30
+as_of: 2026-07-05T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-10-1-g: STOPPED_ON_TIME
+  outputs:
+    RBIOS-2026-10-1-g: {filed_in_time: true}
+  deadlines:
+    - {obligation_id: RBIOS-2026-10-1-g, due_date: 2026-10-31, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

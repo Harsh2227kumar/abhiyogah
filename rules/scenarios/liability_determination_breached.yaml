@@ -1,0 +1,32 @@
+name: liability_determination_breached
+description: >
+  Liability is still not established four days after the 90-day limit; compensation per paras 67-72 is now due.
+obligation_ids: [RBCCB-2025-73]
+hand_check: |
+  Source: RBC-CB para 73 (report Table B, row B7, verification P): liability established within the
+  board-policy time, at most 90 days from receipt; if unresolved by day 90, compensation per paras
+  67-72. Formula: determination due at receipt + 90d. Day basis: calendar, inferred (Q4).
+  bank_receipt_date = 2026-06-08; due_date = 2026-06-08 + 90 days = 2026-09-06
+  (June 22 days left + July 31 + August 31 = 84 -> 2026-08-31; + 6 = 2026-09-06).
+  No LIABILITY_DETERMINED; as_of 2026-09-10 > 2026-09-06: BREACHED, days_late = 4.
+  Required action: COMPENSATE_PER_PARAS_67_72 (amount depends on the B5 tier; not computed here).
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-06-08T10:00:00+05:30
+    payload: {issue_type: UNAUTHORISED_TRANSACTION, transaction_date_t: "2026-06-05", amount_paise: 2500000}
+as_of: 2026-09-10T18:00:00+05:30
+expect:
+  results:
+    RBCCB-2025-73: BREACHED
+  deadlines:
+    - {obligation_id: RBCCB-2025-73, due_date: 2026-09-06, result: BREACHED}
+  breaches:
+    - {obligation_id: RBCCB-2025-73, due_date: 2026-09-06, days_late: 4}
+  compensation_paise: {}
+  required_actions:
+    - {obligation_id: RBCCB-2025-73, action: COMPENSATE_PER_PARAS_67_72}

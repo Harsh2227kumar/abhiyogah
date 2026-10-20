@@ -1,0 +1,40 @@
+name: liability_first_saturday_is_working
+description: >
+  An alert on a Thursday and a report on the Monday: the first Saturday is a bank working day and counts, the Sunday does not.
+obligation_ids: [RBCCB-2025-67-71]
+hand_check: |
+  Source: RBC-CB paras 67-71, Tables 1-2 (report Table B, row B5, verification P). Formula:
+  delay_wd = working days after alert_received (excluded, para 71) up to and including the report,
+  home-branch calendar (MH): Sundays and 2nd/4th Saturdays closed. Assumes no NI Act holiday in MH on
+  the dates counted; the calendar overlay decides that (Q13).
+  liability = 0 if bank fault or third-party with delay_wd <= 3; min(txn, cap) if 4-7; board policy
+  beyond 7. Result DETERMINED; no deadline, no breach.
+  alert Thu 2026-06-04 (excluded). Counted: Fri 05, Sat 06 (1st Saturday, working), Sun 07 closed,
+  Mon 08 = 3 working days. 3 <= 3: ZERO, liability 0.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: ALERT_RECEIVED
+    occurred_at: 2026-06-04T14:00:00+05:30
+  - type: FACTS_RECORDED
+    occurred_at: 2026-06-08T10:00:00+05:30
+    payload: {issue_type: UNAUTHORISED_TRANSACTION, account_type: OTHER_SAVINGS, amount_paise: 1500000, home_branch_state: MH}
+  - type: CUSTOMER_REPORTED
+    occurred_at: 2026-06-08T10:05:00+05:30
+  - type: FACTS_RECORDED
+    occurred_at: 2026-06-08T16:00:00+05:30
+    payload: {liability_fault: THIRD_PARTY}
+    source: HUMAN
+as_of: 2026-06-08T18:00:00+05:30
+expect:
+  results:
+    RBCCB-2025-67-71: DETERMINED
+  outputs:
+    RBCCB-2025-67-71: {delay_working_days: 3, liability_tier: ZERO, customer_liability_paise: 0}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

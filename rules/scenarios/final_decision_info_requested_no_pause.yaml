@@ -1,0 +1,34 @@
+name: final_decision_info_requested_no_pause
+description: >
+  The bank asks the complainant for documents on day 10 and waits; the 30-day clock does not pause,
+  because pause semantics are not researched (Q3), and it is breached.
+obligation_ids: [IO-CB-2026-14-9]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(9) (report Table A, row A17, verification P): final decision
+  to the complainant within 30 days of the bank's receipt. Report formula:
+  final_reply_due = bank_receipt + 30d. Day basis: calendar, inferred (Q4). No pause (Q3).
+  bank_receipt_date = 2026-08-03; INFO_REQUESTED 2026-08-13 does not stop or pause the clock (Q3).
+  due_date = 2026-08-03 + 30 days = 2026-09-02
+  No FINAL_REPLY_SENT; as_of IST date 2026-09-10 > 2026-09-02: BREACHED.
+  days_late = 2026-09-10 - 2026-09-02 = 8. Required action: SEND_FINAL_DECISION.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: INFO_REQUESTED
+    occurred_at: 2026-08-13T12:00:00+05:30
+as_of: 2026-09-10T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-9: BREACHED
+  deadlines:
+    - {obligation_id: IO-CB-2026-14-9, due_date: 2026-09-02, result: BREACHED}
+  breaches:
+    - {obligation_id: IO-CB-2026-14-9, due_date: 2026-09-02, days_late: 8}
+  compensation_paise: {}
+  required_actions:
+    - {obligation_id: IO-CB-2026-14-9, action: SEND_FINAL_DECISION}

@@ -1,0 +1,30 @@
+# B7 (report Table B row B7; clock table "Liability determination"; formula "determination at
+# receipt + 90d"): the bank resolves the complaint and establishes the customer's liability within
+# the time in its board policy, which may not exceed 90 days from receipt. If it is unresolved by day
+# 90, the bank pays compensation as set out in paras 67-72, with no loss of interest (debit) or extra
+# interest (credit card). Only the 90-day outer limit is encoded: each bank's shorter board-policy
+# time is not known. The compensation amount depends on the B5 tier and is not computed here; the
+# breach raises the action COMPENSATE_PER_PARAS_67_72 instead.
+# "Days" read as calendar days is an inference (Q4). No pause is stated.
+obligation_id: RBCCB-2025-73
+deontic: OBLIGATION
+subject: bank
+instrument: "RBI (Commercial Banks – Responsible Business Conduct) Directions, 2025"
+instrument_ref: "RBI/DOR/2025-26/170"
+clause: "para 73"
+source_url: "https://www.caalley.com/rbi_mc_md_25/md/170MD.pdf"
+applies_to: {entity_type: COMMERCIAL_BANK}
+trigger: {event: BANK_RECEIVED, condition: "issue_type in [UNAUTHORISED_TRANSACTION]"}
+clock: {start: BANK_RECEIVED, stop: LIABILITY_DETERMINED, basis: CALENDAR, basis_status: INFERRED, tz: Asia/Kolkata}
+parameters:
+  max_days:
+    "2025-11-28": {value: 90, reference: "para 73 (report row B7)", verification: PRIMARY_TEXT_READ, open_question: Q4}
+valid_from: 2025-11-28
+valid_to: null
+status: DRAFT
+verification: PRIMARY_TEXT_READ
+supersedes_note: "Restates the 2017 limited-liability circular"
+tests:
+  - liability_determined_on_time.yaml
+  - liability_determination_late.yaml
+  - liability_determination_breached.yaml

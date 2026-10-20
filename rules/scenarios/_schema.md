@@ -31,10 +31,13 @@ events:                               # in any order; each becomes a ComplaintEv
     source: SYSTEM                    # optional FactSource; defaults to SYSTEM
 as_of: 2026-08-25T18:00:00+05:30      # evaluation time, offset required
 expect:
+  results:                            # obligation_id -> DecisionResult, one per listed obligation
+    IO-CB-2026-14-1-b: BREACHED
   deadlines:                          # every deadline computed for the listed obligations
     - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-08-23, result: BREACHED}
   breaches:
     - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-08-23, days_late: 2}
+  outputs: {}                         # obligation_id -> {output name: value}, e.g. scheme
   compensation_paise: {}              # obligation_id -> integer paise owed at as_of
   required_actions:
     - {obligation_id: IO-CB-2026-14-1-b, action: REFER_TO_IO}
@@ -44,6 +47,8 @@ expect:
 
 - **Times.** `occurred_at`, `recorded_at` and `as_of` are ISO 8601 with an explicit UTC offset.
   Day arithmetic uses the Asia/Kolkata calendar date of each instant.
+- **Payloads** are JSON values, so a date inside a payload is quoted (`transaction_date_t: "2026-08-10"`);
+  unquoted YAML dates are refused.
 - **Events.** The runner assigns `event_id` = `<name>-<index>` (index from 1 in file order),
   `complaint_id` = `SCN-<name>`, and provenance `{source, actor: "scenario"}`; with `source: LLM` it
   uses `model: "scenario"` and `prompt_version: "scenario"`. Folding follows
@@ -54,13 +59,18 @@ expect:
 - **`result`** is a `DecisionResult`: `NOT_APPLICABLE`, `NOT_TRIGGERED`, `INSUFFICIENT_FACTS`,
   `RUNNING`, `STOPPED_ON_TIME`, `STOPPED_LATE` or `BREACHED`. `BREACHED` means no stop event and the
   `as_of` date is after `due_date`.
+- **`results`** maps every obligation in `obligation_ids` to its `DecisionResult`, including results
+  that produce no deadline (`NOT_TRIGGERED`, `NOT_APPLICABLE`, `INSUFFICIENT_FACTS`). Added by the
+  rules stream; see `rules/obligations/_conventions.md`.
+- **`outputs`** maps an obligation that ends `DETERMINED` (no clock: router, classification,
+  checklist) to the values it produced. Output names are listed in `rules/obligations/_conventions.md`.
 - **`breaches`** lists every breach. `days_late` = stop date − `due_date` when stopped late, else
   `as_of` date − `due_date`.
 - **`deadlines`, `breaches` and `required_actions`** are compared as sets: no missing and no extra
   entries. An empty list means "none". Leaving a key out also means "none".
 - **`compensation_paise`** maps `obligation_id` to an integer amount in paise; obligations that owe
   nothing are left out.
-- **`required_actions`** use `UPPER_SNAKE` action codes. Codes in use so far:
-  `REFER_TO_IO` (A13: send the complaint to the Internal Ombudsman).
+- **`required_actions`** use `UPPER_SNAKE` action codes. The codes in use are listed in
+  `rules/obligations/_conventions.md`.
 - **Obligations** named in `obligation_ids` must exist in `rules/obligations/` (rule-pack stream).
   Until they do, the runner reports the scenario as failing, not skipped.

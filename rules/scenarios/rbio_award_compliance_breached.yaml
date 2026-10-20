@@ -1,0 +1,39 @@
+name: rbio_award_compliance_breached
+description: >
+  Eight days after the window the bank has neither complied nor appealed; compliance or appeal is still required.
+obligation_ids: [RBIOS-2026-15-5]
+hand_check: |
+  Source: RB-IOS 2026 cl. 15(5), 17 (report Table A, row A7, verification P): within 30 days of
+  receiving the acceptance letter the bank complies (and intimates the Ombudsman) or appeals; either
+  stops the clock. Appellate extension not encoded (Q18). Day basis: calendar, inferred (Q4).
+  ACCEPTANCE_LETTER_RECEIVED 2026-09-22; due_date = 2026-09-22 + 30 days = 2026-10-22
+  No COMPLIANCE_INTIMATED or APPEAL_FILED; as_of 2026-10-30 > 2026-10-22: BREACHED, days_late = 8.
+  Required action: COMPLY_WITH_AWARD_OR_APPEAL.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-07-06T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-07-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-25T10:00:00+05:30
+  - type: AWARD_RECEIVED
+    occurred_at: 2026-09-01T12:00:00+05:30
+  - type: ACCEPTANCE_LETTER_RECEIVED
+    occurred_at: 2026-09-22T11:00:00+05:30
+as_of: 2026-10-30T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-15-5: BREACHED
+  outputs: {}
+  deadlines:
+    - {obligation_id: RBIOS-2026-15-5, due_date: 2026-10-22, result: BREACHED}
+  breaches:
+    - {obligation_id: RBIOS-2026-15-5, due_date: 2026-10-22, days_late: 8}
+  compensation_paise: {}
+  required_actions:
+    - {obligation_id: RBIOS-2026-15-5, action: COMPLY_WITH_AWARD_OR_APPEAL}

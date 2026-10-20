@@ -1,0 +1,35 @@
+name: io_20d_running
+description: >
+  A wholly rejected complaint evaluated before its 20-day deadline: the clock is running and the
+  complaint must still be referred to the Internal Ombudsman. The as_of falls on the due date itself.
+obligation_ids: [IO-CB-2026-14-1-b]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(1)(b) (report Table A, row A13, verification P).
+  Day basis: calendar, inferred (Q4). io_due = bank_receipt + 20d.
+  BANK_RECEIVED at 2026-09-01T01:00+05:30 is 2026-08-31T19:30Z; the IST date 2026-09-01 counts.
+  due_date = 2026-09-01 + 20 days = 2026-09-21
+  OUTCOME_SET WHOLLY_REJECTED on 2026-09-10 triggers the obligation. No IO_REFERRED yet.
+  as_of IST date = 2026-09-21 = due_date, not after it, so the clock is RUNNING (the due date is the
+  last day on which referral is on time). No breach. Required action: REFER_TO_IO.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-09-01T01:00:00+05:30
+  - type: OUTCOME_SET
+    occurred_at: 2026-09-10T12:00:00+05:30
+    payload: {outcome: WHOLLY_REJECTED}
+    source: HUMAN
+as_of: 2026-09-21T22:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-1-b: RUNNING
+  deadlines:
+    - {obligation_id: IO-CB-2026-14-1-b, due_date: 2026-09-21, result: RUNNING}
+  breaches: []
+  compensation_paise: {}
+  required_actions:
+    - {obligation_id: IO-CB-2026-14-1-b, action: REFER_TO_IO}

@@ -1,0 +1,35 @@
+# B2 (report Table B row B2): annex rows that were not legible in the source read during research.
+# Encoded so the engine can compute them, but every value is UNVERIFIED (Q5) and the obligation stays
+# DRAFT until the owner reads the rows in the primary text:
+#   row 2c card-not-present T+5; row 5b AePS beneficiary T+1; row 7b NACH debit despite revocation,
+#   compensation ₹100/day beyond T+1 (its T+1 TAT is verified in B1 and computed there, because NACH
+#   is one Channel).
+obligation_id: TAT-2019-ILLEGIBLE-ROWS
+deontic: OBLIGATION
+subject: bank
+instrument: "RBI circular on turnaround time and customer compensation for failed transactions"
+instrument_ref: "RBI/2019-20/67; DPSS.CO.PD No.629/02.01.014/2019-20"
+clause: "Annex rows 2c, 5b, 7b"
+source_url: "https://www.rbi.org.in/commonman/English/scripts/Notification.aspx?Id=3074"
+applies_to: {entity_type: COMMERCIAL_BANK}
+trigger:
+  event: BANK_RECEIVED
+  condition: "issue_type in [FAILED_TRANSACTION] and channel in [CARD_NOT_PRESENT, AEPS_BENEFICIARY] and transaction_date_t is set"
+clock: {start: transaction_date_t, stop: REVERSAL_POSTED, basis: CALENDAR, basis_status: EXPLICIT, tz: Asia/Kolkata}
+parameters:
+  tat_days_by_channel:
+    "2019-10-15": {value: {CARD_NOT_PRESENT: 5, AEPS_BENEFICIARY: 1},
+                   reference: "RBI/2019-20/67 Annex rows 2c, 5b (report row B2, illegible)",
+                   verification: UNVERIFIED, open_question: Q5}
+  compensation_per_day_paise:
+    "2019-10-15": {value: 10000, reference: "RBI/2019-20/67 Annex (report row B2: ₹100/day)",
+                   verification: UNVERIFIED, open_question: Q5}
+valid_from: 2019-10-15
+valid_to: null
+status: DRAFT
+verification: UNVERIFIED
+tests:
+  - failed_txn_card_not_present_unverified_late.yaml
+  - failed_txn_upi_outside_illegible_rows.yaml
+  - failed_txn_aeps_beneficiary_unverified.yaml
+  - failed_txn_aeps_merchant_late.yaml

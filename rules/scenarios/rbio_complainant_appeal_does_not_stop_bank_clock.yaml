@@ -1,0 +1,44 @@
+name: rbio_complainant_appeal_does_not_stop_bank_clock
+description: >
+  After accepting the award the complainant files an appeal of their own; that does not count as the
+  bank's compliance or appeal, and the bank's 30-day clock is breached.
+obligation_ids: [RBIOS-2026-15-5]
+hand_check: |
+  Source: RB-IOS 2026 cl. 15(5), 17 (report Table A, row A7, verification P): within 30 days of the
+  acceptance letter the bank complies (intimating the Ombudsman) or appeals. Appellate extension not
+  encoded (Q18). Day basis: calendar, inferred (Q4).
+  ACCEPTANCE_LETTER_RECEIVED 2026-09-22; due_date = 2026-09-22 + 30 days = 2026-10-22
+  APPEAL_FILED 2026-10-05 has appellant COMPLAINANT; stop_conditions requires appellant in [BANK], so
+  it does not stop the clock. No COMPLIANCE_INTIMATED. as_of 2026-10-24 > 2026-10-22: BREACHED,
+  days_late = 2. Required action: COMPLY_WITH_AWARD_OR_APPEAL.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-07-06T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-07-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-25T10:00:00+05:30
+  - type: AWARD_RECEIVED
+    occurred_at: 2026-09-01T12:00:00+05:30
+  - type: ACCEPTANCE_LETTER_RECEIVED
+    occurred_at: 2026-09-22T11:00:00+05:30
+  - type: APPEAL_FILED
+    occurred_at: 2026-10-05T15:00:00+05:30
+    payload: {appellant: COMPLAINANT}
+as_of: 2026-10-24T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-15-5: BREACHED
+  outputs: {}
+  deadlines:
+    - {obligation_id: RBIOS-2026-15-5, due_date: 2026-10-22, result: BREACHED}
+  breaches:
+    - {obligation_id: RBIOS-2026-15-5, due_date: 2026-10-22, days_late: 2}
+  compensation_paise: {}
+  required_actions:
+    - {obligation_id: RBIOS-2026-15-5, action: COMPLY_WITH_AWARD_OR_APPEAL}

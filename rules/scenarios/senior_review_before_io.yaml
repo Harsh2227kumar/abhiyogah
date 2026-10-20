@@ -1,0 +1,38 @@
+name: senior_review_before_io
+description: >
+  A rejection is reviewed at a senior level two days before it is referred to the IO; the check passes.
+obligation_ids: [IO-CB-2026-14-3-4-review]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(3)-(4) (report Table A, row A15, verification P; limb mapping
+  and "fairly senior" Q16): a partially resolved or wholly rejected complaint is reviewed at a senior
+  level before it goes to the IO. Check obligation: senior_reviewed_before_io = senior_review_date set
+  and <= io_referred_date (if referred). senior_review_date is set by the
+  SENIOR_REVIEWED event (business event, HUMAN).
+  senior_review_date 2026-08-12 <= io_referred_date 2026-08-14: senior_reviewed_before_io = true.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-10T15:00:00+05:30
+    payload: {outcome: WHOLLY_REJECTED}
+    source: HUMAN
+  - type: SENIOR_REVIEWED
+    occurred_at: 2026-08-12T11:00:00+05:30
+    source: HUMAN
+  - type: IO_REFERRED
+    occurred_at: 2026-08-14T10:00:00+05:30
+as_of: 2026-08-15T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-3-4-review: DETERMINED
+  outputs:
+    IO-CB-2026-14-3-4-review: {senior_reviewed_before_io: true}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

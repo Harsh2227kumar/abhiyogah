@@ -1,0 +1,31 @@
+name: outcome_missing_at_closure
+description: >
+  The bank sends its final reply without recording any outcome; the check fails and the outcome must be set.
+obligation_ids: [IO-CB-2026-14-2]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(2) (report Table A, row A14, verification P): only "Fully
+  Resolved", "Partially Resolved" or "Wholly Rejected"; compliance by 30 Jun 2026. Check obligation:
+  at FINAL_REPLY_SENT, outcome must be set with outcome_date <= final_reply_date.
+  final_reply_date 2026-08-12 >= 2026-06-30, so the rule applies.
+  No OUTCOME_SET, so classified_at_closure = false. The outcome is still unset at as_of, so the
+  required action SET_OUTCOME is emitted. No breach entry (a check has no due date).
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-08-12T16:00:00+05:30
+as_of: 2026-08-13T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-2: DETERMINED
+  outputs: {IO-CB-2026-14-2: {classified_at_closure: false}}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions:
+    - {obligation_id: IO-CB-2026-14-2, action: SET_OUTCOME}

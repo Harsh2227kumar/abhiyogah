@@ -1,0 +1,28 @@
+name: fraud_regime_blocked_after_commencement
+description: >
+  A fraudulent-transaction complaint after 1 January 2027 is still not evaluated under the draft
+  figures, because the rule stays FUTURE_DATED until the owner reads the final text.
+obligation_ids: [RBCCB-2026-AMEND3-FRAUD]
+hand_check: |
+  Source: report Table B, row B10 (themes S, draft figures U, Q7). The report says to block activation
+  until the final text is read.
+  as_of 2027-02-15 >= valid_from 2027-01-01, but status is FUTURE_DATED: NOT_APPLICABLE.
+  Had the draft 30-day figure run, due would be 2027-01-05 + 30 = 2027-02-04 and the clock BREACHED;
+  that number is UNVERIFIED and must not drive a decision.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2027-01-05T10:00:00+05:30
+    payload: {issue_type: FRAUDULENT_TRANSACTION, transaction_date_t: "2027-01-04", amount_paise: 4000000}
+as_of: 2027-02-15T18:00:00+05:30
+expect:
+  results:
+    RBCCB-2026-AMEND3-FRAUD: NOT_APPLICABLE
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

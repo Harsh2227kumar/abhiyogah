@@ -1,0 +1,29 @@
+name: outcome_reply_before_compliance_date
+description: >
+  A final reply sent before the 30 June 2026 compliance date is outside the three-state rule.
+obligation_ids: [IO-CB-2026-14-2]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(2) (report Table A, row A14, verification P): only "Fully
+  Resolved", "Partially Resolved" or "Wholly Rejected"; compliance by 30 Jun 2026. Check obligation:
+  at FINAL_REPLY_SENT, outcome must be set with outcome_date <= final_reply_date.
+  anchor final_reply_date = 2026-06-15 < 2026-06-30, the first effective date of allowed_outcomes,
+  so the rule did not apply then: NOT_APPLICABLE, even though no outcome was recorded.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-06-01T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-06-15T16:00:00+05:30
+as_of: 2026-08-01T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-2: NOT_APPLICABLE
+  outputs: {}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

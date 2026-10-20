@@ -1,0 +1,32 @@
+name: scheme_router_2021_saved
+description: >
+  RBI receives the complaint late on 30 June 2026 IST; it stays under RB-IOS 2021, which is repealed
+  but saved for earlier receipts.
+obligation_ids: [RBIOS-2026-20-2]
+hand_check: |
+  Source: RB-IOS 2026 cl. 1(2), 20(1)-(2) (report Table A, row A1, verification P).
+  RBI_RECEIVED at 2026-06-30T23:45+05:30; IST date 2026-06-30 < 2026-07-01, so scheme = RB-IOS-2021.
+  The 2021 value's own effective date (2021-11-12) is UNVERIFIED (Q15); 2026-06-30 is after it
+  either way.
+  as_of 2026-07-10 is after the router's valid_from (2026-07-01), so the router is in the pack.
+  Router has no clock: result DETERMINED, no deadline.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-04-02T11:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-06-30T23:45:00+05:30
+as_of: 2026-07-10T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-20-2: DETERMINED
+  outputs:
+    RBIOS-2026-20-2: {scheme: RB-IOS-2021}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

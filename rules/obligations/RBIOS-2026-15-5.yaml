@@ -1,0 +1,28 @@
+# A7 (report Table A row A7; clock table "Award compliance/appeal"): within 30 days of receiving the
+# complainant's acceptance letter, the bank complies with the award and intimates compliance to the
+# Ombudsman, or appeals (appeal needs ED-or-equivalent sanction; no bank appeal against a cl. 15(1)(a)
+# award). Only an APPEAL_FILED with appellant BANK stops the clock (stop_conditions). The Appellate Authority may allow up to 30 more days: that extension has no event and is
+# not encoded (Q18). The cl. 15(1)(a) bar needs a fact on the award type that does not exist yet; it
+# is not checked. "Days" read as calendar (Q4). Award amounts are within the A9 caps (not encoded).
+obligation_id: RBIOS-2026-15-5
+deontic: OBLIGATION
+subject: bank
+instrument: "Reserve Bank – Integrated Ombudsman Scheme, 2026"
+# instrument_ref omitted: final circular number not found (Q1)
+clause: "15(5), 17"
+source_url: "https://av.sc.com/in/content/docs/in-integrated-ombudsman-scheme.pdf"
+applies_to: {entity_type: COMMERCIAL_BANK}
+trigger: {event: ACCEPTANCE_LETTER_RECEIVED}
+clock: {start: ACCEPTANCE_LETTER_RECEIVED, stop: [COMPLIANCE_INTIMATED, APPEAL_FILED], basis: CALENDAR, basis_status: INFERRED, tz: Asia/Kolkata}
+parameters:
+  max_days:
+    "2026-07-01": {value: 30, reference: "cl. 15(5) (report row A7)", verification: PRIMARY_TEXT_READ, open_question: Q4}
+  stop_conditions:
+    "2026-07-01": {value: {APPEAL_FILED: "appellant in [BANK]"},
+                   reference: "cl. 15(5), 17: the bank's own appeal (report row A7)", verification: PRIMARY_TEXT_READ}
+valid_from: 2026-07-01
+valid_to: null
+status: DRAFT
+verification: PRIMARY_TEXT_READ
+tests: [rbio_award_complied_on_time.yaml, rbio_award_appeal_late.yaml, rbio_award_compliance_breached.yaml,
+        rbio_complainant_appeal_does_not_stop_bank_clock.yaml]

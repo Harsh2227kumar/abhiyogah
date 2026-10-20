@@ -1,0 +1,34 @@
+name: rbios_external_tat_shorter
+description: >
+  An external TAT shorter than 30 days does not shorten the reply window: the 30 days still apply.
+obligation_ids: [RBIOS-2026-10-1-f]
+hand_check: |
+  Source: RB-IOS 2026 cl. 10(1)(f) (report Table A, row A2, verification P). Report formula:
+  bank_deadline = max(bank_receipt + 30d, bank_receipt + external_TAT);
+  escalation_open = no_reply_by(bank_deadline) OR customer_dissatisfied.
+  Day basis: calendar, inferred (Q4). A2 is a PERMISSION of the complainant: no breach, no action.
+  external_tat_days = 20 is a SYNTHETIC bank-supplied input (Q8, Q14).
+  bank_receipt_date = 2026-08-03
+  due_date = 2026-08-03 + max(30, 20) days = 2026-08-03 + 30 days = 2026-09-02
+  No FINAL_REPLY_SENT; as_of IST date 2026-08-25 is after receipt + 20 (2026-08-23) but <= 2026-09-02,
+  so RUNNING; escalation_open = false.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+    payload: {external_tat_days: 20}
+as_of: 2026-08-25T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-10-1-f: RUNNING
+  outputs:
+    RBIOS-2026-10-1-f: {escalation_open: false}
+  deadlines:
+    - {obligation_id: RBIOS-2026-10-1-f, due_date: 2026-09-02, result: RUNNING}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

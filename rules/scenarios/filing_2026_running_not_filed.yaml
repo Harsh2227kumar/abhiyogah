@@ -1,0 +1,33 @@
+name: filing_2026_running_not_filed
+description: >
+  The bank never replied and the complainant has not yet gone to RBI; the filing window is still open
+  and is computed with the 2026 values because the as_of date stands in for the RBI receipt date.
+obligation_ids: [RBIOS-2026-10-1-g]
+hand_check: |
+  Source: RB-IOS 2026 cl. 10(1)(g) (report Table A, row A3, verification P). Report formula:
+  filing_deadline = max(bank_deadline, last_bank_communication) + 90d, bank_deadline from A2
+  (cl. 10(1)(f)): bank_receipt + max(30, external TAT). Day basis: calendar, inferred (Q4).
+  A3 is a PERMISSION of the complainant: no breach entry, no required action.
+  bank_receipt_date = 2026-08-03; bank_deadline = 2026-08-03 + 30 = 2026-09-02
+  No bank communication, so start = 2026-09-02
+  No RBI_RECEIVED: anchor = as_of date 2026-10-15 >= 2026-07-01, so 2026 values (30, 90 days).
+  due_date = 2026-09-02 + 90 days = 2026-12-01
+  as_of 2026-10-15 <= 2026-12-01, so RUNNING. Not filed, so no filed_in_time output.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+as_of: 2026-10-15T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-10-1-g: RUNNING
+  outputs: {}
+  deadlines:
+    - {obligation_id: RBIOS-2026-10-1-g, due_date: 2026-12-01, result: RUNNING}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

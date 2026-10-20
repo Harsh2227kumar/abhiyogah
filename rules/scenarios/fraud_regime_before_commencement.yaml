@@ -1,0 +1,26 @@
+name: fraud_regime_before_commencement
+description: >
+  A fraudulent-transaction complaint in December 2026, before the 1 January 2027 regime starts, is
+  outside the future-dated rule.
+obligation_ids: [RBCCB-2026-AMEND3-FRAUD]
+hand_check: |
+  Source: RBC (Commercial Banks) Third Amendment Directions 2026, press release 24 Jun 2026 (report
+  Table B, row B10: themes S, draft figures U, Q7). valid_from 2027-01-01, status FUTURE_DATED.
+  as_of 2026-12-20 < 2027-01-01, and FUTURE_DATED is never evaluated: NOT_APPLICABLE. No deadline.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-12-10T10:00:00+05:30
+    payload: {issue_type: FRAUDULENT_TRANSACTION, transaction_date_t: "2026-12-09", amount_paise: 4000000}
+as_of: 2026-12-20T18:00:00+05:30
+expect:
+  results:
+    RBCCB-2026-AMEND3-FRAUD: NOT_APPLICABLE
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

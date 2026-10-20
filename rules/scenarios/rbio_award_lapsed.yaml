@@ -1,0 +1,37 @@
+name: rbio_award_lapsed
+description: >
+  No acceptance letter 30 days after the award; the award lapses, which is not a bank breach.
+obligation_ids: [RBIOS-2026-15-4]
+hand_check: |
+  Source: RB-IOS 2026 cl. 15(4) (report Table A, row A6, verification P): the complainant accepts
+  the award within 30 days of receiving it, else it lapses. PERMISSION of the complainant: no breach,
+  no action. AWARD_RECEIVED / ACCEPTANCE_LETTER_RECEIVED stand in for the complainant's receipt and
+  sending (Q18). Day basis: calendar, inferred (Q4).
+  AWARD_RECEIVED 2026-09-01; due_date = 2026-09-01 + 30 days = 2026-10-01
+  No ACCEPTANCE_LETTER_RECEIVED; as_of 2026-10-05 > 2026-10-01: BREACHED; award_lapsed = true.
+  PERMISSION: no breach entry, no action.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-07-06T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-07-20T16:00:00+05:30
+  - type: RBI_RECEIVED
+    occurred_at: 2026-07-25T10:00:00+05:30
+  - type: AWARD_RECEIVED
+    occurred_at: 2026-09-01T12:00:00+05:30
+as_of: 2026-10-05T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-15-4: BREACHED
+  outputs:
+    RBIOS-2026-15-4: {award_lapsed: true}
+  deadlines:
+    - {obligation_id: RBIOS-2026-15-4, due_date: 2026-10-01, result: BREACHED}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

@@ -1,0 +1,43 @@
+name: io_tat_minus_10_breach
+description: >
+  A partially resolved complaint with a short external TAT is not referred by TAT − 10 days; the IO
+  clock is breached although the ordinary 20 days have not yet run out.
+obligation_ids: [IO-CB-2026-14-1-a, IO-CB-2026-14-1-b]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(1)(a) (report Table A, row A13, verification P).
+  Report formula: io_due = external_TAT_deadline - 10d. Day basis: calendar, inferred (Q4).
+  external_tat_days = 25 is a SYNTHETIC bank-supplied input, not a real NPCI TAT (Q8). TAT deadline
+  counted from bank receipt (inferred, Q14).
+  bank_receipt_date = 2026-08-03 (IST)
+  TAT deadline = 2026-08-03 + 25 days = 2026-08-28
+  due_date = 2026-08-28 - 10 days = 2026-08-18
+  OUTCOME_SET PARTIALLY_RESOLVED on 2026-08-10 triggers limb (a); limb (b) is NOT_TRIGGERED.
+  No IO_REFERRED. as_of IST date 2026-08-20 > 2026-08-18, so BREACHED.
+  days_late = 2026-08-20 - 2026-08-18 = 2
+  (Limb (b) alone would give 2026-08-23 and RUNNING; the override changes the answer.)
+  Required action: REFER_TO_IO.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+    payload: {external_tat_days: 25}
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-10T15:00:00+05:30
+    payload: {outcome: PARTIALLY_RESOLVED}
+    source: HUMAN
+as_of: 2026-08-20T09:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-1-a: BREACHED
+    IO-CB-2026-14-1-b: NOT_TRIGGERED
+  deadlines:
+    - {obligation_id: IO-CB-2026-14-1-a, due_date: 2026-08-18, result: BREACHED}
+  breaches:
+    - {obligation_id: IO-CB-2026-14-1-a, due_date: 2026-08-18, days_late: 2}
+  compensation_paise: {}
+  required_actions:
+    - {obligation_id: IO-CB-2026-14-1-a, action: REFER_TO_IO}

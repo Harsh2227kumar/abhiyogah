@@ -1,0 +1,34 @@
+name: rbios_reply_on_time_satisfied
+description: >
+  The bank replies within 30 days and the complainant does not object; the RB-IOS escalation route
+  under cl. 10(1)(f) does not open.
+obligation_ids: [RBIOS-2026-10-1-f]
+hand_check: |
+  Source: RB-IOS 2026 cl. 10(1)(f) (report Table A, row A2, verification P). Report formula:
+  bank_deadline = max(bank_receipt + 30d, bank_receipt + external_TAT);
+  escalation_open = no_reply_by(bank_deadline) OR customer_dissatisfied.
+  Day basis: calendar, inferred (Q4). A2 is a PERMISSION of the complainant: no breach, no action.
+  bank_receipt_date = 2026-08-03; no external TAT, so due_date = 2026-08-03 + 30 days = 2026-09-02
+  FINAL_REPLY_SENT on 2026-08-20 <= 2026-09-02, so STOPPED_ON_TIME.
+  No CUSTOMER_DISSATISFIED event, so escalation_open = false.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-08-20T16:00:00+05:30
+as_of: 2026-09-10T12:00:00+05:30
+expect:
+  results:
+    RBIOS-2026-10-1-f: STOPPED_ON_TIME
+  outputs:
+    RBIOS-2026-10-1-f: {escalation_open: false}
+  deadlines:
+    - {obligation_id: RBIOS-2026-10-1-f, due_date: 2026-09-02, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

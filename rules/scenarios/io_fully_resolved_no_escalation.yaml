@@ -1,0 +1,34 @@
+name: io_fully_resolved_no_escalation
+description: >
+  A fully resolved complaint is not escalated to the Internal Ombudsman; neither limb of cl. 14(1)
+  triggers, even long after 20 days.
+obligation_ids: [IO-CB-2026-14-1-b, IO-CB-2026-14-1-a]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(1)(a)-(b) (report Table A, row A13, verification P): only a
+  partially resolved or wholly rejected complaint is auto-escalated.
+  OUTCOME_SET FULLY_RESOLVED on 2026-08-05; the condition "outcome in [PARTIALLY_RESOLVED,
+  WHOLLY_REJECTED]" is false for both limbs, so both are NOT_TRIGGERED.
+  as_of 2026-09-30 is 58 days after receipt (2026-08-03), yet there is no deadline and no breach.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-05T16:00:00+05:30
+    payload: {outcome: FULLY_RESOLVED}
+    source: HUMAN
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-08-05T16:30:00+05:30
+as_of: 2026-09-30T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-1-b: NOT_TRIGGERED
+    IO-CB-2026-14-1-a: NOT_TRIGGERED
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

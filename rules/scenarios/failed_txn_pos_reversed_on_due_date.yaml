@@ -1,0 +1,32 @@
+name: failed_txn_pos_reversed_on_due_date
+description: >
+  A failed card-present PoS purchase is reversed at 23:40 IST on T+5, the last day of the TAT; a
+  reversal on the due date itself is on time.
+obligation_ids: [TAT-2019-FAILED-TXN]
+hand_check: |
+  Source: RBI/2019-20/67 Annex (report Table B, row B1, verification P). Formula:
+  compensation = 100 x max(0, R - (T + n)) rupees, calendar days (T is a calendar date: EXPLICIT),
+  credited suo motu. 100 rupees = 10000 paise.
+  PoS card-present row: n = 5. T = 2026-08-10. due_date = T + 5 = 2026-08-15
+  REVERSAL_POSTED at 2026-08-15T23:40+05:30 = 2026-08-15T18:10Z; IST date 2026-08-15 = due_date:
+  STOPPED_ON_TIME (the due date is the last on-time day). No compensation.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-11T10:00:00+05:30
+    payload: {issue_type: FAILED_TRANSACTION, channel: POS_CARD_PRESENT, transaction_date_t: "2026-08-10", amount_paise: 349900}
+  - type: REVERSAL_POSTED
+    occurred_at: 2026-08-15T23:40:00+05:30
+as_of: 2026-08-20T12:00:00+05:30
+expect:
+  results:
+    TAT-2019-FAILED-TXN: STOPPED_ON_TIME
+  deadlines:
+    - {obligation_id: TAT-2019-FAILED-TXN, due_date: 2026-08-15, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

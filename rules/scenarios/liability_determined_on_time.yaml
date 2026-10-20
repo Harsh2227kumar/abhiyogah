@@ -1,0 +1,31 @@
+name: liability_determined_on_time
+description: >
+  Liability is established on day 73, inside the 90-day limit.
+obligation_ids: [RBCCB-2025-73]
+hand_check: |
+  Source: RBC-CB para 73 (report Table B, row B7, verification P): liability established within the
+  board-policy time, at most 90 days from receipt; if unresolved by day 90, compensation per paras
+  67-72. Formula: determination due at receipt + 90d. Day basis: calendar, inferred (Q4).
+  bank_receipt_date = 2026-06-08; due_date = 2026-06-08 + 90 days = 2026-09-06
+  (June 22 days left + July 31 + August 31 = 84 -> 2026-08-31; + 6 = 2026-09-06).
+  LIABILITY_DETERMINED 2026-08-20 <= 2026-09-06: STOPPED_ON_TIME.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-06-08T10:00:00+05:30
+    payload: {issue_type: UNAUTHORISED_TRANSACTION, transaction_date_t: "2026-06-05", amount_paise: 2500000}
+  - type: LIABILITY_DETERMINED
+    occurred_at: 2026-08-20T12:00:00+05:30
+as_of: 2026-09-10T18:00:00+05:30
+expect:
+  results:
+    RBCCB-2025-73: STOPPED_ON_TIME
+  deadlines:
+    - {obligation_id: RBCCB-2025-73, due_date: 2026-09-06, result: STOPPED_ON_TIME}
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

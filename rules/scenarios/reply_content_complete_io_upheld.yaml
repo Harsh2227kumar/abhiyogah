@@ -1,0 +1,44 @@
+name: reply_content_complete_io_upheld
+description: >
+  The IO upheld a rejection and the reply carries all six required elements; the reply is complete.
+obligation_ids: [IO-CB-2026-14-11-12]
+hand_check: |
+  Source: IO Directions 2026 cl. 14(11)-(12) (report Table A, row A18, verification P): a partial or
+  rejected reply after IO review states that the IO reviewed it (if upheld) and advises the RB-IOS
+  option with complete complaint details, cms.rbi.org.in and the CRPC postal and email address.
+  required_elements = [RBIOS_OPTION_ADVICE, RBIOS_COMPLETE_COMPLAINT_DETAILS, CMS_PORTAL_LINK,
+  CRPC_POSTAL_ADDRESS, CRPC_EMAIL_ADDRESS]; required_elements_if_io_upheld = [IO_REVIEW_STATEMENT].
+  reply_elements and io_upheld are ComplaintFacts facts (reply QA perceives the elements; the
+  check here decides).
+  io_upheld = true, so 6 elements are required; all 6 are in reply_elements.
+  missing_elements = [], reply_complete = true.
+entity_profile:
+  entity_type: COMMERCIAL_BANK
+  outlets: 120
+  outlets_as_on: 2025-03-31
+  home_branch_state: MH
+events:
+  - type: BANK_RECEIVED
+    occurred_at: 2026-08-03T11:00:00+05:30
+  - type: OUTCOME_SET
+    occurred_at: 2026-08-10T15:00:00+05:30
+    payload: {outcome: WHOLLY_REJECTED}
+    source: HUMAN
+  - type: IO_REFERRED
+    occurred_at: 2026-08-14T10:00:00+05:30
+  - type: IO_DECIDED
+    occurred_at: 2026-08-24T17:00:00+05:30
+    payload: {io_upheld: true}
+  - type: FINAL_REPLY_SENT
+    occurred_at: 2026-08-27T12:00:00+05:30
+    payload: {reply_elements: [IO_REVIEW_STATEMENT, RBIOS_OPTION_ADVICE, RBIOS_COMPLETE_COMPLAINT_DETAILS, CMS_PORTAL_LINK, CRPC_POSTAL_ADDRESS, CRPC_EMAIL_ADDRESS]}
+as_of: 2026-08-28T12:00:00+05:30
+expect:
+  results:
+    IO-CB-2026-14-11-12: DETERMINED
+  outputs:
+    IO-CB-2026-14-11-12: {reply_complete: true, missing_elements: []}
+  deadlines: []
+  breaches: []
+  compensation_paise: {}
+  required_actions: []

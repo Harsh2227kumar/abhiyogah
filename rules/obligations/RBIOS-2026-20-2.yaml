@@ -1,0 +1,30 @@
+# A1 scheme router (report Table A row A1; formula "scheme = 2026 if rbi_receipt >= 2026-07-01
+# else 2021"). The scheme version follows the date RBI received the complaint, not the bank's receipt
+# date (cl. 20(2)). Complaints received before 1 Jul 2026 stay under RB-IOS 2021, including its
+# appeals and award execution (2021 repealed but saved).
+# The parameter `scheme` is resolved at the anchor rbi_receipt_date. The 2021 scheme's commencement
+# date is not in the report; 2021-11-12 is background knowledge, graded UNVERIFIED (Q15).
+obligation_id: RBIOS-2026-20-2
+deontic: OBLIGATION
+subject: rbi_ombudsman
+instrument: "Reserve Bank – Integrated Ombudsman Scheme, 2026"
+# instrument_ref omitted: final circular number not found (Q1)
+clause: "1(2), 20(1)-(2)"
+source_url: "https://av.sc.com/in/content/docs/in-integrated-ombudsman-scheme.pdf"
+applies_to: {entity_type: COMMERCIAL_BANK}
+trigger: {event: RBI_RECEIVED}
+anchor: rbi_receipt_date
+parameters:
+  scheme:
+    "2021-11-12": {value: RB-IOS-2021, reference: "RB-IOS 2026 cl. 20(2) savings; 2021 commencement date not in report",
+                   verification: UNVERIFIED, open_question: Q15}
+    "2026-07-01": {value: RB-IOS-2026, reference: "cl. 1(2), 20(2)", verification: PRIMARY_TEXT_READ, open_question: Q1}
+valid_from: 2026-07-01
+valid_to: null
+status: DRAFT
+verification: PRIMARY_TEXT_READ
+supersedes_note: "RB-IOS 2021, repealed but saved for complaints RBI received before 1 Jul 2026"
+tests:
+  - scheme_router_2026_on_cutover_day.yaml
+  - scheme_router_2021_saved.yaml
+  - scheme_router_not_filed_with_rbi.yaml
