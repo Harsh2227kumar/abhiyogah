@@ -82,13 +82,21 @@ class GatewayConfig(BaseModel):
     api_key: str | None = Field(default=None, repr=False)
     timeout_seconds: float = Field(default=60.0, gt=0)
     max_output_tokens: int = Field(default=2048, gt=0)
+    reasoning_effort: str | None = Field(
+        default=None,
+        description=(
+            "Sent as ``reasoning_effort`` by OpenAI-compatible providers; ``none`` sends null "
+            "(reasoning off). Unset: Sarvam gets ``low``, other endpoints get nothing."
+        ),
+    )
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] = os.environ) -> "GatewayConfig":
         """Read ``LLM_PROVIDER``, ``LLM_MODEL``, ``LLM_REGION``, ``LLM_ENDPOINT``, ``LLM_API_KEY``.
 
         ``LLM_ALLOW_NON_INDIA_REGION=true`` lifts the India-only check. An empty provider means
-        rules-only (``Provider.NONE``).
+        rules-only (``Provider.NONE``). ``LLM_MAX_OUTPUT_TOKENS`` (a positive integer) and
+        ``LLM_REASONING_EFFORT`` are optional.
         """
         raw = env.get("LLM_PROVIDER", "").strip().upper() or Provider.NONE.value
         try:
@@ -103,7 +111,23 @@ class GatewayConfig(BaseModel):
             in {"1", "true", "yes"},
             endpoint=env.get("LLM_ENDPOINT") or None,
             api_key=env.get("LLM_API_KEY") or None,
+            max_output_tokens=_positive_int(env, "LLM_MAX_OUTPUT_TOKENS", 2048),
+            reasoning_effort=env.get("LLM_REASONING_EFFORT", "").strip().lower() or None,
         )
+
+
+def _positive_int(env: Mapping[str, str], name: str, default: int) -> int:
+    """Read a positive integer setting, or ``default`` when it is unset or empty."""
+    raw = env.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise GatewayConfigError(f"{name} must be a positive integer, not {raw!r}") from exc
+    if value <= 0:
+        raise GatewayConfigError(f"{name} must be a positive integer, not {raw!r}")
+    return value
 
 
 def check_region(config: GatewayConfig) -> None:

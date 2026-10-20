@@ -26,6 +26,8 @@
 - [x] Write `STREAM COMPLETE`.
 - [x] (Owner request, 2026-10-20) Sarvam AI provider: `LLM_PROVIDER=SARVAM`, default endpoint,
       `api-subscription-key` + Bearer headers, `in-attested` region only once the owner confirms India-only processing.
+- [x] (Owner request, 2026-10-20) `LLM_MAX_OUTPUT_TOKENS` and `LLM_REASONING_EFFORT` from `.env`; Sarvam
+      sends `reasoning_effort: low` by default, since its reasoning tokens count against `max_tokens`.
 
 ## Requests
 
@@ -35,6 +37,8 @@
   and `LLM_ALLOW_NON_INDIA_REGION=false` next to the existing `LLM_*` placeholders.
 - `.env.example` (integrator): mention `LLM_PROVIDER=SARVAM` (endpoint optional) and that `LLM_REGION=in-attested`
   is set only after Sarvam confirms India-only processing.
+- `.env.example` (integrator): add `LLM_MAX_OUTPUT_TOKENS=` (default 2048) and `LLM_REASONING_EFFORT=`
+  (empty: `low` for Sarvam, nothing for other endpoints; `none` turns reasoning off).
 - `docs/open-questions.md` (rule pack): add the RBI complaint category list as the next Q (issue #35).
   Until answered, triage categories come from configuration and default to none.
 - `workflow/review.py` (platform): consider a `ReviewKind.MANUAL_PERCEPTION` so perception's
@@ -54,3 +58,4 @@
 - 2026-10-19 · item 8 done · merged origin/main; all items checked; final PR #36 (Closes #8) · next: none
 - 2026-10-20 · owner request done · Sarvam provider; OpenAI-compatible adapter retries without `response_format` on 400/422 and tolerates fenced/`<think>` answers · next: none
 STREAM COMPLETE
+- 2026-10-20 · owner request done · LLM_MAX_OUTPUT_TOKENS / LLM_REASONING_EFFORT read from env; Sarvam defaults to reasoning_effort low; a reply cut off at max_tokens names both settings · next: none

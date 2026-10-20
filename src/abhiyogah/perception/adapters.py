@@ -41,6 +41,9 @@ Responder = Callable[[LlmRequest], Mapping[str, JsonValue]]
 
 FAKE_MODEL_ID = "fake-deterministic"
 SARVAM_ENDPOINT = "https://api.sarvam.ai/v1"
+SARVAM_REASONING_EFFORT = "low"
+"""Sarvam reasons at ``medium`` by default, and reasoning tokens count against ``max_tokens``;
+triage and extraction need little reasoning, so the answer is not crowded out."""
 
 
 _THINKING = re.compile(r"<think>.*?</think>", re.DOTALL)
@@ -214,7 +217,8 @@ class OpenAICompatibleAdapter:
 
     It asks for a JSON-schema ``response_format``. If the endpoint rejects that with HTTP 400 or
     422, the adapter retries once without it and keeps doing so: the schema is also in the system
-    prompt, and the answer is schema-validated either way.
+    prompt, and the answer is schema-validated either way. ``reasoning_effort``, when given, is
+    sent as is; ``"none"`` sends null, which turns reasoning off on endpoints that support it.
     """
 
     def __init__(
@@ -225,6 +229,7 @@ class OpenAICompatibleAdapter:
         api_key: str | None = None,
         max_output_tokens: int = 2048,
         key_headers: tuple[str, ...] = ("Authorization",),
+        reasoning_effort: str | None = None,
     ) -> None:
         """POST to ``<endpoint>/chat/completions``, sending ``api_key`` in each of ``key_headers``.
 
@@ -239,6 +244,7 @@ class OpenAICompatibleAdapter:
             for h in key_headers
             if api_key
         }
+        self._reasoning_effort = reasoning_effort
         self._native_schema = True
 
     @property
@@ -262,6 +268,9 @@ class OpenAICompatibleAdapter:
                 {"role": "user", "content": request.text},
             ],
         }
+        if self._reasoning_effort is not None:
+            effort = None if self._reasoning_effort == "none" else self._reasoning_effort
+            body["reasoning_effort"] = effort
         reply = None
         if self._native_schema:
             schema_format = {
@@ -284,10 +293,16 @@ class OpenAICompatibleAdapter:
         except (httpx.HTTPError, ValueError) as exc:
             raise LlmCallError(f"OpenAI-compatible call failed: {type(exc).__name__}") from exc
         try:
-            text = data["choices"][0]["message"]["content"]
+            choice = data["choices"][0]
+            text = choice["message"]["content"]
         except (KeyError, IndexError, TypeError) as exc:
             raise LlmOutputError("unexpected chat-completions response shape") from exc
         if not isinstance(text, str):
+            if choice.get("finish_reason") == "length":
+                raise LlmOutputError(
+                    "answer cut off at max_tokens before any content; raise "
+                    "LLM_MAX_OUTPUT_TOKENS or lower LLM_REASONING_EFFORT"
+                )
             raise LlmOutputError("chat-completions content is not text")
         return LlmResponse(
             model=str(data.get("model") or self._model),
@@ -314,6 +329,14 @@ def build_gateway(
 ) -> LlmGateway | None:
     """Build the configured gateway, or ``None`` for rules-only. Checks the region first."""
     check_region(config)
+    if config.reasoning_effort is not None and config.provider not in {
+        Provider.OPENAI_COMPATIBLE,
+        Provider.SARVAM,
+    }:
+        raise GatewayConfigError(
+            "LLM_REASONING_EFFORT is only sent by OpenAI-compatible providers, "
+            f"not {config.provider}"
+        )
     match config.provider:
         case Provider.NONE:
             return None
@@ -339,7 +362,12 @@ def build_gateway(
                 raise GatewayConfigError("OPENAI_COMPATIBLE needs LLM_ENDPOINT")
             client = http_client or httpx.Client(timeout=config.timeout_seconds)
             return OpenAICompatibleAdapter(
-                client, config.endpoint, _model(config), config.api_key, config.max_output_tokens
+                client,
+                config.endpoint,
+                _model(config),
+                config.api_key,
+                config.max_output_tokens,
+                reasoning_effort=config.reasoning_effort,
             )
         case Provider.SARVAM:
             client = http_client or httpx.Client(timeout=config.timeout_seconds)
@@ -351,4 +379,5 @@ def build_gateway(
                 config.max_output_tokens,
                 # Sarvam's SDK sends api-subscription-key; its examples also use a Bearer token.
                 key_headers=("api-subscription-key", "Authorization"),
+                reasoning_effort=config.reasoning_effort or SARVAM_REASONING_EFFORT,
             )
