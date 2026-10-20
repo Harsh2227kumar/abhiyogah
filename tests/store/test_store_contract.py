@@ -103,3 +103,25 @@ def test_review_tasks_are_opened_once_and_filtered(store: Store) -> None:
     assert [t.task_id for t in store.review_tasks("CMP-WF-1")] == ["RT-2"]
     assert len(store.review_tasks(status=ReviewStatus.OPEN)) == 2
     assert store.review_tasks(status=ReviewStatus.DONE) == []
+
+
+def test_review_task_closes_once_with_a_stored_event(store: Store) -> None:
+    """OPEN -> DONE naming the event; a second close and unknown IDs are refused."""
+    from abhiyogah.store import ReviewTaskClosedError, UnknownReviewTaskError
+
+    store.append_events([E1])
+    store.add_review_task(task(1))
+    closed = store.close_review_task("RT-1", E1.event_id)
+    assert closed.status is ReviewStatus.DONE
+    assert closed.closed_by_event_id == E1.event_id
+    assert store.review_task("RT-1") == closed
+    assert store.review_tasks(status=ReviewStatus.DONE) == [closed]
+    with pytest.raises(ReviewTaskClosedError):
+        store.close_review_task("RT-1", E1.event_id)
+    with pytest.raises(UnknownReviewTaskError):
+        store.close_review_task("RT-404", E1.event_id)
+    store.add_review_task(task(2))
+    with pytest.raises(UnknownReviewTaskError):
+        store.close_review_task("RT-2", "NO-SUCH-EVENT")
+    assert store.review_task("RT-2") is not None
+    assert store.review_task("RT-2").status is ReviewStatus.OPEN  # type: ignore[union-attr]

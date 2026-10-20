@@ -4,7 +4,8 @@ Events and decision records are append-only evidence (CLAUDE.md hard rule 7): th
 delete. ``append_events`` is idempotent on ``event_id`` (re-sending the same event is a no-op;
 re-using an ID for different content is an ``EvidenceConflictError``). ``append_decisions`` seals
 the records onto the complaint's chain head with the ledger, so every store chains the same way.
-Review tasks are opened once per ``task_id``; closing one is a status change, never a delete.
+Review tasks are opened once per ``task_id`` and closed once, by naming the business event that
+recorded the decision; closing is a status change, never a delete.
 """
 
 from collections.abc import Sequence
@@ -14,7 +15,11 @@ from typing import Protocol
 from abhiyogah.domain.decision import DecisionRecord
 from abhiyogah.domain.events import ComplaintEvent
 from abhiyogah.ledger import chain_head, seal_chain
-from abhiyogah.store.errors import EvidenceConflictError
+from abhiyogah.store.errors import (
+    EvidenceConflictError,
+    ReviewTaskClosedError,
+    UnknownReviewTaskError,
+)
 from abhiyogah.workflow import ReviewStatus, ReviewTask
 
 __all__ = ["MemoryStore", "Store"]
@@ -57,6 +62,14 @@ class Store(Protocol):
         self, complaint_id: str | None = None, status: ReviewStatus | None = None
     ) -> list[ReviewTask]:
         """Review tasks, filtered, by creation time."""
+        ...
+
+    def review_task(self, task_id: str) -> ReviewTask | None:
+        """One review task by ID."""
+        ...
+
+    def close_review_task(self, task_id: str, event_id: str) -> ReviewTask:
+        """Mark an open task DONE, closed by the stored event ``event_id``."""
         ...
 
 
@@ -146,3 +159,24 @@ class MemoryStore:
                 and (status is None or t.status is status)
             ]
         return sorted(tasks, key=lambda t: (t.created_at, t.task_id))
+
+    def review_task(self, task_id: str) -> ReviewTask | None:
+        """One review task by ID."""
+        with self._lock:
+            return self._tasks.get(task_id)
+
+    def close_review_task(self, task_id: str, event_id: str) -> ReviewTask:
+        """Mark an open task DONE, closed by the stored event ``event_id``."""
+        with self._lock:
+            task = self._tasks.get(task_id)
+            if task is None:
+                raise UnknownReviewTaskError(task_id)
+            if task.status is not ReviewStatus.OPEN:
+                raise ReviewTaskClosedError(task_id)
+            if event_id not in self._events:
+                raise UnknownReviewTaskError(f"{task_id}: no event {event_id}")
+            closed = task.model_copy(
+                update={"status": ReviewStatus.DONE, "closed_by_event_id": event_id}
+            )
+            self._tasks[task_id] = closed
+            return closed

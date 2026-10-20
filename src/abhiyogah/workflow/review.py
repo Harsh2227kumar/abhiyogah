@@ -79,6 +79,9 @@ class ReviewTask(BaseModel):
     )
     created_at: AwareDatetime
     status: ReviewStatus = ReviewStatus.OPEN
+    closed_by_event_id: str | None = Field(
+        default=None, description="The business event that recorded the person's decision."
+    )
 
 
 _NEEDS_REVIEW: dict[FindingKind, ReviewKind] = {

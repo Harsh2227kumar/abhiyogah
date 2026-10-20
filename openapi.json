@@ -734,6 +734,64 @@
           }
         }
       }
+    },
+    "/review-tasks/{task_id}/close": {
+      "post": {
+        "tags": [
+          "review"
+        ],
+        "summary": "Close Review Task",
+        "description": "Close a review task with the HUMAN business event that records the decision.",
+        "operationId": "closeReviewTask",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseReviewIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewTask"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1079,6 +1137,23 @@
         ],
         "title": "ClockSpec",
         "description": "When the clock starts and stops, and how its days are counted.\n\n``start`` is an event type, or the name of a ``ComplaintFacts`` date field when the anchor is a\nfact rather than an event (for example ``transaction_date_t`` for the failed-transaction TAT).\n``stop`` lists the events that stop the clock; any one of them is enough."
+      },
+      "CloseReviewIn": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Event Id",
+            "description": "A HUMAN event on the same complaint."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id"
+        ],
+        "title": "CloseReviewIn",
+        "description": "The business event that records the person's review decision."
       },
       "ClosureCheck": {
         "properties": {
@@ -3450,6 +3525,18 @@
           "status": {
             "$ref": "#/components/schemas/ReviewStatus",
             "default": "OPEN"
+          },
+          "closed_by_event_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed By Event Id",
+            "description": "The business event that recorded the person's decision."
           }
         },
         "additionalProperties": false,

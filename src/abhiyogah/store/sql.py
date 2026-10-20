@@ -7,14 +7,18 @@ backstop that makes a forked chain impossible even without the lock.
 
 from collections.abc import Sequence
 
-from sqlalchemy import Engine, create_engine, func, select, text
+from sqlalchemy import Engine, create_engine, func, select, text, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session, sessionmaker
 
 from abhiyogah.domain.decision import GENESIS_HASH, DecisionRecord
 from abhiyogah.domain.events import ComplaintEvent
 from abhiyogah.ledger import seal_chain
-from abhiyogah.store.errors import EvidenceConflictError
+from abhiyogah.store.errors import (
+    EvidenceConflictError,
+    ReviewTaskClosedError,
+    UnknownReviewTaskError,
+)
 from abhiyogah.store.models import DecisionRow, EventRow, ReviewTaskRow
 from abhiyogah.workflow import ReviewStatus, ReviewTask
 
@@ -39,6 +43,11 @@ def _to_event(row: EventRow) -> ComplaintEvent:
             "provenance": row.provenance,
         }
     )
+
+
+def _to_task(task: dict[str, object], status: str, closed_by: str | None) -> ReviewTask:
+    """Row to review task; status and closing event come from their columns."""
+    return ReviewTask.model_validate({**task, "status": status, "closed_by_event_id": closed_by})
 
 
 class SqlStore:
@@ -169,16 +178,48 @@ class SqlStore:
         self, complaint_id: str | None = None, status: ReviewStatus | None = None
     ) -> list[ReviewTask]:
         """Review tasks, filtered, by creation time."""
-        query = select(ReviewTaskRow.task, ReviewTaskRow.status)
+        query = select(ReviewTaskRow.task, ReviewTaskRow.status, ReviewTaskRow.closed_by_event_id)
         if complaint_id is not None:
             query = query.where(ReviewTaskRow.complaint_id == complaint_id)
         if status is not None:
             query = query.where(ReviewTaskRow.status == status.value)
         query = query.order_by(ReviewTaskRow.created_at, ReviewTaskRow.task_id)
         with self._sessions() as s:
-            return [
-                ReviewTask.model_validate({**task, "status": st}) for task, st in s.execute(query)
-            ]
+            return [_to_task(task, st, by) for task, st, by in s.execute(query)]
+
+    def review_task(self, task_id: str) -> ReviewTask | None:
+        """One review task by ID."""
+        with self._sessions() as s:
+            row = s.execute(
+                select(
+                    ReviewTaskRow.task, ReviewTaskRow.status, ReviewTaskRow.closed_by_event_id
+                ).where(ReviewTaskRow.task_id == task_id)
+            ).one_or_none()
+            return None if row is None else _to_task(*row)
+
+    def close_review_task(self, task_id: str, event_id: str) -> ReviewTask:
+        """Mark an open task DONE, closed by the stored event ``event_id``."""
+        with self._sessions.begin() as s:
+            row = s.execute(
+                select(ReviewTaskRow.status)
+                .where(ReviewTaskRow.task_id == task_id)
+                .with_for_update()
+            ).one_or_none()
+            if row is None:
+                raise UnknownReviewTaskError(task_id)
+            if row.status != ReviewStatus.OPEN.value:
+                raise ReviewTaskClosedError(task_id)
+            known = s.scalar(select(EventRow.id).where(EventRow.event_id == event_id))
+            if known is None:
+                raise UnknownReviewTaskError(f"{task_id}: no event {event_id}")
+            s.execute(
+                update(ReviewTaskRow)
+                .where(ReviewTaskRow.task_id == task_id)
+                .values(status=ReviewStatus.DONE.value, closed_by_event_id=event_id)
+            )
+        closed = self.review_task(task_id)
+        assert closed is not None  # noqa: S101 - just updated
+        return closed
 
     def count_decisions(self) -> int:
         """Total decision records stored (for health checks)."""

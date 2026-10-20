@@ -302,3 +302,84 @@ def test_module_app_starts_from_the_environment() -> None:
     from abhiyogah.api.app import app
 
     assert TestClient(app).get("/health").json() == {"status": "ok"}
+
+
+def open_task(api: Api) -> str:
+    """Post events and a dismissive finding; return the review task's ID."""
+    post(api)
+    finding = {
+        "finding_id": "PF-9",
+        "kind": "NO_DEFICIENCY",
+        "model": "test-model",
+        "prompt_version": "classify-v1",
+    }
+    res = api.client.post(f"/complaints/{CID}/findings", json=finding, headers=WRITER)
+    task_id: str = res.json()["task_id"]
+    return task_id
+
+
+def decision(event_id: str, source: str = "HUMAN") -> dict[str, Any]:
+    """A FACTS_RECORDED event recording a person's review."""
+    return {
+        "event_id": event_id,
+        "type": "FACTS_RECORDED",
+        "occurred_at": "2026-08-10T11:00:00Z",
+        "source": source,
+        "payload": {},
+    }
+
+
+def test_review_task_is_closed_by_a_human_event(api: Api) -> None:
+    """A person's event on the same complaint closes the task, once."""
+    task_id = open_task(api)
+    post(api, [decision("REV-1")])
+    res = api.client.post(
+        f"/review-tasks/{task_id}/close", json={"event_id": "REV-1"}, headers=WRITER
+    )
+    assert res.status_code == 200, res.text
+    assert res.json()["status"] == "DONE"
+    assert res.json()["closed_by_event_id"] == "REV-1"
+    again = api.client.post(
+        f"/review-tasks/{task_id}/close", json={"event_id": "REV-1"}, headers=WRITER
+    )
+    assert again.status_code == 409
+    open_ = api.client.get("/review-tasks", params={"status": "OPEN"}, headers=READER).json()
+    assert open_ == []
+
+
+def test_review_task_cannot_be_closed_by_a_system_event_or_another_complaint(api: Api) -> None:
+    """Hard rule 4: a feed or a model never settles a review; evidence must be on this complaint."""
+    task_id = open_task(api)
+    post(api, [decision("REV-SYS", source="SYSTEM")])
+    post(api, [decision("REV-OTHER")], cid="CMP-OTHER")
+    for event_id, fragment in [("REV-SYS", "person"), ("REV-OTHER", "not on complaint")]:
+        res = api.client.post(
+            f"/review-tasks/{task_id}/close", json={"event_id": event_id}, headers=WRITER
+        )
+        assert res.status_code == 422
+        assert fragment in res.text
+    assert (
+        api.client.post(
+            f"/review-tasks/{task_id}/close", json={"event_id": "REV-SYS"}, headers=READER
+        ).status_code
+        == 403
+    )
+    assert (
+        api.client.post(
+            "/review-tasks/RT-NOPE/close", json={"event_id": "REV-SYS"}, headers=WRITER
+        ).status_code
+        == 404
+    )
+
+
+def test_review_task_cannot_be_closed_by_an_earlier_event(api: Api) -> None:
+    """The decision is recorded after the task was opened."""
+    api.clock.at = datetime(2026, 8, 10, 11, tzinfo=UTC)
+    post(api, [decision("REV-EARLY")])
+    api.clock.at = datetime(2026, 8, 10, 12, tzinfo=UTC)
+    task_id = open_task(api)
+    res = api.client.post(
+        f"/review-tasks/{task_id}/close", json={"event_id": "REV-EARLY"}, headers=WRITER
+    )
+    assert res.status_code == 422
+    assert "before the task" in res.text
