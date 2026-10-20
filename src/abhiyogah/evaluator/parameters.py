@@ -1,8 +1,8 @@
 """Dated parameter lookup and the clock-duration building blocks.
 
-``parameter_at`` picks the value whose effective date is the latest on or before the anchor date
-(the rule in ``rules/README.md``). It stands in for the registry resolver until the rule-pack stream
-ships ``registry/resolve.py``.
+``parameter_at`` wraps the registry resolver (``registry/resolve.py``: the value whose effective
+date is the latest on or before the anchor date) and also returns that effective date, which the
+decision record cites.
 
 A clocked obligation names its duration with exactly one of these parameters, as set out in
 ``rules/obligations/_conventions.md``. The numbers always come from the rule pack. ``s`` is the
@@ -37,6 +37,8 @@ from abhiyogah.domain.decision import DecisionResult, ParameterUse
 from abhiyogah.domain.enums import DayBasis
 from abhiyogah.domain.events import EventType
 from abhiyogah.evaluator.errors import ParameterError
+from abhiyogah.registry import resolve
+from abhiyogah.registry.errors import NoParameterInForce, UnknownParameterError
 from abhiyogah.registry.schema import Obligation, ParameterValue
 
 __all__ = [
@@ -67,14 +69,14 @@ def parameter_at(
     obligation: Obligation, name: str, anchor: date
 ) -> tuple[date, ParameterValue] | None:
     """The ``(effective_date, value)`` in force on ``anchor``, or None if none is yet."""
-    history = obligation.parameters.get(name)
-    if history is None:
-        raise ParameterError(f"{obligation.obligation_id}: no parameter {name!r}")
-    eligible = [d for d in history if d <= anchor]
-    if not eligible:
+    try:
+        value = resolve.parameter_at(obligation, name, anchor)
+    except UnknownParameterError as exc:
+        raise ParameterError(f"{obligation.obligation_id}: no parameter {name!r}") from exc
+    except NoParameterInForce:
         return None
-    effective = max(eligible)
-    return effective, history[effective]
+    effective = next(d for d, v in obligation.parameters[name].items() if v is value)
+    return effective, value
 
 
 def int_parameter(
