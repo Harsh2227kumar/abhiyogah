@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # The plan's end-to-end demo against `docker compose up` (docs/plan.md, "End-to-end demo script").
 #
-# Starts Postgres, the API and the worker with the demo overrides (scripts/demo.compose.yml), applies
-# the database migrations, then runs scripts/demo.py: a synthetic UPI fraud complaint, its deadlines
+# Starts Postgres, the migrations (docker-compose.yml's one-shot `migrate` service), the API and the
+# worker with the demo overrides (scripts/demo.compose.yml), then runs scripts/demo.py: a synthetic UPI fraud complaint, its deadlines
 # and liability tier, a time travel past day 20 with the IO breach and referral, and the
 # clause-cited explanation of the stored decision.
 #
@@ -27,18 +27,7 @@ export ABHIYOGAH_DEMO_API_KEYS="officer-demo:writer:${WRITER_KEY};admin-demo:adm
 
 compose() { docker compose -f docker-compose.yml -f scripts/demo.compose.yml "$@"; }
 
-echo "==> Starting Postgres"
-compose up -d --wait postgres
-
-echo "==> Applying migrations (events, decision records, job queue)"
-compose run --rm --no-deps api sh -c \
-  "uv sync --frozen --no-dev && uv run --no-sync alembic upgrade head"
-# procrastinate's schema can only be applied once; a second run reports it already exists.
-compose run --rm --no-deps worker sh -c \
-  "uv sync --frozen --no-dev && uv run --no-sync procrastinate --app=abhiyogah.worker.app.app schema --apply" \
-  || echo "    (job-queue schema already present)"
-
-echo "==> Starting the API and worker (recreated so they pick up this run's keys)"
+echo "==> Starting Postgres, migrations, API and worker (recreated so they pick up this run's keys)"
 compose up -d --force-recreate api worker
 
 ABHIYOGAH_DEMO_API_URL="$API_URL" \

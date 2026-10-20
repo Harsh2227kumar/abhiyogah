@@ -34,7 +34,7 @@
       time-travel past day 20 → auto-escalation → clause-cited trace), on the real start-up path
       (YAML rule pack, real calendar) with DRAFT copies from PR #16 in `tests/e2e/rulepack/`.
 - [x] e2e demo, MCP step: the MCP tools return the same result to an agent as the API.
-- [ ] e2e demo and `scripts/demo.sh` on the real rule pack: once #16 merges, point both at
+- [x] e2e demo and `scripts/demo.sh` on the real rule pack: once #16 merges, point both at
       `rules/obligations/`, keep the hand-checked assertions, and delete `tests/e2e/rulepack/`.
 - [x] `scripts/demo.sh` that runs the demo against `docker compose up`.
 - [x] Release checklist in `docs/release.md` (rule-pack version, calendar version, migration notes).
@@ -48,3 +48,8 @@
 - 2026-10-19 · demo.sh done · `scripts/demo.sh` + `demo.compose.yml` (demo rule pack, profile, per-run API keys) + stdlib client `demo.py`; ran against Postgres 16 in Docker with migrations (the uv image pull from ghcr is blocked here, so API ran on the host) · next: MCP step (stream 07) and real rule pack (#16)
 - 2026-10-19 · e2e MCP step done · `test_demo.py` step 5: `evaluate_complaint` (now and time-travelled), `get_deadlines` and `explain_decision` equal the API's JSON; demo.py points to the MCP server · next: real rule pack (waits on #16)
 - 2026-10-19 · CI runs console checks · `.github/workflows/ci.yml` adds pnpm (pinned via console/package.json packageManager) and Node 22, so `make check` runs console-check in CI · next: real rule pack (waits on #16)
+- 2026-10-20 · e2e demo on the real rule pack · test and demo.sh read `rules/obligations/`; demo copies deleted; the four demo rules were identical, so B5/B6/A13 assertions are unchanged; added hand-checked A17, A2, A3, B7 and A15 results the full pack applies to the same complaint · next: foundation/integrator Requests
+- 2026-10-20 · Requests: runtime deps `mcp>=2.2,<3` (07) and `pypdf` (07), optional `llm` extra (06); the MCP protocol and PDF tests now run instead of skipping · next: `.env.example` placeholders and compose migrations
+- 2026-10-20 · Requests: `.env.example` placeholders (04: ABHIYOGAH_*; 06: LLM_MODEL/REGION/ALLOW_NON_INDIA_REGION) and a one-shot compose `migrate` service (alembic + procrastinate schema on first run) that api/worker wait for; demo.sh relies on it. Ran migrate's command twice on fresh Postgres 16 (both exit 0) and the db store tests (32 passed) · next: PROGRESS.md, STREAM COMPLETE
+- 2026-10-20 · final board · PROGRESS.md updated to the final state; open-questions Q19-Q21 recorded from the calendar, platform and perception Requests; bug #40 filed · next: none
+STREAM COMPLETE

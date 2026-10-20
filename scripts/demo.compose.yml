@@ -1,8 +1,8 @@
 # Demo overrides for docker-compose.yml, used by scripts/demo.sh (do not start it by hand).
-# The rule pack is the DRAFT demo copy in tests/e2e/rulepack/ until PR #16 merges; the bank profile
+# The rule pack is rules/obligations/ (agent-written DRAFT rules, not signed off); the bank profile
 # is synthetic. API keys are generated per run by scripts/demo.sh and never stored.
 x-demo-env: &demo-env
-  ABHIYOGAH_RULES_DIR: tests/e2e/rulepack
+  ABHIYOGAH_RULES_DIR: rules/obligations
   ABHIYOGAH_API_KEYS: ${ABHIYOGAH_DEMO_API_KEYS:?start the demo with scripts/demo.sh}
   ABHIYOGAH_PROFILE: >-
     {"entity_type": "COMMERCIAL_BANK", "outlets": 120, "outlets_as_on": "2025-03-31",

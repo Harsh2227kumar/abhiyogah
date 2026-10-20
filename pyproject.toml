@@ -16,7 +16,14 @@ dependencies = [
     "procrastinate",
     "httpx",
     "structlog",
+    "mcp>=2.2,<3",
+    "pypdf",
 ]
+
+[project.optional-dependencies]
+# LLM providers and PII detection for the perception stream; loaded lazily, so the engine runs
+# rules-only without them.
+llm = ["anthropic", "boto3", "presidio-analyzer"]
 
 [dependency-groups]
 dev = [
