@@ -73,7 +73,6 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
   and an `outputs` field on `DecisionRecord`, so clockless obligations (A1, A14, A15, A18) and outputs
   such as `escalation_open` can be reported. Today clockless obligations end `NOT_APPLICABLE` with
   an "obligation has a clock: false" trace line.
-- Engine side, once 02 merges: switch `evaluator/parameters.parameter_at` to `registry/resolve.py`.
 
 ## Log
 - 2026-10-19 · item 1 done · clocks/: Clock (due_date/state/days_remaining/days_late, IST rounding, pauses supported but unused), BankCalendar protocol + FakeCalendar double, build_clock from facts · next: item 2 overrides
@@ -94,3 +93,4 @@ Every scenario from stream 02 passes; mypy strict clean; import-linter confirms 
 - 2026-10-19 · filtered-stops item done · `stop_conditions` parameter: a stop event counts only if its own payload passes the condition; each candidate is traced · next: BLOCKED on #25 (DecisionRecord.outputs) and rules PR #16
 - 2026-10-19 · determinations + B5 items done · merged main (#27, #28 outputs); evaluator/determinations.py: A1 router, A14, A15 ×2, A18 checks and the B5 determination end DETERMINED with outputs/actions; A2/A3/A6/A8 clock outputs; runner compares outputs exactly. Local trial against rules PR #16 @5baaca9 on the real bank calendar: 75/75 scenarios pass · next: test_scenarios.py on the real calendar once #16 is on main
 - 2026-10-20 · scenario-suite items done · merged main (rules #16); tests/scenarios/test_scenarios.py runs all 75 rule-pack scenarios on load_bank_calendar() through the runner, in `make rules`; all pass · next: switch parameter_at to registry/resolve.py
+- 2026-10-20 · parameter_at now wraps registry/resolve.py (one source for the latest-on-or-before rule) and adds the effective date for the record; Request removed · next: STREAM COMPLETE

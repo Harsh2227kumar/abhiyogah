@@ -10,6 +10,8 @@ from abhiyogah.domain.enums import EntityType, FactSource
 from abhiyogah.domain.events import ComplaintEvent, EventType, Provenance
 from abhiyogah.domain.tz import IST
 from abhiyogah.evaluator import EntityProfile, EvaluationError, ParameterError, evaluate
+from abhiyogah.evaluator.parameters import parameter_at
+from abhiyogah.registry.resolve import parameter_at as registry_parameter_at
 from abhiyogah.registry.schema import Obligation
 from tests.clocks.fakes import FakeCalendar
 from tests.evaluator.builders import obligation, ordinary_limb, tat_limb
@@ -549,3 +551,16 @@ def test_stop_conditions_must_name_stop_events() -> None:
             [bad],
             oid="RBIOS-2026-17",
         )
+
+
+def test_parameter_at_wraps_registry_resolver() -> None:
+    """Same value as registry.resolve, plus the effective date; None before the first one."""
+    ob = obligation()
+    found = parameter_at(ob, "max_days", date(2026, 8, 3))
+    assert found is not None
+    effective, value = found
+    assert effective == date(2026, 1, 14)
+    assert value is registry_parameter_at(ob, "max_days", date(2026, 8, 3))
+    assert parameter_at(ob, "max_days", date(2026, 1, 13)) is None
+    with pytest.raises(ParameterError):
+        parameter_at(ob, "no_such_parameter", date(2026, 8, 3))
