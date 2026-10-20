@@ -300,6 +300,109 @@ def test_config_from_env_reads_sarvam() -> None:
     assert GatewayConfig.from_env({"LLM_PROVIDER": "sarvam"}).provider is Provider.SARVAM
 
 
+def test_config_from_env_reads_token_limit_and_reasoning_effort() -> None:
+    config = GatewayConfig.from_env(
+        {"LLM_PROVIDER": "sarvam", "LLM_MAX_OUTPUT_TOKENS": "4096", "LLM_REASONING_EFFORT": "High"}
+    )
+    assert config.max_output_tokens == 4096
+    assert config.reasoning_effort == "high"
+    defaults = GatewayConfig.from_env({"LLM_MAX_OUTPUT_TOKENS": "", "LLM_REASONING_EFFORT": ""})
+    assert defaults.max_output_tokens == 2048
+    assert defaults.reasoning_effort is None
+
+
+@pytest.mark.parametrize("raw", ["0", "-5", "lots", "2.5"])
+def test_config_from_env_rejects_a_bad_token_limit(raw: str) -> None:
+    with pytest.raises(GatewayConfigError):
+        GatewayConfig.from_env({"LLM_MAX_OUTPUT_TOKENS": raw})
+
+
+def _sarvam_bodies(**config: Any) -> list[dict[str, Any]]:
+    """Send one request through a Sarvam gateway and return the JSON bodies it posted."""
+    bodies: list[dict[str, Any]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        bodies.append(json.loads(request.content))
+        return _chat_reply('{"label": "c"}')
+
+    gateway = build_gateway(
+        GatewayConfig(
+            provider=Provider.SARVAM, model="sarvam-test", region="in-attested", **config
+        ),
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    assert gateway is not None
+    gateway.complete(REQUEST)
+    return bodies
+
+
+def test_sarvam_reasons_low_by_default_within_the_token_limit() -> None:
+    body = _sarvam_bodies(max_output_tokens=3000)[0]
+    assert body["reasoning_effort"] == "low"
+    assert body["max_tokens"] == 3000
+
+
+def test_sarvam_reasoning_effort_is_configurable_and_none_turns_it_off() -> None:
+    assert _sarvam_bodies(reasoning_effort="high")[0]["reasoning_effort"] == "high"
+    body = _sarvam_bodies(reasoning_effort="none")[0]
+    assert "reasoning_effort" in body
+    assert body["reasoning_effort"] is None
+
+
+def test_openai_compatible_sends_no_reasoning_effort_unless_configured() -> None:
+    bodies: list[dict[str, Any]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        bodies.append(json.loads(request.content))
+        return _chat_reply('{"label": "c"}')
+
+    gateway = build_gateway(
+        GatewayConfig(
+            provider=Provider.OPENAI_COMPATIBLE,
+            model="m",
+            region="on-prem",
+            endpoint="http://llm.internal.test/v1",
+        ),
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    assert gateway is not None
+    gateway.complete(REQUEST)
+    assert "reasoning_effort" not in bodies[0]
+
+
+def test_reasoning_effort_is_refused_for_providers_that_do_not_send_it() -> None:
+    with pytest.raises(GatewayConfigError):
+        build_gateway(
+            GatewayConfig(
+                provider=Provider.BEDROCK, model="m", region="ap-south-1", reasoning_effort="low"
+            )
+        )
+
+
+def test_answer_cut_off_by_the_token_limit_says_so() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "model": "sarvam-test",
+                "choices": [
+                    {
+                        "message": {"content": None, "reasoning_content": "thinking..."},
+                        "finish_reason": "length",
+                    }
+                ],
+            },
+        )
+
+    gateway = build_gateway(
+        GatewayConfig(provider=Provider.SARVAM, model="sarvam-test", region="in-attested"),
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    assert gateway is not None
+    with pytest.raises(LlmOutputError, match="LLM_MAX_OUTPUT_TOKENS"):
+        gateway.complete(REQUEST)
+
+
 def test_rejected_response_format_falls_back_to_prompt_only() -> None:
     bodies: list[dict[str, Any]] = []
 
