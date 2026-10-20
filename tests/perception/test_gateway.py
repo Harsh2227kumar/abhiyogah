@@ -260,3 +260,96 @@ def test_openai_compatible_needs_endpoint() -> None:
 def test_parse_json_object_rejects_non_objects(text: str) -> None:
     with pytest.raises(LlmOutputError):
         parse_json_object(text)
+
+
+def _chat_reply(content: str, model: str = "served") -> httpx.Response:
+    return httpx.Response(
+        200, json={"model": model, "choices": [{"message": {"content": content}}]}
+    )
+
+
+def test_sarvam_uses_its_endpoint_and_both_key_headers() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return _chat_reply('{"label": "c"}', "sarvam-test")
+
+    gateway = build_gateway(
+        GatewayConfig(
+            provider=Provider.SARVAM,
+            model="sarvam-test",
+            region="in-attested",
+            api_key="placeholder",
+        ),
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    assert gateway is not None
+    assert gateway.complete(REQUEST).output == {"label": "c"}
+    assert str(seen[0].url) == "https://api.sarvam.ai/v1/chat/completions"
+    assert seen[0].headers["api-subscription-key"] == "placeholder"
+    assert seen[0].headers["Authorization"] == "Bearer placeholder"
+
+
+def test_sarvam_without_a_region_is_refused() -> None:
+    with pytest.raises(RegionNotAllowedError):
+        build_gateway(GatewayConfig(provider=Provider.SARVAM, model="m"))
+
+
+def test_config_from_env_reads_sarvam() -> None:
+    assert GatewayConfig.from_env({"LLM_PROVIDER": "sarvam"}).provider is Provider.SARVAM
+
+
+def test_rejected_response_format_falls_back_to_prompt_only() -> None:
+    bodies: list[dict[str, Any]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        bodies.append(body)
+        if "response_format" in body:
+            return httpx.Response(400, json={"error": "response_format not supported"})
+        return _chat_reply('{"label": "q"}')
+
+    adapter = OpenAICompatibleAdapter(
+        httpx.Client(transport=httpx.MockTransport(handler)), "http://llm.internal.test", "m"
+    )
+    assert adapter.complete(REQUEST).output == {"label": "q"}
+    assert adapter.complete(REQUEST).output == {"label": "q"}
+    # One rejected try, then prompt-only for this and every later request.
+    assert ["response_format" in b for b in bodies] == [True, False, False]
+    assert json.dumps(SCHEMA, sort_keys=True) in bodies[1]["messages"][0]["content"]
+
+
+def test_server_error_is_not_mistaken_for_a_rejected_format() -> None:
+    client = httpx.Client(transport=httpx.MockTransport(lambda r: httpx.Response(503)))
+    with pytest.raises(LlmCallError):
+        OpenAICompatibleAdapter(client, "http://llm.internal.test", "m").complete(REQUEST)
+
+
+def test_no_key_sends_no_auth_headers() -> None:
+    seen: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return _chat_reply('{"label": "c"}')
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    OpenAICompatibleAdapter(client, "http://localhost:11434/v1", "m").complete(REQUEST)
+    assert "Authorization" not in seen[0].headers
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        '```json\n{"label": "c"}\n```',
+        '<think>The customer says money was debited.</think>\n{"label": "c"}',
+        'Here is the answer: {"label": "c"} Hope this helps.',
+    ],
+)
+def test_parse_json_object_finds_the_object(text: str) -> None:
+    assert parse_json_object(text) == {"label": "c"}
+
+
+def test_parse_json_object_rejects_broken_braces() -> None:
+    with pytest.raises(LlmOutputError):
+        parse_json_object("answer: {label: c}")

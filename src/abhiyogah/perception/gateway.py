@@ -10,10 +10,13 @@ Adapters (``perception.adapters``):
 - ``FakeModel``: deterministic, no network; the default in tests.
 - ``AnthropicAdapter``: the Anthropic SDK client (loaded lazily, never a hard dependency).
 - ``BedrockAdapter``: an AWS Bedrock runtime client, normally in ``ap-south-1`` (Mumbai).
-- ``OpenAICompatibleAdapter``: any ``/chat/completions`` endpoint, for example self-hosted vLLM.
+- ``OpenAICompatibleAdapter``: any ``/chat/completions`` endpoint, for example self-hosted vLLM,
+  Ollama or Sarvam AI (``Provider.SARVAM`` fills in Sarvam's endpoint and key header).
 
 Provider, model and region come from configuration (``GatewayConfig.from_env``). A region outside
-India is refused unless ``allow_non_india_region`` is set explicitly. Model identifiers are never
+India is refused unless ``allow_non_india_region`` is set explicitly. ``in-attested`` is for a
+hosted provider (e.g. Sarvam AI) that has confirmed to the owner that it processes data only in
+India; setting it is the owner's call, never a default. Model identifiers are never
 written into code: they come only from configuration.
 """
 
@@ -48,6 +51,7 @@ INDIA_REGIONS: frozenset[str] = frozenset(
         "asia-south1",  # Google Cloud Mumbai
         "asia-south2",  # Google Cloud Delhi
         "on-prem",  # the bank's own data centre (self-hosted model)
+        "in-attested",  # a hosted provider the owner has confirmed processes data only in India
     }
 )
 """Regions whose data stays in India. Anything else needs ``allow_non_india_region``."""
@@ -61,6 +65,8 @@ class Provider(StrEnum):
     ANTHROPIC = "ANTHROPIC"
     BEDROCK = "BEDROCK"
     OPENAI_COMPATIBLE = "OPENAI_COMPATIBLE"
+    SARVAM = "SARVAM"
+    """Sarvam AI's OpenAI-style API; endpoint defaults to ``https://api.sarvam.ai/v1``."""
 
 
 class GatewayConfig(BaseModel):

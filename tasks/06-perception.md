@@ -24,6 +24,8 @@
       reporting recall per language. A TF-IDF baseline for comparison.
 - [x] Rules-only fallback when no LLM is configured: everything goes to the manual queue.
 - [x] Write `STREAM COMPLETE`.
+- [x] (Owner request, 2026-10-20) Sarvam AI provider: `LLM_PROVIDER=SARVAM`, default endpoint,
+      `api-subscription-key` + Bearer headers, `in-attested` region only once the owner confirms India-only processing.
 
 ## Requests
 
@@ -31,6 +33,8 @@
   Perception loads these lazily (`importlib`) and tests inject fakes, so nothing breaks without them.
 - `.env.example` (foundation/platform): add `LLM_MODEL=`, `LLM_REGION=` (India region, e.g. `ap-south-1`)
   and `LLM_ALLOW_NON_INDIA_REGION=false` next to the existing `LLM_*` placeholders.
+- `.env.example` (integrator): mention `LLM_PROVIDER=SARVAM` (endpoint optional) and that `LLM_REGION=in-attested`
+  is set only after Sarvam confirms India-only processing.
 - `docs/open-questions.md` (rule pack): add the RBI complaint category list as the next Q (issue #35).
   Until answered, triage categories come from configuration and default to none.
 - `workflow/review.py` (platform): consider a `ReviewKind.MANUAL_PERCEPTION` so perception's
@@ -48,4 +52,5 @@
 - 2026-10-19 · item 6 done · `data/gold/triage.jsonl` (20 synthetic each EN/HI/Hinglish, no identifiers) + `perception.eval`: recall/precision per language for cue rules, TF-IDF char-n-gram baseline (leave-one-out) and the LLM pipeline when configured · next: item 7 rules-only fallback
 - 2026-10-19 · item 7 done · `perception.service.PerceptionService`: from_config builds the gateway; with no provider it is rules-only (no model calls, untriaged text stays a complaint, ManualTask per step); model failures fall back per step · next: item 8 STREAM COMPLETE
 - 2026-10-19 · item 8 done · merged origin/main; all items checked; final PR #36 (Closes #8) · next: none
+- 2026-10-20 · owner request done · Sarvam provider; OpenAI-compatible adapter retries without `response_format` on 400/422 and tolerates fenced/`<think>` answers · next: none
 STREAM COMPLETE
