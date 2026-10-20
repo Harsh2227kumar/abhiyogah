@@ -7,6 +7,7 @@ the real client lazily from ``GatewayConfig`` after the India-region check.
 
 import importlib
 import json
+import re
 from collections.abc import Callable, Mapping
 from typing import Any, Protocol, cast
 
@@ -39,14 +40,31 @@ Responder = Callable[[LlmRequest], Mapping[str, JsonValue]]
 """Produces the fake model's answer for one request."""
 
 FAKE_MODEL_ID = "fake-deterministic"
+SARVAM_ENDPOINT = "https://api.sarvam.ai/v1"
+
+
+_THINKING = re.compile(r"<think>.*?</think>", re.DOTALL)
+_FENCE = re.compile(r"^```(?:json)?\s*|\s*```$")
 
 
 def parse_json_object(text: str) -> dict[str, JsonValue]:
-    """Parse a model's text answer as one JSON object, or raise ``LlmOutputError``."""
+    """Parse a model's text answer as one JSON object, or raise ``LlmOutputError``.
+
+    Without native schema-constrained output, some models wrap the object in a code fence or put
+    ``<think>`` reasoning before it; both are stripped. The object is still schema-validated by
+    the caller, so this only finds it, never repairs it.
+    """
+    cleaned = _FENCE.sub("", _THINKING.sub("", text).strip())
     try:
-        value = json.loads(text)
+        value = json.loads(cleaned)
     except json.JSONDecodeError as exc:
-        raise LlmOutputError(f"model answer is not JSON: {exc.msg}") from exc
+        start, end = cleaned.find("{"), cleaned.rfind("}")
+        if start == -1 or end <= start:
+            raise LlmOutputError(f"model answer is not JSON: {exc.msg}") from exc
+        try:
+            value = json.loads(cleaned[start : end + 1])
+        except json.JSONDecodeError as inner:
+            raise LlmOutputError(f"model answer is not JSON: {inner.msg}") from inner
     if not isinstance(value, dict):
         raise LlmOutputError("model answer is not a JSON object")
     return cast(dict[str, JsonValue], value)
@@ -192,7 +210,12 @@ class BedrockAdapter:
 
 
 class OpenAICompatibleAdapter:
-    """Calls an OpenAI-compatible ``/chat/completions`` endpoint, e.g. a self-hosted vLLM."""
+    """Calls an OpenAI-compatible ``/chat/completions`` endpoint (vLLM, Ollama, Sarvam, ...).
+
+    It asks for a JSON-schema ``response_format``. If the endpoint rejects that with HTTP 400 or
+    422, the adapter retries once without it and keeps doing so: the schema is also in the system
+    prompt, and the answer is schema-validated either way.
+    """
 
     def __init__(
         self,
@@ -201,40 +224,61 @@ class OpenAICompatibleAdapter:
         model: str,
         api_key: str | None = None,
         max_output_tokens: int = 2048,
+        key_headers: tuple[str, ...] = ("Authorization",),
     ) -> None:
-        """POST to ``<endpoint>/chat/completions`` with ``client``."""
+        """POST to ``<endpoint>/chat/completions``, sending ``api_key`` in each of ``key_headers``.
+
+        ``Authorization`` carries ``Bearer <key>``; any other header carries the bare key.
+        """
         self._client = client
         self._url = endpoint.rstrip("/") + "/chat/completions"
         self._model = model
-        self._api_key = api_key
         self._max_tokens = max_output_tokens
+        self._headers = {
+            h: (f"Bearer {api_key}" if h == "Authorization" else api_key)
+            for h in key_headers
+            if api_key
+        }
+        self._native_schema = True
 
     @property
     def model(self) -> str:
         """The configured model identifier."""
         return self._model
 
+    def _post(self, body: dict[str, Any]) -> httpx.Response:
+        try:
+            return self._client.post(self._url, json=body, headers=self._headers)
+        except httpx.HTTPError as exc:
+            raise LlmCallError(f"OpenAI-compatible call failed: {type(exc).__name__}") from exc
+
     def complete(self, request: LlmRequest) -> LlmResponse:
-        """Send one chat completion with a JSON-schema response format."""
-        headers = {"Authorization": f"Bearer {self._api_key}"} if self._api_key else {}
-        body = {
+        """Send one chat completion and parse the JSON answer."""
+        body: dict[str, Any] = {
             "model": self._model,
             "max_tokens": self._max_tokens,
             "messages": [
                 {"role": "system", "content": _json_instructions(request)},
                 {"role": "user", "content": request.text},
             ],
-            "response_format": {
+        }
+        reply = None
+        if self._native_schema:
+            schema_format = {
                 "type": "json_schema",
                 "json_schema": {
                     "name": request.prompt_id,
                     "schema": request.output_schema,
                     "strict": True,
                 },
-            },
-        }
+            }
+            reply = self._post({**body, "response_format": schema_format})
+            if reply.status_code in {400, 422}:
+                self._native_schema = False
+                reply = None
+        if reply is None:
+            reply = self._post(body)
         try:
-            reply = self._client.post(self._url, json=body, headers=headers)
             reply.raise_for_status()
             data = reply.json()
         except (httpx.HTTPError, ValueError) as exc:
@@ -296,4 +340,15 @@ def build_gateway(
             client = http_client or httpx.Client(timeout=config.timeout_seconds)
             return OpenAICompatibleAdapter(
                 client, config.endpoint, _model(config), config.api_key, config.max_output_tokens
+            )
+        case Provider.SARVAM:
+            client = http_client or httpx.Client(timeout=config.timeout_seconds)
+            return OpenAICompatibleAdapter(
+                client,
+                config.endpoint or SARVAM_ENDPOINT,
+                _model(config),
+                config.api_key,
+                config.max_output_tokens,
+                # Sarvam's SDK sends api-subscription-key; its examples also use a Bearer token.
+                key_headers=("api-subscription-key", "Authorization"),
             )
