@@ -8,7 +8,7 @@ _Last updated: 2026-10-20, by the integrator (final board)_
 Every stream is complete and its stream issue (#2–#9) is closed. The full rule pack
 (#16) is in `main`, and the end-to-end demo (UPI fraud complaint → deadlines and liability tier →
 time travel past day 20 → IO breach and referral → clause-cited trace → the same result over MCP)
-runs on it in `tests/e2e/test_demo.py` and `scripts/demo.sh`. Every rule is `DRAFT` (B10 is
+runs on it in `tests/e2e/test_demo.py` and `make demo` (`scripts/dev.py`). Every rule is `DRAFT` (B10 is
 `FUTURE_DATED`); none is signed off, so nothing is `IN_FORCE`.
 
 | Stream | Issue | Task file | State | Last merged PR | Needs the owner? |
@@ -35,7 +35,7 @@ runs on it in `tests/e2e/test_demo.py` and `scripts/demo.sh`. Every rule is `DRA
   so no obligation pauses (hard rule 3).
 - **Bank holiday overlay.** `data/calendars/` files are unsourced (`source_url: null`), so working-day
   deadlines use Sundays, 2nd/4th Saturdays and the `holidays` package only.
-- **Run `./scripts/demo.sh` once with normal Docker access.** It was verified against Postgres 16 with
+- **Run `make demo` (Windows: `.\make demo`) once with normal Docker access.** It was verified against Postgres 16 with
   the migrations and API run on the host; the `ghcr.io/astral-sh/uv` image could not be pulled from
   the build sandbox.
 

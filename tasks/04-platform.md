@@ -58,7 +58,7 @@ liability tier → time-travel past day 20 → breach and required IO referral a
 ## Requests
 
 - docs/open-questions.md owner: add the cl. 14(5)(c)-(e) IO-routing question (#26) as the next Q; the workflow routes those limbs to human review until it is answered.
-- console: `openapi.json` is published at the repo root; regenerate the client with `OPENAPI_SPEC=../openapi.json pnpm openapi` (or `make openapi`). The console typechecks against it as is. New: `ComplaintDetail` adds `deadlines`, `breaches`, `required_actions`, `review_tasks`; `ChainStatus` adds `reason` and `head`; every route needs `X-API-Key`.
+- console: `openapi.json` is published at the repo root; regenerate the client with `pnpm openapi` (or `make openapi`). The console typechecks against it as is. New: `ComplaintDetail` adds `deadlines`, `breaches`, `required_actions`, `review_tasks`; `ChainStatus` adds `reason` and `head`; every route needs `X-API-Key`.
 - domain owner: consider a `REVIEW_DECIDED` event type for closing review tasks; until then any HUMAN event on the complaint (e.g. `FACTS_RECORDED`) recorded after the task opened can close it.
 - foundation (`.env.example`, `docker-compose.yml`): add `ABHIYOGAH_API_KEYS`, `ABHIYOGAH_PROFILE`, `ABHIYOGAH_RULES_DIR`, `ABHIYOGAH_REEVALUATE_MINUTES` placeholders (documented in `src/abhiyogah/api/settings.py`), and run `alembic upgrade head` plus `procrastinate --app=abhiyogah.worker.app.app schema --apply` (first run only) before the api and worker start. The `openapi` target in the Makefile was filled in by this stream (it was a stub).
 

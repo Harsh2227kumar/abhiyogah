@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check": "pnpm lint && pnpm typecheck && pnpm test",
-    "openapi": "openapi-typescript ${OPENAPI_SPEC:-../openapi.json} -o lib/api/generated/schema.ts"
+    "openapi": "openapi-typescript ../openapi.json -o lib/api/generated/schema.ts"
   },
   "dependencies": {
     "next": "16.4.2",

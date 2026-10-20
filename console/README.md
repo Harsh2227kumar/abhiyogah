@@ -9,6 +9,14 @@ ABHIYOGAH_API_URL=http://localhost:8000 ABHIYOGAH_API_KEY=<key> pnpm dev   # htt
 pnpm check      # eslint + tsc --noEmit + vitest (also run by `make check` via `console-check`)
 ```
 
+PowerShell (Windows):
+
+```powershell
+pnpm install
+$env:ABHIYOGAH_API_URL = "http://localhost:8000"; $env:ABHIYOGAH_API_KEY = "<key>"; pnpm dev
+pnpm check
+```
+
 All data shown is synthetic.
 
 ## Engine API
@@ -36,11 +44,28 @@ export ABHIYOGAH_RULES_DIR=rules/obligations   # the DRAFT rule pack
 uv run uvicorn abhiyogah.api.app:app --port 8000
 ```
 
+PowerShell (Windows):
+
+```powershell
+$env:ABHIYOGAH_API_KEYS = "demo-admin:ADMIN:demo-admin-key-synthetic;demo-writer:WRITER:demo-writer-key-synthetic"
+$env:ABHIYOGAH_PROFILE = '{"entity_type":"COMMERCIAL_BANK","outlets":120,"outlets_as_on":"2025-03-31","home_branch_state":"MH"}'
+$env:ABHIYOGAH_RULES_DIR = "rules/obligations"   # the DRAFT rule pack
+uv run uvicorn abhiyogah.api.app:app --port 8000
+```
+
 Then, in `console/`:
 
 ```sh
 ABHIYOGAH_API_URL=http://localhost:8000 ABHIYOGAH_WRITER_KEY=demo-writer-key-synthetic node scripts/seed-demo.mjs
 ABHIYOGAH_API_URL=http://localhost:8000 ABHIYOGAH_API_KEY=demo-admin-key-synthetic pnpm dev
+```
+
+PowerShell (Windows):
+
+```powershell
+$env:ABHIYOGAH_API_URL = "http://localhost:8000"
+$env:ABHIYOGAH_WRITER_KEY = "demo-writer-key-synthetic"; node scripts/seed-demo.mjs
+$env:ABHIYOGAH_API_KEY = "demo-admin-key-synthetic"; pnpm dev
 ```
 
 `seed-demo.mjs` posts five synthetic complaints dated relative to today (IST). On the board,

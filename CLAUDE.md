@@ -113,6 +113,12 @@ from `openapi.json` (`make openapi`); never hand-write API types.
 | `make rules` | lint `rules/` and run every scenario file |
 | `make openapi` | export `openapi.json` from the API and regenerate the console client |
 | `make up` | `docker compose up` (Postgres + api + worker), only where Docker exists |
+| `make demo` | the end-to-end demo against `docker compose` (needs Docker and a `.env`) |
+
+Every target is implemented once in `scripts/dev.py` (stdlib Python), so the commands behave the
+same on Windows, macOS and Linux. On Windows without GNU make, run `.\make <target>` from the repo
+root (`make.cmd`). Keep it that way: no bash-only scripts, POSIX-only shell in `package.json`
+scripts, hard-coded `/` paths or Unix-only APIs. CI runs `make check` on Ubuntu and Windows.
 
 Tests that need Postgres are marked `@pytest.mark.db` and are skipped when `DATABASE_URL` is unset,
 so the core suite always runs in a plain cloud container.
